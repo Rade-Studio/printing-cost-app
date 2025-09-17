@@ -18,6 +18,7 @@ import {
 import { apiClient } from "@/lib/api"
 import { ArrowLeft, Plus, Edit, Trash2, Package, Clock, Weight, Calculator } from "lucide-react"
 import { Filament, WorkPackage } from "@/lib/types"
+import { useLocale } from "@/app/localContext"
 
 interface SaleDetail {
   id: string
@@ -51,6 +52,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
   const [details, setDetails] = useState<SaleDetail[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleteDetail, setDeleteDetail] = useState<SaleDetail | null>(null)
+  const { formatCurrency } = useLocale()
 
   const fetchDetails = async () => {
     try {
@@ -181,7 +183,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">COP {new Intl.NumberFormat("es-CO").format(detail.subTotal)}</div>
+                          <div className="font-medium">{ formatCurrency(detail.subTotal) }</div>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
@@ -203,7 +205,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
               <div className="bg-muted p-4 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total Estimado:</span>
-                  <span className="text-2xl font-bold text-primary">COP {new Intl.NumberFormat("es-CO").format(totalCost)}</span>
+                  <span className="text-2xl font-bold text-primary">{formatCurrency(totalCost)}</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Basado en {details.length} producto{details.length !== 1 ? "s" : ""}

@@ -33,6 +33,7 @@ const statusColors = {
   completada: "bg-green-100 text-green-800",
   cancelada: "bg-red-100 text-red-800",
   Pending: "bg-yellow-100 text-yellow-800",
+  prueba_venta: "bg-purple-100 text-purple-800",
 }
 
 const statusLabels = {
@@ -41,6 +42,7 @@ const statusLabels = {
   completada: "Completada",
   cancelada: "Cancelada",
   Pending: "Pendiente",
+  prueba_venta: "Prueba de Venta",
 }
 
 export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleListProps) {

@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
 import { Loader2, Calculator } from "lucide-react"
+import { useLocale } from "@/app/localContext"
 
 interface Filament {
   id: string
@@ -67,6 +68,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [error, setError] = useState("")
+  const { formatCurrency } = useLocale()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,7 +102,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
     }
 
     // Costo del material
-    const materialCost = ((formData.weightGrams || 0) * (selectedFilament.costPerGram || 0)) / 100
+    const materialCost = ((formData.weightGrams || 0) * (selectedFilament.costPerGram || 0))
 
     // Costo de trabajo
     let workCost = 0
@@ -108,18 +110,18 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
       if (selectedWorkPackage.calculationType === "Fixed") {
         workCost = selectedWorkPackage.value || 0
       } else if (selectedWorkPackage.calculationType === "Multiply") {
-        workCost = (formData.printTimeHours || 0) * (selectedWorkPackage.value || 0)
+        workCost = (formData.workPackagePerHour || 0) * (selectedWorkPackage.value || 0)
       }
     }
 
     // Costo de máquina
-    const machineCost = ((formData.printTimeHours || 0) * (formData.machineRateApplied || 0)) / 100
+    const machineCost = (formData.machineRateApplied || 0)
 
     // Costo total por unidad
-    const unitCost = materialCost + workCost + machineCost
+    const unitCost = materialCost + machineCost
 
     // Costo total considerando cantidad
-    const totalCost = unitCost * (formData.quantity || 1)
+    const totalCost = unitCost * (formData.quantity || 1) + workCost
 
     setCalculatedCost(totalCost)
   }
@@ -209,7 +211,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                   <SelectContent>
                     {filaments.map((filament) => (
                       <SelectItem key={filament.id} value={filament.id}>
-                        {filament.type} - {filament.color} (${filament.costPerGram}/g)
+                        {filament.type} - {filament.color} ({formatCurrency(filament.costPerGram || 0)}/g)
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -220,7 +222,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                 <Input
                   id="weightGrams"
                   type="number"
-                  step="0.1"
+                  step="1"
                   placeholder="0"
                   value={formData.weightGrams}
                   onChange={(e) => handleChange("weightGrams", Number.parseFloat(e.target.value) || 0)}
@@ -232,7 +234,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                 <Input
                   id="printTimeHours"
                   type="number"
-                  step="0.1"
+                  step="1"
                   placeholder="0"
                   value={formData.printTimeHours}
                   onChange={(e) => handleChange("printTimeHours", Number.parseFloat(e.target.value) || 0)}
@@ -281,7 +283,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                   <SelectContent>
                     {workPackages.map((wp) => (
                       <SelectItem key={wp.id} value={wp.id}>
-                        {wp.name} - {wp.calculationType} (${wp.value})
+                        {wp.name} - {wp.calculationType} ({formatCurrency(wp.value)})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -292,7 +294,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                 <Input
                   id="workPackagePerHour"
                   type="number"
-                  step="0.01"
+                  step="1"
                   placeholder="0"
                   value={formData.workPackagePerHour}
                   onChange={(e) => handleChange("workPackagePerHour", Number.parseFloat(e.target.value) || 0)}
@@ -304,8 +306,9 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
           {/* Cálculo de costos */}
           <div className="bg-muted p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Cálculo de Costos</h3>
-            <div className="text-2xl font-bold text-primary">${(calculatedCost || 0).toFixed(2)}</div>
+            <div className="text-2xl font-bold text-primary">{ formatCurrency(calculatedCost || 0) }</div>
             <p className="text-sm text-muted-foreground">Costo total estimado</p>
+            <p className="text-sm text-muted-foreground">No se incluye el costo de consumo de energia, por lo que el precio real estimado se calcula al guardar el producto.</p>
           </div>
 
           {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}

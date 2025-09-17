@@ -109,6 +109,7 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                 <SelectItem value="en_proceso">En Proceso</SelectItem>
                 <SelectItem value="completada">Completada</SelectItem>
                 <SelectItem value="cancelada">Cancelada</SelectItem>
+                <SelectItem value="prueba_venta">Prueba de Venta</SelectItem>
               </SelectContent>
             </Select>
           </div>

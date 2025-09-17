@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
+import { LocaleProvider } from "./localContext"
 
 export const metadata: Metadata = {
   title: "Calculadora 3D - Gestión de Impresión 3D",
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        <LocaleProvider>
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </LocaleProvider>
         <Analytics />
       </body>
     </html>

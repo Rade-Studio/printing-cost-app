@@ -19,6 +19,8 @@ import {
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Package, AlertTriangle } from "lucide-react"
 
+import { useLocale } from "@/app/localContext"
+
 interface Filament {
   id: string
   type: string
@@ -39,6 +41,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteFilament, setDeleteFilament] = useState<Filament | null>(null)
+  const { formatCurrency } = useLocale()
 
   const fetchFilaments = async () => {
     try {
@@ -114,7 +117,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
             <CardTitle className="text-sm font-medium">Valor Total del Inventario</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalValue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
             <p className="text-xs text-muted-foreground">En stock</p>
           </CardContent>
         </Card>
@@ -194,9 +197,9 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">${(filament.costPerGram || 0).toFixed(3)}/g</p>
+                            <p className="font-medium">{(formatCurrency(filament.costPerGram || 0))}/g</p>
                             <p className="text-sm text-muted-foreground">
-                              ${((filament.costPerGram || 0) * 1000).toFixed(2)}/kg
+                              {(formatCurrency((filament.costPerGram || 0) * 1000))}/kg
                             </p>
                           </div>
                         </TableCell>
@@ -204,7 +207,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
                           <div>
                             <p className="font-medium">{filament.stockGrams || 0}g</p>
                             <p className="text-sm text-muted-foreground">
-                              {((filament.stockGrams || 0) / 1000).toFixed(2)}kg
+                              {((filament.stockGrams || 0) / 1000).toFixed(1)}kg
                             </p>
                           </div>
                         </TableCell>
@@ -215,7 +218,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <p className="font-medium">${totalValue.toFixed(2)}</p>
+                          <p className="font-medium">{formatCurrency(totalValue)}</p>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">

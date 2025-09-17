@@ -8,25 +8,25 @@ import { SaleDetailForm } from "@/components/sale-detail-form"
 import { apiClient } from "@/lib/api"
 
 interface Sale {
-  Id: string
-  ClientId: string
-  Status: string
-  EstimatedTotal: number
-  FinalTotal: number
+  id: string
+  clientId: string
+  status: string
+  estimatedTotal: number
+  finalTotal: number
 }
 
 interface SaleDetail {
-  Id: string
-  SaleId: string
-  FilamentId: string
-  ProductDescription: string
-  WeightGrams: number
-  PrintTimeHours: number
-  Quantity: number
-  Comments: string
-  WorkPackagePerHour: number
-  WorkPackageId: string
-  MachineRateApplied: number
+  id: string
+  saleId: string
+  filamentId: string
+  productDescription: string
+  weightGrams: number
+  printTimeHours: number
+  quantity: number
+  comments: string
+  workPackagePerHour: number
+  workPackageId: string
+  machineRateApplied: number
 }
 
 type View = "list" | "form" | "details" | "detail-form"
