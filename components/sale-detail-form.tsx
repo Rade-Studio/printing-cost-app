@@ -13,32 +13,32 @@ import { apiClient } from "@/lib/api"
 import { Loader2, Calculator } from "lucide-react"
 
 interface Filament {
-  Id: string
-  Type: string
-  Color: string
-  CostPerGram: number
+  id: string
+  type: string
+  color: string
+  costPerGram: number
 }
 
 interface WorkPackage {
-  Id: string
-  Name: string
-  Description: string
-  CalculationType: string
-  Value: number
+  id: string
+  name: string
+  description: string
+  calculationType: string
+  value: number
 }
 
 interface SaleDetail {
-  Id?: string
-  SaleId: string
-  FilamentId: string
-  ProductDescription: string
-  WeightGrams: number
-  PrintTimeHours: number
-  Quantity: number
-  Comments: string
-  WorkPackagePerHour: number
-  WorkPackageId: string
-  MachineRateApplied: number
+  id?: string
+  saleId: string
+  filamentId: string
+  productDescription: string
+  weightGrams: number
+  printTimeHours: number
+  quantity: number
+  comments: string
+  workPackagePerHour: number
+  workPackageId: string
+  machineRateApplied: number
 }
 
 interface SaleDetailFormProps {
@@ -52,16 +52,16 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
   const [filaments, setFilaments] = useState<Filament[]>([])
   const [workPackages, setWorkPackages] = useState<WorkPackage[]>([])
   const [formData, setFormData] = useState<SaleDetail>({
-    SaleId: saleId,
-    FilamentId: detail?.FilamentId || "",
-    ProductDescription: detail?.ProductDescription || "",
-    WeightGrams: detail?.WeightGrams || 0,
-    PrintTimeHours: detail?.PrintTimeHours || 0,
-    Quantity: detail?.Quantity || 1,
-    Comments: detail?.Comments || "",
-    WorkPackagePerHour: detail?.WorkPackagePerHour || 0,
-    WorkPackageId: detail?.WorkPackageId || "",
-    MachineRateApplied: detail?.MachineRateApplied || 0,
+    saleId: saleId,
+    filamentId: detail?.filamentId || "",
+    productDescription: detail?.productDescription || "",
+    weightGrams: detail?.weightGrams || 0,
+    printTimeHours: detail?.printTimeHours || 0,
+    quantity: detail?.quantity || 1,
+    comments: detail?.comments || "",
+    workPackagePerHour: detail?.workPackagePerHour || 0,
+    workPackageId: detail?.workPackageId || "",
+    machineRateApplied: detail?.machineRateApplied || 0,
   })
   const [calculatedCost, setCalculatedCost] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -91,8 +91,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
   }, [formData, filaments, workPackages])
 
   const calculateCost = () => {
-    const selectedFilament = filaments.find((f) => f.Id === formData.FilamentId)
-    const selectedWorkPackage = workPackages.find((wp) => wp.Id === formData.WorkPackageId)
+    const selectedFilament = filaments.find((f) => f.id === formData.filamentId)
+    const selectedWorkPackage = workPackages.find((wp) => wp.id === formData.workPackageId)
 
     if (!selectedFilament) {
       setCalculatedCost(0)
@@ -100,26 +100,26 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
     }
 
     // Costo del material
-    const materialCost = ((formData.WeightGrams || 0) * (selectedFilament.CostPerGram || 0)) / 100
+    const materialCost = ((formData.weightGrams || 0) * (selectedFilament.costPerGram || 0)) / 100
 
     // Costo de trabajo
     let workCost = 0
     if (selectedWorkPackage) {
-      if (selectedWorkPackage.CalculationType === "Fixed") {
-        workCost = selectedWorkPackage.Value || 0
-      } else if (selectedWorkPackage.CalculationType === "Multiply") {
-        workCost = (formData.PrintTimeHours || 0) * (selectedWorkPackage.Value || 0)
+      if (selectedWorkPackage.calculationType === "Fixed") {
+        workCost = selectedWorkPackage.value || 0
+      } else if (selectedWorkPackage.calculationType === "Multiply") {
+        workCost = (formData.printTimeHours || 0) * (selectedWorkPackage.value || 0)
       }
     }
 
     // Costo de máquina
-    const machineCost = ((formData.PrintTimeHours || 0) * (formData.MachineRateApplied || 0)) / 100
+    const machineCost = ((formData.printTimeHours || 0) * (formData.machineRateApplied || 0)) / 100
 
     // Costo total por unidad
     const unitCost = materialCost + workCost + machineCost
 
     // Costo total considerando cantidad
-    const totalCost = unitCost * (formData.Quantity || 1)
+    const totalCost = unitCost * (formData.quantity || 1)
 
     setCalculatedCost(totalCost)
   }
@@ -130,8 +130,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
     setError("")
 
     try {
-      if (detail?.Id) {
-        await apiClient.updateSaleDetail(saleId, detail.Id, { ...formData, Id: detail.Id })
+      if (detail?.id) {
+        await apiClient.updateSaleDetail(saleId, detail.id, { ...formData, id: detail.id })
       } else {
         await apiClient.createSaleDetail(saleId, formData)
       }
@@ -180,8 +180,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
               <Textarea
                 id="productDescription"
                 placeholder="Describe el producto a imprimir..."
-                value={formData.ProductDescription}
-                onChange={(e) => handleChange("ProductDescription", e.target.value)}
+                value={formData.productDescription}
+                onChange={(e) => handleChange("productDescription", e.target.value)}
                 required
               />
             </div>
@@ -190,8 +190,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
               <Textarea
                 id="comments"
                 placeholder="Comentarios adicionales..."
-                value={formData.Comments}
-                onChange={(e) => handleChange("Comments", e.target.value)}
+                value={formData.comments}
+                onChange={(e) => handleChange("comments", e.target.value)}
               />
             </div>
           </div>
@@ -202,14 +202,14 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="filament">Filamento</Label>
-                <Select value={formData.FilamentId} onValueChange={(value) => handleChange("FilamentId", value)}>
+                <Select value={formData.filamentId} onValueChange={(value) => handleChange("filamentId", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona filamento" />
                   </SelectTrigger>
                   <SelectContent>
                     {filaments.map((filament) => (
-                      <SelectItem key={filament.Id} value={filament.Id}>
-                        {filament.Type} - {filament.Color} (${filament.CostPerGram}/g)
+                      <SelectItem key={filament.id} value={filament.id}>
+                        {filament.type} - {filament.color} (${filament.costPerGram}/g)
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -222,8 +222,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                   type="number"
                   step="0.1"
                   placeholder="0"
-                  value={formData.WeightGrams}
-                  onChange={(e) => handleChange("WeightGrams", Number.parseFloat(e.target.value) || 0)}
+                  value={formData.weightGrams}
+                  onChange={(e) => handleChange("weightGrams", Number.parseFloat(e.target.value) || 0)}
                   required
                 />
               </div>
@@ -234,8 +234,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                   type="number"
                   step="0.1"
                   placeholder="0"
-                  value={formData.PrintTimeHours}
-                  onChange={(e) => handleChange("PrintTimeHours", Number.parseFloat(e.target.value) || 0)}
+                  value={formData.printTimeHours}
+                  onChange={(e) => handleChange("printTimeHours", Number.parseFloat(e.target.value) || 0)}
                   required
                 />
               </div>
@@ -248,8 +248,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                   type="number"
                   min="1"
                   placeholder="1"
-                  value={formData.Quantity}
-                  onChange={(e) => handleChange("Quantity", Number.parseInt(e.target.value) || 1)}
+                  value={formData.quantity}
+                  onChange={(e) => handleChange("quantity", Number.parseInt(e.target.value) || 1)}
                   required
                 />
               </div>
@@ -260,8 +260,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                   type="number"
                   step="0.01"
                   placeholder="0"
-                  value={formData.MachineRateApplied}
-                  onChange={(e) => handleChange("MachineRateApplied", Number.parseFloat(e.target.value) || 0)}
+                  value={formData.machineRateApplied}
+                  onChange={(e) => handleChange("machineRateApplied", Number.parseFloat(e.target.value) || 0)}
                   required
                 />
               </div>
@@ -274,14 +274,14 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="workPackage">Paquete de Trabajo</Label>
-                <Select value={formData.WorkPackageId} onValueChange={(value) => handleChange("WorkPackageId", value)}>
+                <Select value={formData.workPackageId} onValueChange={(value) => handleChange("workPackageId", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona paquete" />
                   </SelectTrigger>
                   <SelectContent>
                     {workPackages.map((wp) => (
-                      <SelectItem key={wp.Id} value={wp.Id}>
-                        {wp.Name} - {wp.CalculationType} (${wp.Value})
+                      <SelectItem key={wp.id} value={wp.id}>
+                        {wp.name} - {wp.calculationType} (${wp.value})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -294,8 +294,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
                   type="number"
                   step="0.01"
                   placeholder="0"
-                  value={formData.WorkPackagePerHour}
-                  onChange={(e) => handleChange("WorkPackagePerHour", Number.parseFloat(e.target.value) || 0)}
+                  value={formData.workPackagePerHour}
+                  onChange={(e) => handleChange("workPackagePerHour", Number.parseFloat(e.target.value) || 0)}
                 />
               </div>
             </div>
