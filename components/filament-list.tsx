@@ -60,8 +60,8 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
   useEffect(() => {
     const filtered = filaments.filter(
       (filament) =>
-        filament.Type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        filament.Color.toLowerCase().includes(searchTerm.toLowerCase()),
+        (filament.Type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (filament.Color || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredFilaments(filtered)
   }, [searchTerm, filaments])

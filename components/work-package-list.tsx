@@ -60,8 +60,8 @@ export function WorkPackageList({ onEdit, onAdd, refreshTrigger }: WorkPackageLi
   useEffect(() => {
     const filtered = workPackages.filter(
       (wp) =>
-        wp.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        wp.Description.toLowerCase().includes(searchTerm.toLowerCase()),
+        (wp.Name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (wp.Description || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredWorkPackages(filtered)
   }, [searchTerm, workPackages])

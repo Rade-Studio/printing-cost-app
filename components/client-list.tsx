@@ -60,10 +60,10 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
   useEffect(() => {
     const filtered = clients.filter(
       (client) =>
-        client.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.Email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.Phone.includes(searchTerm) ||
-        client.City.toLowerCase().includes(searchTerm.toLowerCase()),
+        (client.Name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (client.Email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (client.Phone || "").includes(searchTerm) ||
+        (client.City || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredClients(filtered)
   }, [searchTerm, clients])

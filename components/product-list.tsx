@@ -58,8 +58,8 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
   useEffect(() => {
     const filtered = products.filter(
       (product) =>
-        product.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.Description.toLowerCase().includes(searchTerm.toLowerCase()),
+        (product.Name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.Description || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredProducts(filtered)
   }, [searchTerm, products])

@@ -115,9 +115,9 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
     const filtered = configs.filter((config) => {
       const info = configInfo[config.Key]
       return (
-        config.Key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        info?.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        config.Value.toLowerCase().includes(searchTerm.toLowerCase())
+        (config.Key || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (info?.label || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (config.Value || "").toLowerCase().includes(searchTerm.toLowerCase())
       )
     })
     setFilteredConfigs(filtered)

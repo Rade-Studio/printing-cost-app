@@ -88,9 +88,9 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
   useEffect(() => {
     const filtered = sales.filter(
       (sale) =>
-        sale.ClientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sale.Status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sale.Id.toLowerCase().includes(searchTerm.toLowerCase()),
+        (sale.ClientName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (sale.Status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (sale.Id || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredSales(filtered)
   }, [searchTerm, sales])

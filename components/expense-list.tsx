@@ -73,8 +73,8 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
   useEffect(() => {
     const filtered = expenses.filter(
       (expense) =>
-        expense.Description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        expense.Category.toLowerCase().includes(searchTerm.toLowerCase()),
+        (expense.Description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (expense.Category || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredExpenses(filtered)
   }, [searchTerm, expenses])
