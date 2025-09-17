@@ -166,7 +166,9 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
                   {filteredSales.map((sale) => (
                     <TableRow key={sale.Id}>
                       <TableCell>
-                        <code className="text-xs bg-muted px-2 py-1 rounded">{sale.Id.slice(0, 8)}...</code>
+                        <code className="text-xs bg-muted px-2 py-1 rounded">
+                          {sale.Id ? sale.Id.slice(0, 8) + "..." : "N/A"}
+                        </code>
                       </TableCell>
                       <TableCell>
                         <div>
