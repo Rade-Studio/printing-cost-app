@@ -18,11 +18,11 @@ import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Briefcase, ExternalLink, ImageIcon } from "lucide-react"
 
 interface Product {
-  Id: string
-  Name: string
-  Description: string
-  ModelUrl: string
-  ImageUrl: string
+  id: string
+  name: string
+  description: string
+  modelUrl: string
+  imageUrl: string
 }
 
 interface ProductListProps {
@@ -58,15 +58,15 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
   useEffect(() => {
     const filtered = products.filter(
       (product) =>
-        (product.Name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.Description || "").toLowerCase().includes(searchTerm.toLowerCase()),
+        (product.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.description || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredProducts(filtered)
   }, [searchTerm, products])
 
   const handleDelete = async (product: Product) => {
     try {
-      await apiClient.deleteProduct(product.Id)
+      await apiClient.deleteProduct(product.id)
       await fetchProducts()
       setDeleteProduct(null)
     } catch (error) {
@@ -124,12 +124,12 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
-                <Card key={product.Id} className="overflow-hidden">
+                <Card key={product.id} className="overflow-hidden">
                   <div className="aspect-video bg-muted flex items-center justify-center">
-                    {product.ImageUrl ? (
+                    {product.imageUrl ? (
                       <img
-                        src={product.ImageUrl || "/placeholder.svg"}
-                        alt={product.Name}
+                        src={product.imageUrl || "/placeholder.svg"}
+                        alt={product.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = "none"
@@ -137,21 +137,21 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
                         }}
                       />
                     ) : null}
-                    <div className={`flex flex-col items-center gap-2 ${product.ImageUrl ? "hidden" : ""}`}>
+                    <div className={`flex flex-col items-center gap-2 ${product.imageUrl ? "hidden" : ""}`}>
                       <ImageIcon className="h-8 w-8 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">Sin imagen</p>
                     </div>
                   </div>
                   <CardContent className="p-4">
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-lg line-clamp-1">{product.Name}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{product.Description}</p>
+                      <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
                     </div>
 
                     <div className="flex items-center gap-2 mt-4">
-                      {product.ModelUrl && (
+                      {product.modelUrl && (
                         <Button variant="outline" size="sm" asChild>
-                          <a href={product.ModelUrl} target="_blank" rel="noopener noreferrer">
+                          <a href={product.modelUrl} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-3 w-3 mr-1" />
                             Modelo
                           </a>
@@ -180,7 +180,7 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el producto "{deleteProduct?.Name}" del
+              Esta acción no se puede deshacer. Se eliminará permanentemente el producto "{deleteProduct?.name}" del
               catálogo.
             </AlertDialogDescription>
           </AlertDialogHeader>

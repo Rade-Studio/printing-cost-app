@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { SaleList } from "@/components/sale-list"
 import { SaleForm } from "@/components/sale-form"
 import { SaleDetails } from "@/components/sale-details"
 import { SaleDetailForm } from "@/components/sale-detail-form"
+import { apiClient } from "@/lib/api"
 
 interface Sale {
   Id: string

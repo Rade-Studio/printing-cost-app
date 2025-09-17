@@ -17,22 +17,26 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { ArrowLeft, Plus, Edit, Trash2, Package, Clock, Weight, Calculator } from "lucide-react"
+import { Filament, WorkPackage } from "@/lib/types"
 
 interface SaleDetail {
-  Id: string
-  SaleId: string
-  FilamentId: string
-  ProductDescription: string
-  WeightGrams: number
-  PrintTimeHours: number
-  Quantity: number
-  Comments: string
-  WorkPackagePerHour: number
-  WorkPackageId: string
-  MachineRateApplied: number
-  FilamentType?: string
-  FilamentColor?: string
-  WorkPackageName?: string
+  id: string
+  saleId: string
+  filamentId: string
+  productDescription: string
+  weightGrams: number
+  printTimeHours: number
+  quantity: number
+  comments: string
+  workPackagePerHour: number
+  workPackageId: string
+  machineRateApplied: number
+  filamentType?: string
+  filamentColor?: string
+  workPackageName?: string,
+  subTotal: number,
+  filament?: Filament,
+  workPackage?: WorkPackage,
 }
 
 interface SaleDetailsProps {
@@ -51,21 +55,17 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
   const fetchDetails = async () => {
     try {
       setIsLoading(true)
-      const [detailsData, filamentsData, workPackagesData] = await Promise.all([
-        apiClient.getSaleDetails(saleId),
-        apiClient.getFilaments(),
-        apiClient.getWorkPackages(),
-      ])
+      const detailsData = await apiClient.getSaleDetails(saleId);
 
       // Enriquecer detalles con información de filamentos y paquetes de trabajo
       const enrichedDetails = detailsData.map((detail: SaleDetail) => {
-        const filament = filamentsData.find((f: any) => f.Id === detail.FilamentId)
-        const workPackage = workPackagesData.find((wp: any) => wp.Id === detail.WorkPackageId)
+        const filament =  detail.filament
+        const workPackage = detail.workPackage 
         return {
           ...detail,
-          FilamentType: filament?.Type,
-          FilamentColor: filament?.Color,
-          WorkPackageName: workPackage?.Name,
+          filamentType: filament?.type,
+          filamentColor: filament?.color,
+          workPackageName: workPackage?.name,
         }
       })
 
@@ -83,7 +83,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
 
   const handleDelete = async (detail: SaleDetail) => {
     try {
-      await apiClient.deleteSaleDetail(saleId, detail.Id)
+      await apiClient.deleteSaleDetail(saleId, detail.id)
       await fetchDetails()
       setDeleteDetail(null)
     } catch (error) {
@@ -91,15 +91,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
     }
   }
 
-  const calculateDetailCost = (detail: SaleDetail) => {
-    // Cálculo simplificado del costo
-    const materialCost = ((detail.WeightGrams || 0) * 0.8) / 100 // Asumiendo costo promedio
-    const machineCost = ((detail.PrintTimeHours || 0) * (detail.MachineRateApplied || 0)) / 100
-    const workCost = (detail.WorkPackagePerHour || 0) * (detail.PrintTimeHours || 0)
-    return (materialCost + machineCost + workCost) * (detail.Quantity || 1)
-  }
-
-  const totalCost = details.reduce((sum, detail) => sum + calculateDetailCost(detail), 0)
+  const totalCost = details.reduce((sum, detail) => sum + detail.subTotal, 0)
 
   if (isLoading) {
     return (
@@ -155,20 +147,20 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
                   </TableHeader>
                   <TableBody>
                     {details.map((detail) => (
-                      <TableRow key={detail.Id}>
+                      <TableRow key={detail.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{detail.ProductDescription}</p>
-                            {detail.Comments && <p className="text-sm text-muted-foreground">{detail.Comments}</p>}
+                            <p className="font-medium">{detail.productDescription}</p>
+                            {detail.comments && <p className="text-sm text-muted-foreground">{detail.comments}</p>}
                             <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline">Cantidad: {detail.Quantity}</Badge>
+                              <Badge variant="outline">Cantidad: {detail.quantity}</Badge>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">
-                              {detail.FilamentType} - {detail.FilamentColor}
+                              {detail.filamentType} - {detail.filamentColor}
                             </p>
                           </div>
                         </TableCell>
@@ -176,20 +168,20 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
                           <div className="space-y-1 text-sm">
                             <div className="flex items-center gap-2">
                               <Weight className="h-3 w-3 text-muted-foreground" />
-                              <span>{detail.WeightGrams}g</span>
+                              <span>{detail.weightGrams}g</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="h-3 w-3 text-muted-foreground" />
-                              <span>{detail.PrintTimeHours}h</span>
+                              <span>{detail.printTimeHours}h</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Calculator className="h-3 w-3 text-muted-foreground" />
-                              <span>${detail.MachineRateApplied}/h</span>
+                              <span>${detail.machineRateApplied}/h</span>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">${calculateDetailCost(detail).toFixed(2)}</div>
+                          <div className="font-medium">COP {new Intl.NumberFormat("es-CO").format(detail.subTotal)}</div>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
@@ -211,7 +203,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
               <div className="bg-muted p-4 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total Estimado:</span>
-                  <span className="text-2xl font-bold text-primary">${totalCost.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-primary">COP {new Intl.NumberFormat("es-CO").format(totalCost)}</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   Basado en {details.length} producto{details.length !== 1 ? "s" : ""}
