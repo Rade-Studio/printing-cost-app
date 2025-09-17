@@ -18,15 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Eye, DollarSign } from "lucide-react"
-
-interface Sale {
-  Id: string
-  ClientId: string
-  Status: string
-  EstimatedTotal: number
-  FinalTotal: number
-  ClientName?: string
-}
+import type { Sale } from "@/lib/types"
 
 interface SaleListProps {
   onEdit: (sale: Sale) => void
@@ -36,17 +28,19 @@ interface SaleListProps {
 }
 
 const statusColors = {
+  cotizacion: "bg-yellow-100 text-yellow-800",
+  en_proceso: "bg-blue-100 text-blue-800",
+  completada: "bg-green-100 text-green-800",
+  cancelada: "bg-red-100 text-red-800",
   Pending: "bg-yellow-100 text-yellow-800",
-  InProgress: "bg-blue-100 text-blue-800",
-  Completed: "bg-green-100 text-green-800",
-  Cancelled: "bg-red-100 text-red-800",
 }
 
 const statusLabels = {
+  cotizacion: "Cotización",
+  en_proceso: "En Proceso",
+  completada: "Completada",
+  cancelada: "Cancelada",
   Pending: "Pendiente",
-  InProgress: "En Progreso",
-  Completed: "Completada",
-  Cancelled: "Cancelada",
 }
 
 export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleListProps) {
@@ -62,12 +56,11 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
       setIsLoading(true)
       const [salesData, clientsData] = await Promise.all([apiClient.getSales(), apiClient.getClients()])
 
-      // Enriquecer ventas con nombres de clientes
       const enrichedSales = salesData.map((sale: Sale) => {
-        const client = clientsData.find((c: any) => c.Id === sale.ClientId)
+        const client = clientsData.find((c: any) => c.id === sale.clientId)
         return {
           ...sale,
-          ClientName: client?.Name || "Cliente no encontrado",
+          clientName: client?.name || "Cliente no encontrado",
         }
       })
 
@@ -88,16 +81,16 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
   useEffect(() => {
     const filtered = sales.filter(
       (sale) =>
-        (sale.ClientName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (sale.Status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (sale.Id || "").toLowerCase().includes(searchTerm.toLowerCase()),
+        (sale.clientName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (sale.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (sale.id || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredSales(filtered)
   }, [searchTerm, sales])
 
   const handleDelete = async (sale: Sale) => {
     try {
-      await apiClient.deleteSale(sale.Id)
+      await apiClient.deleteSale(sale.id!)
       await fetchData()
       setDeleteSale(null)
     } catch (error) {
@@ -164,37 +157,37 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
                 </TableHeader>
                 <TableBody>
                   {filteredSales.map((sale) => (
-                    <TableRow key={sale.Id}>
+                    <TableRow key={sale.id}>
                       <TableCell>
                         <code className="text-xs bg-muted px-2 py-1 rounded">
-                          {sale.Id ? sale.Id.slice(0, 8) + "..." : "N/A"}
+                          {sale.id ? sale.id.slice(0, 8) + "..." : "N/A"}
                         </code>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{sale.ClientName}</p>
+                          <p className="font-medium">{sale.clientName}</p>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={statusColors[sale.Status as keyof typeof statusColors] || "bg-gray-100"}>
-                          {statusLabels[sale.Status as keyof typeof statusLabels] || sale.Status}
+                        <Badge className={statusColors[sale.status as keyof typeof statusColors] || "bg-gray-100"}>
+                          {statusLabels[sale.status as keyof typeof statusLabels] || sale.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <DollarSign className="h-3 w-3 text-muted-foreground" />
-                          <span>{(sale.EstimatedTotal || 0).toFixed(2)}</span>
+                          <span>{(sale.estimatedTotal || 0).toFixed(2)}</span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <DollarSign className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-medium">{(sale.FinalTotal || 0).toFixed(2)}</span>
+                          <span className="font-medium">{(sale.finalTotal || 0).toFixed(2)}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={() => onViewDetails(sale.Id)}>
+                          <Button variant="outline" size="sm" onClick={() => onViewDetails(sale.id!)}>
                             <Eye className="h-3 w-3" />
                           </Button>
                           <Button variant="outline" size="sm" onClick={() => onEdit(sale)}>

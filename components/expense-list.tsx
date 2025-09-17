@@ -18,14 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Receipt, Calendar, DollarSign, TrendingUp, TrendingDown } from "lucide-react"
-
-interface Expense {
-  Id: string
-  Description: string
-  Amount: number
-  ExpenseDate: string
-  Category: string
-}
+import type { Expense } from "@/lib/types"
 
 interface ExpenseListProps {
   onEdit: (expense: Expense) => void
@@ -43,6 +36,7 @@ const categoryColors: Record<string, string> = {
   Transporte: "bg-indigo-100 text-indigo-800",
   Oficina: "bg-gray-100 text-gray-800",
   Servicios: "bg-orange-100 text-orange-800",
+  Utilidad: "bg-teal-100 text-teal-800", // Agregado categoría Utilidad según API
   Otros: "bg-slate-100 text-slate-800",
 }
 
@@ -73,15 +67,15 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
   useEffect(() => {
     const filtered = expenses.filter(
       (expense) =>
-        (expense.Description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (expense.Category || "").toLowerCase().includes(searchTerm.toLowerCase()),
+        (expense.description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (expense.category || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredExpenses(filtered)
   }, [searchTerm, expenses])
 
   const handleDelete = async (expense: Expense) => {
     try {
-      await apiClient.deleteExpense(expense.Id)
+      await apiClient.deleteExpense(expense.id!)
       await fetchExpenses()
       setDeleteExpense(null)
     } catch (error) {
@@ -97,24 +91,24 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
     })
   }
 
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.Amount, 0)
+  const totalExpenses = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0)
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
   const monthlyExpenses = expenses
     .filter((expense) => {
-      const expenseDate = new Date(expense.ExpenseDate)
+      const expenseDate = new Date(expense.expenseDate || expense.createdAt || "")
       return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear
     })
-    .reduce((sum, expense) => sum + expense.Amount, 0)
+    .reduce((sum, expense) => sum + (expense.amount || 0), 0)
 
   const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1
   const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear
   const lastMonthExpenses = expenses
     .filter((expense) => {
-      const expenseDate = new Date(expense.ExpenseDate)
+      const expenseDate = new Date(expense.expenseDate || expense.createdAt || "")
       return expenseDate.getMonth() === lastMonth && expenseDate.getFullYear() === lastMonthYear
     })
-    .reduce((sum, expense) => sum + expense.Amount, 0)
+    .reduce((sum, expense) => sum + (expense.amount || 0), 0)
 
   const monthlyChange = lastMonthExpenses > 0 ? ((monthlyExpenses - lastMonthExpenses) / lastMonthExpenses) * 100 : 0
 
@@ -213,29 +207,35 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
                 </TableHeader>
                 <TableBody>
                   {filteredExpenses
-                    .sort((a, b) => new Date(b.ExpenseDate).getTime() - new Date(a.ExpenseDate).getTime())
+                    .sort(
+                      (a, b) =>
+                        new Date(b.expenseDate || b.createdAt || "").getTime() -
+                        new Date(a.expenseDate || a.createdAt || "").getTime(),
+                    )
                     .map((expense) => (
-                      <TableRow key={expense.Id}>
+                      <TableRow key={expense.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium line-clamp-2">{expense.Description}</p>
+                            <p className="font-medium line-clamp-2">{expense.description}</p>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={categoryColors[expense.Category] || categoryColors.Otros}>
-                            {expense.Category}
+                          <Badge className={categoryColors[expense.category || ""] || categoryColors.Otros}>
+                            {expense.category}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-sm">{formatDate(expense.ExpenseDate)}</span>
+                            <span className="text-sm">
+                              {formatDate(expense.expenseDate || expense.createdAt || "")}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1 font-medium">
                             <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            <span>{(expense.Amount || 0).toFixed(2)}</span>
+                            <span>{(expense.amount || 0).toFixed(2)}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
