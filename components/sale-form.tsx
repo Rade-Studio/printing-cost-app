@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import type { Client, Sale } from "@/lib/types"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,20 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
 import { Loader2 } from "lucide-react"
-
-interface Client {
-  Id: string
-  Name: string
-  Email: string
-}
-
-interface Sale {
-  Id?: string
-  ClientId: string
-  Status: string
-  EstimatedTotal?: number
-  FinalTotal?: number
-}
 
 interface SaleFormProps {
   sale?: Sale
@@ -34,10 +20,10 @@ interface SaleFormProps {
 export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
   const [clients, setClients] = useState<Client[]>([])
   const [formData, setFormData] = useState<Sale>({
-    ClientId: sale?.ClientId || "",
-    Status: sale?.Status || "Pending",
-    EstimatedTotal: sale?.EstimatedTotal || 0,
-    FinalTotal: sale?.FinalTotal || 0,
+    clientId: sale?.clientId || "",
+    status: sale?.status || "cotizacion",
+    estimatedTotal: sale?.estimatedTotal || 0,
+    finalTotal: sale?.finalTotal || 0,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingClients, setIsLoadingClients] = useState(true)
@@ -63,8 +49,8 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
     setError("")
 
     try {
-      if (sale?.Id) {
-        await apiClient.updateSale(sale.Id, { ...formData, Id: sale.Id })
+      if (sale?.id) {
+        await apiClient.updateSale(sale.id, { ...formData, id: sale.id })
       } else {
         await apiClient.createSale(formData)
       }
@@ -97,14 +83,14 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                 <Loader2 className="h-4 w-4 animate-spin" />
               </div>
             ) : (
-              <Select value={formData.ClientId} onValueChange={(value) => handleChange("ClientId", value)}>
+              <Select value={formData.clientId} onValueChange={(value) => handleChange("clientId", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un cliente" />
                 </SelectTrigger>
                 <SelectContent>
                   {clients.map((client) => (
-                    <SelectItem key={client.Id} value={client.Id}>
-                      {client.Name} - {client.Email}
+                    <SelectItem key={client.id} value={client.id || ""}>
+                      {client.name} - {client.email}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -114,15 +100,15 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="status">Estado</Label>
-            <Select value={formData.Status} onValueChange={(value) => handleChange("Status", value)}>
+            <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona el estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Pending">Pendiente</SelectItem>
-                <SelectItem value="InProgress">En Progreso</SelectItem>
-                <SelectItem value="Completed">Completada</SelectItem>
-                <SelectItem value="Cancelled">Cancelada</SelectItem>
+                <SelectItem value="cotizacion">Cotización</SelectItem>
+                <SelectItem value="en_proceso">En Proceso</SelectItem>
+                <SelectItem value="completada">Completada</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -135,8 +121,8 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                value={formData.EstimatedTotal}
-                onChange={(e) => handleChange("EstimatedTotal", Number.parseFloat(e.target.value) || 0)}
+                value={formData.estimatedTotal || ""}
+                onChange={(e) => handleChange("estimatedTotal", Number.parseFloat(e.target.value) || 0)}
               />
             </div>
             <div className="space-y-2">
@@ -146,8 +132,8 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                value={formData.FinalTotal}
-                onChange={(e) => handleChange("FinalTotal", Number.parseFloat(e.target.value) || 0)}
+                value={formData.finalTotal || ""}
+                onChange={(e) => handleChange("finalTotal", Number.parseFloat(e.target.value) || 0)}
               />
             </div>
           </div>

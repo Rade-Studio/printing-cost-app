@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import type { Client } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,15 +18,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Mail, Phone, MapPin } from "lucide-react"
-
-interface Client {
-  Id: string
-  Name: string
-  Email: string
-  Phone: string
-  Address: string
-  City: string
-}
 
 interface ClientListProps {
   onEdit: (client: Client) => void
@@ -60,17 +52,17 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
   useEffect(() => {
     const filtered = clients.filter(
       (client) =>
-        (client.Name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (client.Email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (client.Phone || "").includes(searchTerm) ||
-        (client.City || "").toLowerCase().includes(searchTerm.toLowerCase()),
+        (client.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (client.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (client.phone || "").includes(searchTerm) ||
+        (client.city || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredClients(filtered)
   }, [searchTerm, clients])
 
   const handleDelete = async (client: Client) => {
     try {
-      await apiClient.deleteClient(client.Id)
+      await apiClient.deleteClient(client.id!)
       await fetchClients()
       setDeleteClient(null)
     } catch (error) {
@@ -137,21 +129,21 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
                 </TableHeader>
                 <TableBody>
                   {filteredClients.map((client) => (
-                    <TableRow key={client.Id}>
+                    <TableRow key={client.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{client.Name}</p>
+                          <p className="font-medium">{client.name}</p>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm">
                             <Mail className="h-3 w-3 text-muted-foreground" />
-                            <span>{client.Email}</span>
+                            <span>{client.email}</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Phone className="h-3 w-3 text-muted-foreground" />
-                            <span>{client.Phone}</span>
+                            <span>{client.phone}</span>
                           </div>
                         </div>
                       </TableCell>
@@ -159,8 +151,8 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-3 w-3 text-muted-foreground" />
                           <div>
-                            <p>{client.City}</p>
-                            <p className="text-muted-foreground text-xs">{client.Address}</p>
+                            <p>{client.city}</p>
+                            <p className="text-muted-foreground text-xs">{client.address}</p>
                           </div>
                         </div>
                       </TableCell>
@@ -188,7 +180,7 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el cliente "{deleteClient?.Name}" de la
+              Esta acción no se puede deshacer. Se eliminará permanentemente el cliente "{deleteClient?.name}" de la
               base de datos.
             </AlertDialogDescription>
           </AlertDialogHeader>

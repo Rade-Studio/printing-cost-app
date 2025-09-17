@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import type { Client } from "@/lib/types"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,15 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { apiClient } from "@/lib/api"
 import { Loader2 } from "lucide-react"
-
-interface Client {
-  Id?: string
-  Name: string
-  Email: string
-  Phone: string
-  Address: string
-  City: string
-}
 
 interface ClientFormProps {
   client?: Client
@@ -27,11 +18,11 @@ interface ClientFormProps {
 
 export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
   const [formData, setFormData] = useState<Client>({
-    Name: client?.Name || "",
-    Email: client?.Email || "",
-    Phone: client?.Phone || "",
-    Address: client?.Address || "",
-    City: client?.City || "",
+    name: client?.name || "",
+    email: client?.email || "",
+    phone: client?.phone || "",
+    address: client?.address || "",
+    city: client?.city || "",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -42,8 +33,8 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
     setError("")
 
     try {
-      if (client?.Id) {
-        await apiClient.updateClient(client.Id, { ...formData, Id: client.Id })
+      if (client?.id) {
+        await apiClient.updateClient(client.id, { ...formData, id: client.id })
       } else {
         await apiClient.createClient(formData)
       }
@@ -76,8 +67,8 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
                 id="name"
                 type="text"
                 placeholder="Juan Pérez"
-                value={formData.Name}
-                onChange={(e) => handleChange("Name", e.target.value)}
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value)}
                 required
               />
             </div>
@@ -87,8 +78,8 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
                 id="email"
                 type="email"
                 placeholder="juan@email.com"
-                value={formData.Email}
-                onChange={(e) => handleChange("Email", e.target.value)}
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
                 required
               />
             </div>
@@ -101,8 +92,8 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
                 id="phone"
                 type="tel"
                 placeholder="+1 234 567 8900"
-                value={formData.Phone}
-                onChange={(e) => handleChange("Phone", e.target.value)}
+                value={formData.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
                 required
               />
             </div>
@@ -112,8 +103,8 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
                 id="city"
                 type="text"
                 placeholder="Ciudad de México"
-                value={formData.City}
-                onChange={(e) => handleChange("City", e.target.value)}
+                value={formData.city}
+                onChange={(e) => handleChange("city", e.target.value)}
                 required
               />
             </div>
@@ -125,8 +116,8 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
               id="address"
               type="text"
               placeholder="Calle Principal 123, Colonia Centro"
-              value={formData.Address}
-              onChange={(e) => handleChange("Address", e.target.value)}
+              value={formData.address}
+              onChange={(e) => handleChange("address", e.target.value)}
               required
             />
           </div>
