@@ -93,7 +93,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const costPerKg = formData.CostPerGram * 1000
+  const costPerKg = (formData.CostPerGram || 0) * 1000
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -166,7 +166,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Equivale a {(formData.StockGrams / 1000).toFixed(2)} kilogramos
+                Equivale a {((formData.StockGrams || 0) / 1000).toFixed(2)} kilogramos
               </p>
             </div>
           </div>
@@ -177,11 +177,11 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Valor Total del Stock:</p>
-                <p className="font-medium">${(formData.CostPerGram * formData.StockGrams).toFixed(2)}</p>
+                <p className="font-medium">${((formData.CostPerGram || 0) * (formData.StockGrams || 0)).toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Peso Total:</p>
-                <p className="font-medium">{(formData.StockGrams / 1000).toFixed(2)} kg</p>
+                <p className="font-medium">{((formData.StockGrams || 0) / 1000).toFixed(2)} kg</p>
               </div>
             </div>
           </div>

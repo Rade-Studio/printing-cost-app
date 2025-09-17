@@ -179,7 +179,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
                 <TableBody>
                   {filteredFilaments.map((filament) => {
                     const stockStatus = getStockStatus(filament.StockGrams)
-                    const totalValue = filament.CostPerGram * filament.StockGrams
+                    const totalValue = (filament.CostPerGram || 0) * (filament.StockGrams || 0)
                     return (
                       <TableRow key={filament.Id}>
                         <TableCell>
@@ -191,16 +191,18 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">${filament.CostPerGram.toFixed(3)}/g</p>
+                            <p className="font-medium">${(filament.CostPerGram || 0).toFixed(3)}/g</p>
                             <p className="text-sm text-muted-foreground">
-                              ${(filament.CostPerGram * 1000).toFixed(2)}/kg
+                              ${((filament.CostPerGram || 0) * 1000).toFixed(2)}/kg
                             </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{filament.StockGrams}g</p>
-                            <p className="text-sm text-muted-foreground">{(filament.StockGrams / 1000).toFixed(2)}kg</p>
+                            <p className="font-medium">{filament.StockGrams || 0}g</p>
+                            <p className="text-sm text-muted-foreground">
+                              {((filament.StockGrams || 0) / 1000).toFixed(2)}kg
+                            </p>
                           </div>
                         </TableCell>
                         <TableCell>

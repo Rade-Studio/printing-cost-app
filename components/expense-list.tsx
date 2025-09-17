@@ -235,7 +235,7 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
                         <TableCell>
                           <div className="flex items-center gap-1 font-medium">
                             <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            <span>{expense.Amount.toFixed(2)}</span>
+                            <span>{(expense.Amount || 0).toFixed(2)}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">

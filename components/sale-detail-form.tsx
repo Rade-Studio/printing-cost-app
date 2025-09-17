@@ -100,26 +100,26 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
     }
 
     // Costo del material
-    const materialCost = (formData.WeightGrams * selectedFilament.CostPerGram) / 100
+    const materialCost = ((formData.WeightGrams || 0) * (selectedFilament.CostPerGram || 0)) / 100
 
     // Costo de trabajo
     let workCost = 0
     if (selectedWorkPackage) {
       if (selectedWorkPackage.CalculationType === "Fixed") {
-        workCost = selectedWorkPackage.Value
+        workCost = selectedWorkPackage.Value || 0
       } else if (selectedWorkPackage.CalculationType === "Multiply") {
-        workCost = formData.PrintTimeHours * selectedWorkPackage.Value
+        workCost = (formData.PrintTimeHours || 0) * (selectedWorkPackage.Value || 0)
       }
     }
 
     // Costo de máquina
-    const machineCost = (formData.PrintTimeHours * formData.MachineRateApplied) / 100
+    const machineCost = ((formData.PrintTimeHours || 0) * (formData.MachineRateApplied || 0)) / 100
 
     // Costo total por unidad
     const unitCost = materialCost + workCost + machineCost
 
     // Costo total considerando cantidad
-    const totalCost = unitCost * formData.Quantity
+    const totalCost = unitCost * (formData.Quantity || 1)
 
     setCalculatedCost(totalCost)
   }
@@ -304,7 +304,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
           {/* Cálculo de costos */}
           <div className="bg-muted p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Cálculo de Costos</h3>
-            <div className="text-2xl font-bold text-primary">${calculatedCost.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-primary">${(calculatedCost || 0).toFixed(2)}</div>
             <p className="text-sm text-muted-foreground">Costo total estimado</p>
           </div>
 

@@ -181,13 +181,13 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <DollarSign className="h-3 w-3 text-muted-foreground" />
-                          <span>{sale.EstimatedTotal?.toFixed(2) || "0.00"}</span>
+                          <span>{(sale.EstimatedTotal || 0).toFixed(2)}</span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <DollarSign className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-medium">{sale.FinalTotal?.toFixed(2) || "0.00"}</span>
+                          <span className="font-medium">{(sale.FinalTotal || 0).toFixed(2)}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

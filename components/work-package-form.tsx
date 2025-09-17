@@ -152,14 +152,14 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
             <div className="text-sm">
               {formData.CalculationType === "Fixed" ? (
                 <p>
-                  Para cualquier trabajo: <span className="font-medium">${formData.Value.toFixed(2)}</span>
+                  Para cualquier trabajo: <span className="font-medium">${(formData.Value || 0).toFixed(2)}</span>
                 </p>
               ) : (
                 <div>
                   <p>Para un trabajo de 2.5 horas:</p>
                   <p>
-                    2.5 × ${formData.Value.toFixed(2)} ={" "}
-                    <span className="font-medium">${(2.5 * formData.Value).toFixed(2)}</span>
+                    2.5 × ${(formData.Value || 0).toFixed(2)} ={" "}
+                    <span className="font-medium">${(2.5 * (formData.Value || 0)).toFixed(2)}</span>
                   </p>
                 </div>
               )}

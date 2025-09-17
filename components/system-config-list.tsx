@@ -139,7 +139,8 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
 
     switch (info.type) {
       case "currency":
-        return `$${Number.parseFloat(config.Value).toFixed(2)}`
+        const numValue = Number.parseFloat(config.Value) || 0
+        return `$${numValue.toFixed(2)}`
       case "percentage":
         return `${config.Value}%`
       default:

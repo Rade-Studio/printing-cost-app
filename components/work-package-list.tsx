@@ -161,13 +161,16 @@ export function WorkPackageList({ onEdit, onAdd, refreshTrigger }: WorkPackageLi
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">
-                          ${wp.Value.toFixed(2)}
+                          ${(wp.Value || 0).toFixed(2)}
                           {wp.CalculationType === "Multiply" && <span className="text-muted-foreground">/h</span>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="font-medium text-primary">
-                          ${wp.CalculationType === "Fixed" ? wp.Value.toFixed(2) : (2.5 * wp.Value).toFixed(2)}
+                          $
+                          {wp.CalculationType === "Fixed"
+                            ? (wp.Value || 0).toFixed(2)
+                            : (2.5 * (wp.Value || 0)).toFixed(2)}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

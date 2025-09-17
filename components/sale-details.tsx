@@ -93,10 +93,10 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
 
   const calculateDetailCost = (detail: SaleDetail) => {
     // Cálculo simplificado del costo
-    const materialCost = (detail.WeightGrams * 0.8) / 100 // Asumiendo costo promedio
-    const machineCost = (detail.PrintTimeHours * detail.MachineRateApplied) / 100
-    const workCost = detail.WorkPackagePerHour * detail.PrintTimeHours
-    return (materialCost + machineCost + workCost) * detail.Quantity
+    const materialCost = ((detail.WeightGrams || 0) * 0.8) / 100 // Asumiendo costo promedio
+    const machineCost = ((detail.PrintTimeHours || 0) * (detail.MachineRateApplied || 0)) / 100
+    const workCost = (detail.WorkPackagePerHour || 0) * (detail.PrintTimeHours || 0)
+    return (materialCost + machineCost + workCost) * (detail.Quantity || 1)
   }
 
   const totalCost = details.reduce((sum, detail) => sum + calculateDetailCost(detail), 0)
