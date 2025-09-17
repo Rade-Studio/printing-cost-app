@@ -20,11 +20,11 @@ import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Briefcase, DollarSign, Clock } from "lucide-react"
 
 interface WorkPackage {
-  Id: string
-  Name: string
-  Description: string
-  CalculationType: string
-  Value: number
+  id: string
+  name: string
+  description: string
+  calculationType: string
+  value: number
 }
 
 interface WorkPackageListProps {
@@ -60,15 +60,15 @@ export function WorkPackageList({ onEdit, onAdd, refreshTrigger }: WorkPackageLi
   useEffect(() => {
     const filtered = workPackages.filter(
       (wp) =>
-        (wp.Name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (wp.Description || "").toLowerCase().includes(searchTerm.toLowerCase()),
+        (wp.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (wp.description || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredWorkPackages(filtered)
   }, [searchTerm, workPackages])
 
   const handleDelete = async (workPackage: WorkPackage) => {
     try {
-      await apiClient.deleteWorkPackage(workPackage.Id)
+      await apiClient.deleteWorkPackage(workPackage.id)
       await fetchWorkPackages()
       setDeleteWorkPackage(null)
     } catch (error) {
@@ -137,16 +137,16 @@ export function WorkPackageList({ onEdit, onAdd, refreshTrigger }: WorkPackageLi
                 </TableHeader>
                 <TableBody>
                   {filteredWorkPackages.map((wp) => (
-                    <TableRow key={wp.Id}>
+                    <TableRow key={wp.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{wp.Name}</p>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{wp.Description}</p>
+                          <p className="font-medium">{wp.name}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{wp.description}</p>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={wp.CalculationType === "Fixed" ? "default" : "secondary"}>
-                          {wp.CalculationType === "Fixed" ? (
+                        <Badge variant={wp.calculationType === "Fixed" ? "default" : "secondary"}>
+                          {wp.calculationType === "Fixed" ? (
                             <>
                               <DollarSign className="h-3 w-3 mr-1" />
                               Costo Fijo
@@ -161,16 +161,16 @@ export function WorkPackageList({ onEdit, onAdd, refreshTrigger }: WorkPackageLi
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">
-                          ${(wp.Value || 0).toFixed(2)}
-                          {wp.CalculationType === "Multiply" && <span className="text-muted-foreground">/h</span>}
+                          ${(wp.value || 0).toFixed(2)}
+                          {wp.calculationType === "Multiply" && <span className="text-muted-foreground">/h</span>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="font-medium text-primary">
                           $
-                          {wp.CalculationType === "Fixed"
-                            ? (wp.Value || 0).toFixed(2)
-                            : (2.5 * (wp.Value || 0)).toFixed(2)}
+                          {wp.calculationType === "Fixed"
+                            ? (wp.value || 0).toFixed(2)
+                            : (2.5 * (wp.value || 0)).toFixed(2)}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -198,7 +198,7 @@ export function WorkPackageList({ onEdit, onAdd, refreshTrigger }: WorkPackageLi
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta acción no se puede deshacer. Se eliminará permanentemente el paquete de trabajo "
-              {deleteWorkPackage?.Name}".
+              {deleteWorkPackage?.name}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

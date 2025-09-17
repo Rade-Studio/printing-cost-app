@@ -20,11 +20,11 @@ import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Package, AlertTriangle } from "lucide-react"
 
 interface Filament {
-  Id: string
-  Type: string
-  Color: string
-  CostPerGram: number
-  StockGrams: number
+  id: string
+  type: string
+  color: string
+  costPerGram: number
+  stockGrams?: number
 }
 
 interface FilamentListProps {
@@ -60,15 +60,15 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
   useEffect(() => {
     const filtered = filaments.filter(
       (filament) =>
-        (filament.Type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (filament.Color || "").toLowerCase().includes(searchTerm.toLowerCase()),
+        (filament.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (filament.color || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
     setFilteredFilaments(filtered)
   }, [searchTerm, filaments])
 
   const handleDelete = async (filament: Filament) => {
     try {
-      await apiClient.deleteFilament(filament.Id)
+      await apiClient.deleteFilament(filament.id)
       await fetchFilaments()
       setDeleteFilament(null)
     } catch (error) {
@@ -82,7 +82,10 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
     return { label: "Disponible", color: "bg-green-100 text-green-800", icon: Package }
   }
 
-  const totalValue = filaments.reduce((sum, filament) => sum + filament.CostPerGram * filament.StockGrams, 0)
+  const totalValue = filaments.reduce(
+    (sum, filament) => sum + (filament.costPerGram || 0) * (filament.stockGrams || 0),
+    0,
+  )
 
   if (isLoading) {
     return (
@@ -121,7 +124,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
-              {filaments.filter((f) => f.StockGrams <= 500).length}
+              {filaments.filter((f) => (f.stockGrams || 0) <= 500).length}
             </div>
             <p className="text-xs text-muted-foreground">Requieren reposición</p>
           </CardContent>
@@ -178,30 +181,30 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
                 </TableHeader>
                 <TableBody>
                   {filteredFilaments.map((filament) => {
-                    const stockStatus = getStockStatus(filament.StockGrams)
-                    const totalValue = (filament.CostPerGram || 0) * (filament.StockGrams || 0)
+                    const stockStatus = getStockStatus(filament.stockGrams || 0)
+                    const totalValue = (filament.costPerGram || 0) * (filament.stockGrams || 0)
                     return (
-                      <TableRow key={filament.Id}>
+                      <TableRow key={filament.id}>
                         <TableCell>
                           <div>
                             <p className="font-medium">
-                              {filament.Type} - {filament.Color}
+                              {filament.type} - {filament.color}
                             </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">${(filament.CostPerGram || 0).toFixed(3)}/g</p>
+                            <p className="font-medium">${(filament.costPerGram || 0).toFixed(3)}/g</p>
                             <p className="text-sm text-muted-foreground">
-                              ${((filament.CostPerGram || 0) * 1000).toFixed(2)}/kg
+                              ${((filament.costPerGram || 0) * 1000).toFixed(2)}/kg
                             </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{filament.StockGrams || 0}g</p>
+                            <p className="font-medium">{filament.stockGrams || 0}g</p>
                             <p className="text-sm text-muted-foreground">
-                              {((filament.StockGrams || 0) / 1000).toFixed(2)}kg
+                              {((filament.stockGrams || 0) / 1000).toFixed(2)}kg
                             </p>
                           </div>
                         </TableCell>
@@ -239,8 +242,8 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el filamento "{deleteFilament?.Type} -{" "}
-              {deleteFilament?.Color}" del inventario.
+              Esta acción no se puede deshacer. Se eliminará permanentemente el filamento "{deleteFilament?.type} -{" "}
+              {deleteFilament?.color}" del inventario.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
