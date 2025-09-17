@@ -34,11 +34,11 @@ const filamentTypes = [
   "ASA",
   "PC",
   "Nylon",
-  "Wood Fill",
-  "Metal Fill",
-  "Carbon Fiber",
-  "Glow in the Dark",
-  "Transparent",
+  "Relleno de Madera",
+  "Relleno Metálico",
+  "Fibra de Carbono",
+  "Brilla en la Oscuridad",
+  "Transparente",
   "Flexible",
 ]
 

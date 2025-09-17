@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AuthService } from "@/lib/auth"
-import { Loader2, Printer } from "lucide-react"
+import { Loader2, Layers3 } from "lucide-react"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -34,43 +34,63 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-primary rounded-full">
-              <Printer className="h-8 w-8 text-primary-foreground" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <Card className="w-full max-w-md shadow-xl border-0 bg-white">
+        <CardHeader className="text-center pb-8 pt-8">
+          <div className="flex justify-center mb-6">
+            <div className="p-3 bg-primary rounded-xl shadow-lg">
+              <Layers3 className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Calculadora 3D</CardTitle>
-          <CardDescription>Inicia sesión para gestionar tu negocio de impresión 3D</CardDescription>
+          <CardTitle className="text-2xl font-bold text-foreground mb-2">PrintCost Pro</CardTitle>
+          <CardDescription className="text-muted-foreground text-base">Bienvenido de vuelta</CardDescription>
+          <p className="text-sm text-muted-foreground mt-1">Ingresa tus credenciales para acceder a tu cuenta</p>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="px-8 pb-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
+              <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                Correo electrónico
+              </Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="tu@email.com"
+                placeholder="m@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="h-12 bg-muted/30 border-border rounded-lg text-base"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                  Contraseña
+                </Label>
+                <button type="button" className="text-sm text-primary hover:underline">
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="h-12 bg-muted/30 border-border rounded-lg text-base"
                 required
               />
             </div>
-            {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
+                {error}
+              </div>
+            )}
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-medium rounded-lg shadow-sm"
+              disabled={isLoading}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -81,6 +101,14 @@ export function LoginForm() {
               )}
             </Button>
           </form>
+          <div className="text-center mt-6">
+            <p className="text-sm text-muted-foreground">
+              ¿No tienes una cuenta?{" "}
+              <button type="button" className="text-primary hover:underline font-medium">
+                Registrarse
+              </button>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

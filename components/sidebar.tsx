@@ -17,11 +17,11 @@ import {
   LogOut,
   Menu,
   X,
-  Printer,
+  Layers3,
 } from "lucide-react"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
+  { name: "Tablero", href: "/dashboard", icon: BarChart3 },
   { name: "Clientes", href: "/clientes", icon: Users },
   { name: "Ventas", href: "/ventas", icon: ShoppingCart },
   { name: "Filamentos", href: "/filamentos", icon: Package },
@@ -59,18 +59,18 @@ export function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center gap-2 p-6 border-b border-sidebar-border">
-            <div className="p-2 bg-sidebar-primary rounded-lg">
-              <Printer className="h-6 w-6 text-sidebar-primary-foreground" />
+          <div className="flex items-center gap-3 p-6 border-b border-sidebar-border">
+            <div className="p-2 bg-sidebar-primary rounded-xl shadow-sm">
+              <Layers3 className="h-6 w-6 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">Calculadora 3D</h1>
-              <p className="text-sm text-sidebar-foreground/60">Gestión de impresión</p>
+              <h1 className="text-lg font-bold text-sidebar-foreground">PrintCost Pro</h1>
+              <p className="text-sm text-sidebar-foreground/70">Gestión de Impresión 3D</p>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-4 space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -79,9 +79,9 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
                       : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
                   )}
                 >
@@ -96,7 +96,7 @@ export function Sidebar() {
           <div className="p-4 border-t border-sidebar-border">
             <Button
               variant="ghost"
-              className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/50"
+              className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-xl py-3"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4" />
