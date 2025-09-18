@@ -122,7 +122,7 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
               {filteredProducts.map((product) => (
                 <Card key={product.id} className="overflow-hidden">
                   <div className="aspect-video bg-muted flex items-center justify-center">
@@ -130,7 +130,7 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
                       <img
                         src={product.imageUrl || "/placeholder.svg"}
                         alt={product.name}
-                        className="w-8 h-8 h-full object-cover"
+                        className="w-100/12 object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = "none"
                           e.currentTarget.nextElementSibling?.classList.remove("hidden")

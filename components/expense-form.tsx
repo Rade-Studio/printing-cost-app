@@ -13,11 +13,11 @@ import { apiClient } from "@/lib/api"
 import { Loader2, Receipt } from "lucide-react"
 
 interface Expense {
-  Id?: string
-  Description: string
-  Amount: number
-  ExpenseDate: string
-  Category: string
+  id?: string
+  description: string
+  amount: number
+  expenseDate: string
+  category: string
 }
 
 interface ExpenseFormProps {
@@ -41,10 +41,10 @@ const expenseCategories = [
 
 export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) {
   const [formData, setFormData] = useState<Expense>({
-    Description: expense?.Description || "",
-    Amount: expense?.Amount || 0,
-    ExpenseDate: expense?.ExpenseDate ? expense.ExpenseDate.split("T")[0] : new Date().toISOString().split("T")[0],
-    Category: expense?.Category || "",
+    description: expense?.description || "",
+    amount: expense?.amount || 0,
+    expenseDate: expense?.expenseDate ? expense.expenseDate.split("T")[0] : new Date().toISOString().split("T")[0],
+    category: expense?.category || "",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -57,11 +57,11 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
     try {
       const expenseData = {
         ...formData,
-        ExpenseDate: new Date(formData.ExpenseDate).toISOString(),
+        expenseDate: new Date(formData.expenseDate).toISOString(),
       }
 
-      if (expense?.Id) {
-        await apiClient.updateExpense(expense.Id, { ...expenseData, Id: expense.Id })
+      if (expense?.id) {
+        await apiClient.updateExpense(expense.id, { ...expenseData, id: expense.id })
       } else {
         await apiClient.createExpense(expenseData)
       }
@@ -95,8 +95,8 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
             <Textarea
               id="description"
               placeholder="Describe el gasto realizado..."
-              value={formData.Description}
-              onChange={(e) => handleChange("Description", e.target.value)}
+              value={formData.description}
+              onChange={(e) => handleChange("description", e.target.value)}
               rows={3}
               required
             />
@@ -110,8 +110,8 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                value={formData.Amount}
-                onChange={(e) => handleChange("Amount", Number.parseFloat(e.target.value) || 0)}
+                value={formData.amount}
+                onChange={(e) => handleChange("amount", Number.parseFloat(e.target.value) || 0)}
                 required
               />
             </div>
@@ -120,8 +120,8 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
               <Input
                 id="expenseDate"
                 type="date"
-                value={formData.ExpenseDate}
-                onChange={(e) => handleChange("ExpenseDate", e.target.value)}
+                value={formData.expenseDate}
+                onChange={(e) => handleChange("expenseDate", e.target.value)}
                 required
               />
             </div>
@@ -129,7 +129,7 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
 
           <div className="space-y-2">
             <Label htmlFor="category">Categoría</Label>
-            <Select value={formData.Category} onValueChange={(value) => handleChange("Category", value)}>
+            <Select value={formData.category} onValueChange={(value) => handleChange("category", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona una categoría" />
               </SelectTrigger>

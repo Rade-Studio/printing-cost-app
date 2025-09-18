@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Briefcase, DollarSign, Clock } from "lucide-react"
+import { useLocale } from "@/app/localContext"
 
 interface WorkPackage {
   id: string
@@ -39,6 +40,7 @@ export function WorkPackageList({ onEdit, onAdd, refreshTrigger }: WorkPackageLi
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteWorkPackage, setDeleteWorkPackage] = useState<WorkPackage | null>(null)
+  const { formatCurrency } = useLocale()
 
   const fetchWorkPackages = async () => {
     try {
@@ -161,16 +163,15 @@ export function WorkPackageList({ onEdit, onAdd, refreshTrigger }: WorkPackageLi
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">
-                          ${(wp.value || 0).toFixed(2)}
+                          {formatCurrency(wp.value || 0)}
                           {wp.calculationType === "Multiply" && <span className="text-muted-foreground">/h</span>}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="font-medium text-primary">
-                          $
                           {wp.calculationType === "Fixed"
-                            ? (wp.value || 0).toFixed(2)
-                            : (2.5 * (wp.value || 0)).toFixed(2)}
+                            ? formatCurrency(wp.value || 0)
+                            : formatCurrency((2.5 * (wp.value || 0)))}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

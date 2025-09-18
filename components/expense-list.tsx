@@ -19,6 +19,7 @@ import {
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Receipt, Calendar, DollarSign, TrendingUp, TrendingDown } from "lucide-react"
 import type { Expense } from "@/lib/types"
+import { useLocale } from "@/app/localContext"
 
 interface ExpenseListProps {
   onEdit: (expense: Expense) => void
@@ -46,6 +47,8 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null)
+  const { formatCurrency } = useLocale()
+  
 
   const fetchExpenses = async () => {
     try {
@@ -131,7 +134,7 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
             <CardTitle className="text-sm font-medium">Total de Gastos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalExpenses.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(totalExpenses)}</div>
             <p className="text-xs text-muted-foreground">Histórico</p>
           </CardContent>
         </Card>
@@ -140,7 +143,7 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
             <CardTitle className="text-sm font-medium">Gastos del Mes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${monthlyExpenses.toFixed(2)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(monthlyExpenses)}</div>
             <p className="text-xs text-muted-foreground">Mes actual</p>
           </CardContent>
         </Card>
@@ -234,15 +237,14 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1 font-medium">
-                            <DollarSign className="h-3 w-3 text-muted-foreground" />
-                            <span>{(expense.amount || 0).toFixed(2)}</span>
+                            <span>{formatCurrency(expense.amount || 0)}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" size="sm" onClick={() => onEdit(expense)}>
+                            {/* <Button variant="outline" size="sm" onClick={() => onEdit(expense)}>
                               <Edit className="h-3 w-3" />
-                            </Button>
+                            </Button> */}
                             <Button variant="outline" size="sm" onClick={() => setDeleteExpense(expense)}>
                               <Trash2 className="h-3 w-3" />
                             </Button>

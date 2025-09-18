@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
 import { Loader2, Briefcase, Calculator } from "lucide-react"
+import { useLocale } from "@/app/localContext"
 
 interface WorkPackage {
   Id?: string
@@ -35,6 +36,7 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { formatCurrency } = useLocale()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -152,14 +154,14 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
             <div className="text-sm">
               {formData.CalculationType === "Fixed" ? (
                 <p>
-                  Para cualquier trabajo: <span className="font-medium">${(formData.Value || 0).toFixed(2)}</span>
+                  Para cualquier trabajo: <span className="font-medium">{formatCurrency(formData.Value || 0)}</span>
                 </p>
               ) : (
                 <div>
                   <p>Para un trabajo de 2.5 horas:</p>
                   <p>
-                    2.5 × ${(formData.Value || 0).toFixed(2)} ={" "}
-                    <span className="font-medium">${(2.5 * (formData.Value || 0)).toFixed(2)}</span>
+                    2.5 × {formatCurrency((formData.Value || 0))} ={" "}
+                    <span className="font-medium">{formatCurrency((2.5 * (formData.Value || 0)))}</span>
                   </p>
                 </div>
               )}
