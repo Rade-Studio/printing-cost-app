@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
 import { Loader2, Package } from "lucide-react"
+import { useLocale } from "@/app/localContext"
 
 interface Filament {
   id?: string
@@ -51,6 +52,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { formatCurrency } = useLocale()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -155,7 +157,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Valor Total del Stock:</p>
-                <p className="font-medium">${((formData.costPerGram || 0) * (formData.stockGrams || 0)).toFixed(2)}</p>
+                <p className="font-medium">{formatCurrency((formData.costPerGram || 0) * (formData.stockGrams || 0))}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Peso Total:</p>

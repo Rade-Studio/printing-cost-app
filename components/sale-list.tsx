@@ -19,6 +19,7 @@ import {
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Eye, DollarSign } from "lucide-react"
 import type { Sale } from "@/lib/types"
+import { useLocale } from "@/app/localContext"
 
 interface SaleListProps {
   onEdit: (sale: Sale) => void
@@ -52,6 +53,7 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteSale, setDeleteSale] = useState<Sale | null>(null)
+  const { formatCurrency } = useLocale()
 
   const fetchData = async () => {
     try {
@@ -178,13 +180,13 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <DollarSign className="h-3 w-3 text-muted-foreground" />
-                          <span>{(sale.estimatedTotal || 0).toFixed(2)}</span>
+                          <span>{formatCurrency(sale.estimatedTotal || 0)}</span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <DollarSign className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-medium">{(sale.finalTotal || 0).toFixed(2)}</span>
+                          <span className="font-medium">{formatCurrency(sale.finalTotal || 0)}</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
