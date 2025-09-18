@@ -38,7 +38,7 @@ export function LoginForm() {
       <Card className="w-full max-w-md shadow-xl border-0 bg-white">
         <CardHeader className="text-center pb-8 pt-8">
           <div className="flex justify-center mb-6">
-            <div className="p-3 bg-primary rounded-xl shadow-lg">
+            <div className="p-3 bg-primary/10 rounded-lg">
               <img src="/favicon.ico" alt="Logo" className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
