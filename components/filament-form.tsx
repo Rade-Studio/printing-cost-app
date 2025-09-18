@@ -12,11 +12,11 @@ import { apiClient } from "@/lib/api"
 import { Loader2, Package } from "lucide-react"
 
 interface Filament {
-  Id?: string
-  Type: string
-  Color: string
-  CostPerGram: number
-  StockGrams: number
+  id?: string
+  type: string
+  color: string
+  costPerGram: number
+  stockGrams: number
 }
 
 interface FilamentFormProps {
@@ -42,30 +42,12 @@ const filamentTypes = [
   "Flexible",
 ]
 
-const colors = [
-  "Negro",
-  "Blanco",
-  "Rojo",
-  "Azul",
-  "Verde",
-  "Amarillo",
-  "Naranja",
-  "Morado",
-  "Rosa",
-  "Gris",
-  "Marrón",
-  "Transparente",
-  "Dorado",
-  "Plateado",
-  "Bronce",
-]
-
 export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProps) {
   const [formData, setFormData] = useState<Filament>({
-    Type: filament?.Type || "",
-    Color: filament?.Color || "",
-    CostPerGram: filament?.CostPerGram || 0,
-    StockGrams: filament?.StockGrams || 0,
+    type: filament?.type || "",
+    color: filament?.color || "",
+    costPerGram: filament?.costPerGram || 0,
+    stockGrams: filament?.stockGrams || 0,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -76,8 +58,8 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
     setError("")
 
     try {
-      if (filament?.Id) {
-        await apiClient.updateFilament(filament.Id, { ...formData, Id: filament.Id })
+      if (filament?.id) {
+        await apiClient.updateFilament(filament.id, { ...formData, Id: filament.id })
       } else {
         await apiClient.createFilament(formData)
       }
@@ -93,7 +75,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const costPerKg = (formData.CostPerGram || 0) * 1000
+  const costPerKg = (formData.costPerGram || 0) * 1000
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -111,7 +93,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Tipo de Filamento</Label>
-              <Select value={formData.Type} onValueChange={(value) => handleChange("Type", value)}>
+              <Select value={formData.type} onValueChange={(value) => handleChange("type", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona el tipo" />
                 </SelectTrigger>
@@ -126,18 +108,14 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
             </div>
             <div className="space-y-2">
               <Label htmlFor="color">Color</Label>
-              <Select value={formData.Color} onValueChange={(value) => handleChange("Color", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona el color" />
-                </SelectTrigger>
-                <SelectContent>
-                  {colors.map((color) => (
-                    <SelectItem key={color} value={color}>
-                      {color}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="color"
+                type="text"
+                placeholder="Rojo, Azul, Verde..."
+                value={formData.color}
+                onChange={(e) => handleChange("color", e.target.value)}
+                required
+              />
             </div>
           </div>
 
@@ -149,8 +127,8 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
                 type="number"
                 step="0.001"
                 placeholder="0.080"
-                value={formData.CostPerGram}
-                onChange={(e) => handleChange("CostPerGram", Number.parseFloat(e.target.value) || 0)}
+                value={formData.costPerGram}
+                onChange={(e) => handleChange("costPerGram", Number.parseFloat(e.target.value) || 0)}
                 required
               />
               <p className="text-xs text-muted-foreground">Equivale a ${costPerKg.toFixed(2)} por kilogramo</p>
@@ -161,12 +139,12 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
                 id="stockGrams"
                 type="number"
                 placeholder="1000"
-                value={formData.StockGrams}
-                onChange={(e) => handleChange("StockGrams", Number.parseInt(e.target.value) || 0)}
+                value={formData.stockGrams}
+                onChange={(e) => handleChange("stockGrams", Number.parseInt(e.target.value) || 0)}
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Equivale a {((formData.StockGrams || 0) / 1000).toFixed(2)} kilogramos
+                Equivale a {((formData.stockGrams || 0) / 1000).toFixed(2)} kilogramos
               </p>
             </div>
           </div>
@@ -177,11 +155,11 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Valor Total del Stock:</p>
-                <p className="font-medium">${((formData.CostPerGram || 0) * (formData.StockGrams || 0)).toFixed(2)}</p>
+                <p className="font-medium">${((formData.costPerGram || 0) * (formData.stockGrams || 0)).toFixed(2)}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Peso Total:</p>
-                <p className="font-medium">{((formData.StockGrams || 0) / 1000).toFixed(2)} kg</p>
+                <p className="font-medium">{((formData.stockGrams || 0) / 1000).toFixed(2)} kg</p>
               </div>
             </div>
           </div>

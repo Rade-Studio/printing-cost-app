@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Settings, DollarSign, Percent, Mail, Phone, Building } from "lucide-react"
+import { useLocale } from "@/app/localContext"
 
 interface SystemConfig {
-  Id: string
-  Key: string
-  Value: string
+  id: string
+  key: string
+  value: string
 }
 
 interface SystemConfigListProps {
@@ -93,6 +94,7 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteConfig, setDeleteConfig] = useState<SystemConfig | null>(null)
+  const { formatCurrency } = useLocale()
 
   const fetchConfigs = async () => {
     try {
@@ -113,11 +115,11 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
 
   useEffect(() => {
     const filtered = configs.filter((config) => {
-      const info = configInfo[config.Key]
+      const info = configInfo[config.key]
       return (
-        (config.Key || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (config.key || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (info?.label || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (config.Value || "").toLowerCase().includes(searchTerm.toLowerCase())
+        (config.value || "").toLowerCase().includes(searchTerm.toLowerCase())
       )
     })
     setFilteredConfigs(filtered)
@@ -125,7 +127,7 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
 
   const handleDelete = async (config: SystemConfig) => {
     try {
-      await apiClient.deleteSystemConfig(config.Id)
+      await apiClient.deleteSystemConfig(config.id)
       await fetchConfigs()
       setDeleteConfig(null)
     } catch (error) {
@@ -134,29 +136,29 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
   }
 
   const formatValue = (config: SystemConfig) => {
-    const info = configInfo[config.Key]
-    if (!info) return config.Value
+    const info = configInfo[config.key]
+    if (!info) return config.value
 
     switch (info.type) {
       case "currency":
-        const numValue = Number.parseFloat(config.Value) || 0
-        return `$${numValue.toFixed(2)}`
+        const numValue = formatCurrency(Number.parseFloat(config.value) || 0)
+        return `${numValue}`
       case "percentage":
-        return `${config.Value}%`
+        return `${config.value}%`
       default:
-        return config.Value
+        return config.value
     }
   }
 
-  const getConfigCategory = (key: string) => {
-    if (key.includes("Company")) return "Empresa"
-    if (key.includes("Rate") || key.includes("Cost") || key.includes("Margin") || key.includes("Value")) return "Costos"
+  const getConfigCategory = (key: string | undefined) => {
+    if (key?.includes("Company")) return "Empresa"
+    if (key?.includes("Rate") || key?.includes("Cost") || key?.includes("Margin") || key?.includes("Value")) return "Costos"
     return "General"
   }
 
   const groupedConfigs = filteredConfigs.reduce(
     (groups, config) => {
-      const category = getConfigCategory(config.Key)
+      const category = getConfigCategory(config.key)
       if (!groups[category]) groups[category] = []
       groups[category].push(config)
       return groups
@@ -230,16 +232,16 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
                       </TableHeader>
                       <TableBody>
                         {categoryConfigs.map((config) => {
-                          const info = configInfo[config.Key]
+                          const info = configInfo[config.key]
                           const IconComponent = info?.icon || Settings
                           return (
-                            <TableRow key={config.Id}>
+                            <TableRow key={config.id}>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <IconComponent className="h-4 w-4 text-muted-foreground" />
                                   <div>
-                                    <p className="font-medium">{info?.label || config.Key}</p>
-                                    <code className="text-xs text-muted-foreground">{config.Key}</code>
+                                    <p className="font-medium">{info?.label || config.key}</p>
+                                    <code className="text-xs text-muted-foreground">{config.key}</code>
                                   </div>
                                 </div>
                               </TableCell>
@@ -280,7 +282,7 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta acción no se puede deshacer. Se eliminará permanentemente la configuración "
-              {deleteConfig && configInfo[deleteConfig.Key]?.label}".
+              {deleteConfig && configInfo[deleteConfig.key]?.label}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

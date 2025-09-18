@@ -11,9 +11,9 @@ import { apiClient } from "@/lib/api"
 import { Loader2, Settings } from "lucide-react"
 
 interface SystemConfig {
-  Id?: string
-  Key: string
-  Value: string
+  id?: string
+  key: string
+  value: string
 }
 
 interface SystemConfigFormProps {
@@ -72,8 +72,8 @@ const configDescriptions: Record<string, { label: string; description: string; t
 
 export function SystemConfigForm({ config, onSuccess, onCancel }: SystemConfigFormProps) {
   const [formData, setFormData] = useState<SystemConfig>({
-    Key: config?.Key || "",
-    Value: config?.Value || "",
+    key: config?.key || "",
+    value: config?.value || "",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -84,8 +84,8 @@ export function SystemConfigForm({ config, onSuccess, onCancel }: SystemConfigFo
     setError("")
 
     try {
-      if (config?.Id) {
-        await apiClient.updateSystemConfig(config.Id, { ...formData, Id: config.Id })
+      if (config?.id) {
+        await apiClient.updateSystemConfig(config.id, { ...formData, Id: config.id })
       } else {
         await apiClient.createSystemConfig(formData)
       }
@@ -101,7 +101,7 @@ export function SystemConfigForm({ config, onSuccess, onCancel }: SystemConfigFo
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const configInfo = configDescriptions[formData.Key]
+  const configInfo = configDescriptions[formData.key]
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -120,8 +120,8 @@ export function SystemConfigForm({ config, onSuccess, onCancel }: SystemConfigFo
             <Label htmlFor="key">Clave de Configuración</Label>
             <select
               id="key"
-              value={formData.Key}
-              onChange={(e) => handleChange("Key", e.target.value)}
+              value={formData.key}
+              onChange={(e) => handleChange("key", e.target.value)}
               className="w-full p-2 border border-input rounded-md bg-background"
               required
               disabled={!!config}
@@ -146,17 +146,17 @@ export function SystemConfigForm({ config, onSuccess, onCancel }: SystemConfigFo
               type={configInfo?.type || "text"}
               step={configInfo?.type === "number" ? "0.01" : undefined}
               placeholder={configInfo?.type === "number" ? "0.00" : "Ingresa el valor"}
-              value={formData.Value}
-              onChange={(e) => handleChange("Value", e.target.value)}
+              value={formData.value}
+              onChange={(e) => handleChange("value", e.target.value)}
               required
             />
           </div>
 
           {/* Preview para configuraciones numéricas */}
-          {configInfo?.type === "number" && formData.Value && (
+          {configInfo?.type === "number" && formData.value && (
             <div className="bg-muted p-3 rounded-lg">
               <p className="text-sm">
-                <span className="font-medium">Vista previa:</span> {formData.Value} {configInfo.unit}
+                <span className="font-medium">Vista previa:</span> {formData.value} {configInfo.unit}
               </p>
             </div>
           )}

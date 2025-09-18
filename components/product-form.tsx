@@ -12,11 +12,11 @@ import { apiClient } from "@/lib/api"
 import { Loader2, Briefcase, ImageIcon, FileText } from "lucide-react"
 
 interface Product {
-  Id?: string
-  Name: string
-  Description: string
-  ModelUrl: string
-  ImageUrl: string
+  id?: string
+  name: string
+  description: string
+  modelUrl: string
+  imageUrl: string
 }
 
 interface ProductFormProps {
@@ -27,10 +27,10 @@ interface ProductFormProps {
 
 export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) {
   const [formData, setFormData] = useState<Product>({
-    Name: product?.Name || "",
-    Description: product?.Description || "",
-    ModelUrl: product?.ModelUrl || "",
-    ImageUrl: product?.ImageUrl || "",
+    name: product?.name || "",
+    description: product?.description || "",
+    modelUrl: product?.modelUrl || "",
+    imageUrl: product?.imageUrl || "",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -41,8 +41,8 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
     setError("")
 
     try {
-      if (product?.Id) {
-        await apiClient.updateProduct(product.Id, { ...formData, Id: product.Id })
+      if (product?.id) {
+        await apiClient.updateProduct(product.id, { ...formData, Id: product.id })
       } else {
         await apiClient.createProduct(formData)
       }
@@ -77,8 +77,8 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
               id="name"
               type="text"
               placeholder="Ej: Figura decorativa, Prototipo funcional, Repuesto automotriz"
-              value={formData.Name}
-              onChange={(e) => handleChange("Name", e.target.value)}
+              value={formData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
               required
             />
           </div>
@@ -88,8 +88,8 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
             <Textarea
               id="description"
               placeholder="Describe las características, dimensiones, uso previsto y cualquier detalle relevante del producto..."
-              value={formData.Description}
-              onChange={(e) => handleChange("Description", e.target.value)}
+              value={formData.description}
+              onChange={(e) => handleChange("description", e.target.value)}
               rows={4}
               required
             />
@@ -104,8 +104,8 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
               id="imageUrl"
               type="url"
               placeholder="https://ejemplo.com/imagen-del-producto.jpg"
-              value={formData.ImageUrl}
-              onChange={(e) => handleChange("ImageUrl", e.target.value)}
+              value={formData.imageUrl}
+              onChange={(e) => handleChange("imageUrl", e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
               URL de una imagen que muestre el producto terminado o el diseño
@@ -121,8 +121,8 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
               id="modelUrl"
               type="url"
               placeholder="https://ejemplo.com/modelo.stl"
-              value={formData.ModelUrl}
-              onChange={(e) => handleChange("ModelUrl", e.target.value)}
+              value={formData.modelUrl}
+              onChange={(e) => handleChange("modelUrl", e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
               URL del archivo STL, OBJ u otro formato de modelo 3D para impresión
@@ -130,12 +130,12 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
           </div>
 
           {/* Vista previa de imagen */}
-          {formData.ImageUrl && (
+          {formData.imageUrl && (
             <div className="space-y-2">
               <Label>Vista Previa de la Imagen</Label>
               <div className="border rounded-lg p-4 bg-muted">
                 <img
-                  src={formData.ImageUrl || "/placeholder.svg"}
+                  src={formData.imageUrl || "/placeholder.svg"}
                   alt="Vista previa del producto"
                   className="max-w-full h-32 object-contain mx-auto rounded"
                   onError={(e) => {

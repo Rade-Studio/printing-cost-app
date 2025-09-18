@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { LocaleProvider } from "./localContext"
+import { SystemConfigProvider } from "./systenConfigContext"
 
 export const metadata: Metadata = {
   title: "Calculadora 3D - Gestión de Impresión 3D",
@@ -22,7 +23,9 @@ export default function RootLayout({
     <html lang="es">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <LocaleProvider>
-          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+          <SystemConfigProvider>
+            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+          </SystemConfigProvider>
         </LocaleProvider>
         <Analytics />
       </body>

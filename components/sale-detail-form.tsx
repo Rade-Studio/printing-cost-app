@@ -12,12 +12,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiClient } from "@/lib/api"
 import { Loader2, Calculator } from "lucide-react"
 import { useLocale } from "@/app/localContext"
+import { useSystemConfig } from "@/app/systenConfigContext"
+import { ProductSelect } from "./shared/select-product"
 
 interface Filament {
   id: string
   type: string
   color: string
   costPerGram: number
+}
+
+interface Product {
+  id?: string
+  name: string
+  description: string
+  modelUrl: string
+  imageUrl: string
 }
 
 interface WorkPackage {
@@ -32,6 +42,7 @@ interface SaleDetail {
   id?: string
   saleId: string
   filamentId: string
+  productId: string
   productDescription: string
   weightGrams: number
   printTimeHours: number
@@ -39,7 +50,7 @@ interface SaleDetail {
   comments: string
   workPackagePerHour: number
   workPackageId: string
-  machineRateApplied: number
+  machineRateApplied: number,
 }
 
 interface SaleDetailFormProps {
@@ -47,14 +58,17 @@ interface SaleDetailFormProps {
   detail?: SaleDetail
   onSuccess: () => void
   onCancel: () => void
+  refreshTrigger: () => void
 }
 
-export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDetailFormProps) {
+export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTrigger }: SaleDetailFormProps) {
   const [filaments, setFilaments] = useState<Filament[]>([])
   const [workPackages, setWorkPackages] = useState<WorkPackage[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [formData, setFormData] = useState<SaleDetail>({
     saleId: saleId,
     filamentId: detail?.filamentId || "",
+    productId: detail?.productId || "",
     productDescription: detail?.productDescription || "",
     weightGrams: detail?.weightGrams || 0,
     printTimeHours: detail?.printTimeHours || 0,
@@ -69,16 +83,19 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [error, setError] = useState("")
   const { formatCurrency } = useLocale()
+  const { configs, refreshConfigs, isLoading: isLoadingConfigs } = useSystemConfig()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [filamentsData, workPackagesData] = await Promise.all([
+        const [filamentsData, workPackagesData, productsData] = await Promise.all([
           apiClient.getFilaments(),
           apiClient.getWorkPackages(),
+          apiClient.getProducts(),
         ])
         setFilaments(filamentsData)
         setWorkPackages(workPackagesData)
+        setProducts(productsData)
       } catch (error) {
         console.error("Error fetching data:", error)
       } finally {
@@ -87,6 +104,10 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
     }
     fetchData()
   }, [])
+
+  useEffect(() => {
+    refreshConfigs()
+  }, [refreshTrigger])
 
   useEffect(() => {
     calculateCost()
@@ -102,26 +123,41 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
     }
 
     // Costo del material
-    const materialCost = ((formData.weightGrams || 0) * (selectedFilament.costPerGram || 0))
+    const filamentCostPerGram = ((formData.weightGrams || 0) * (selectedFilament.costPerGram || 0))
 
     // Costo de trabajo
-    let workCost = 0
+    let workPackageCost = 0
     if (selectedWorkPackage) {
       if (selectedWorkPackage.calculationType === "Fixed") {
-        workCost = selectedWorkPackage.value || 0
+        workPackageCost = selectedWorkPackage.value || 0 
       } else if (selectedWorkPackage.calculationType === "Multiply") {
-        workCost = (formData.workPackagePerHour || 0) * (selectedWorkPackage.value || 0)
+        workPackageCost = (formData.workPackagePerHour || 0) * (selectedWorkPackage.value || 0)
       }
     }
+
 
     // Costo de máquina
     const machineCost = (formData.machineRateApplied || 0)
 
+    // Tarifa de energia
+    const electricityCost = Number(configs.ElectricityCostPerKwh) || 0 
+
+    const machineElectricityCost = (formData.printTimeHours || 0) * electricityCost
+
     // Costo total por unidad
-    const unitCost = materialCost + machineCost
+    const subTotal = filamentCostPerGram + machineCost
 
     // Costo total considerando cantidad
-    const totalCost = unitCost * (formData.quantity || 1) + workCost
+    const totalCost = (subTotal * (formData.quantity || 1)) + workPackageCost + machineElectricityCost
+
+    // Valor minimo de pedido
+    const minimumOrderValue = Number(configs.MinimumOrderValue) || 0
+
+    if (totalCost < minimumOrderValue) {
+      setCalculatedCost(minimumOrderValue)
+      setError("El costo total no puede ser menor a " + formatCurrency(minimumOrderValue) + " por el valor mínimo de pedido.")
+      return
+    }
 
     setCalculatedCost(totalCost)
   }
@@ -174,6 +210,10 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Producto con buscador rapido de escribir */}
+          <ProductSelect products={products} formData={formData} handleChange={handleChange} />
+
           {/* Información del producto */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Información del Producto</h3>
@@ -302,6 +342,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel }: SaleDeta
               </div>
             </div>
           </div>
+
 
           {/* Cálculo de costos */}
           <div className="bg-muted p-4 rounded-lg">

@@ -1,6 +1,6 @@
 import { AuthService } from "./auth"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://ahernand53-001-site1.stempurl.com"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
 class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {

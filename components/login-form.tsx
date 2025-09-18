@@ -67,9 +67,6 @@ export function LoginForm() {
                 <Label htmlFor="password" className="text-sm font-medium text-foreground">
                   Contraseña
                 </Label>
-                <button type="button" className="text-sm text-primary hover:underline">
-                  ¿Olvidaste tu contraseña?
-                </button>
               </div>
               <Input
                 id="password"
@@ -101,14 +98,6 @@ export function LoginForm() {
               )}
             </Button>
           </form>
-          <div className="text-center mt-6">
-            <p className="text-sm text-muted-foreground">
-              ¿No tienes una cuenta?{" "}
-              <button type="button" className="text-primary hover:underline font-medium">
-                Registrarse
-              </button>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

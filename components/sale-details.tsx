@@ -16,14 +16,24 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
-import { ArrowLeft, Plus, Edit, Trash2, Package, Clock, Weight, Calculator } from "lucide-react"
+import { ArrowLeft, Plus, Edit, Trash2, Package, Clock, Weight, Calculator, Cuboid} from "lucide-react"
 import { Filament, WorkPackage } from "@/lib/types"
 import { useLocale } from "@/app/localContext"
+
+
+interface Product {
+  id?: string
+  name: string
+  description: string
+  modelUrl: string
+  imageUrl: string
+}
 
 interface SaleDetail {
   id: string
   saleId: string
   filamentId: string
+  productId: string
   productDescription: string
   weightGrams: number
   printTimeHours: number
@@ -38,6 +48,7 @@ interface SaleDetail {
   subTotal: number,
   filament?: Filament,
   workPackage?: WorkPackage,
+  product?: Product,
 }
 
 interface SaleDetailsProps {
@@ -187,6 +198,9 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => window.open(detail.product?.modelUrl, "_blank")}>
+                              <Cuboid className="h-3 w-3" />
+                            </Button>
                             <Button variant="outline" size="sm" onClick={() => onEditDetail(detail)}>
                               <Edit className="h-3 w-3" />
                             </Button>

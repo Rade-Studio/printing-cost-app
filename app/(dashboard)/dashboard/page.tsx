@@ -8,60 +8,60 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-lg">Welcome to PrintCost Pro - Manage your 3D printing business</p>
+        <p className="text-muted-foreground text-lg">Bienvenido a PrintCost Pro - Gestiona tu negocio de impresión 3D</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Active Clients</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Clientes Activos</CardTitle>
             <div className="p-2 bg-primary/10 rounded-lg">
               <Users className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">24</div>
-            <p className="text-sm text-emerald-600 font-medium">+2 from last month</p>
+            <p className="text-sm text-emerald-600 font-medium">+2 desde el mes pasado</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Monthly Sales</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Ventas Mensuales</CardTitle>
             <div className="p-2 bg-primary/10 rounded-lg">
               <DollarSign className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">$12,450</div>
-            <p className="text-sm text-emerald-600 font-medium">+15% from last month</p>
+            <p className="text-sm text-emerald-600 font-medium">+15% desde el mes pasado</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Filaments in Stock</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Filamentos en Stock</CardTitle>
             <div className="p-2 bg-primary/10 rounded-lg">
               <Package className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">18</div>
-            <p className="text-sm text-muted-foreground font-medium">3 different types</p>
+            <p className="text-sm text-muted-foreground font-medium">3 tipos diferentes</p>
           </CardContent>
         </Card>
 
         <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Monthly Profit</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Ganancia Mensual</CardTitle>
             <div className="p-2 bg-primary/10 rounded-lg">
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">$8,920</div>
-            <p className="text-sm text-emerald-600 font-medium">+22% from last month</p>
+            <p className="text-sm text-emerald-600 font-medium">+22% desde el mes pasado</p>
           </CardContent>
         </Card>
       </div>
@@ -75,8 +75,8 @@ export default function DashboardPage() {
                 <Activity className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-lg">Recent Sales</CardTitle>
-                <CardDescription>Latest transactions completed</CardDescription>
+                <CardTitle className="text-lg">Ventas Recientes</CardTitle>
+                <CardDescription>Últimas transacciones completadas</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -85,11 +85,11 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                 <div>
                   <p className="font-semibold text-foreground">Decorative Figure</p>
-                  <p className="text-sm text-muted-foreground">Client: Juan Pérez</p>
+                  <p className="text-sm text-muted-foreground">Cliente: Juan Pérez</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-primary">$450</p>
-                  <p className="text-sm text-muted-foreground">Today</p>
+                  <p className="text-sm text-muted-foreground">Hoy</p>
                 </div>
               </div>
               <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
@@ -123,8 +123,8 @@ export default function DashboardPage() {
                 <Package className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-lg">Filament Status</CardTitle>
-                <CardDescription>Current stock levels</CardDescription>
+                <CardTitle className="text-lg">Estado de los Filamentos</CardTitle>
+                <CardDescription>Niveles de stock actuales</CardDescription>
               </div>
             </div>
           </CardHeader>
