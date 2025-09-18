@@ -10,7 +10,6 @@ import {
   Users,
   ShoppingCart,
   Package,
-  Briefcase,
   Settings,
   Receipt,
   BarChart3,
@@ -18,15 +17,16 @@ import {
   Menu,
   X,
   Layers3,
+  HammerIcon
 } from "lucide-react"
 
 const navigation = [
   { name: "Tablero", href: "/dashboard", icon: BarChart3 },
   { name: "Clientes", href: "/clientes", icon: Users },
   { name: "Ventas", href: "/ventas", icon: ShoppingCart },
-  { name: "Filamentos", href: "/filamentos", icon: Package },
-  { name: "Productos", href: "/productos", icon: Briefcase },
-  { name: "Paquetes de Trabajo", href: "/paquetes-trabajo", icon: Briefcase },
+  { name: "Filamentos", href: "/filamentos", icon: Layers3 },
+  { name: "Productos", href: "/productos", icon: Package },
+  { name: "Paquetes de Trabajo", href: "/paquetes-trabajo", icon: HammerIcon },
   { name: "Gastos", href: "/gastos", icon: Receipt },
   { name: "Configuración", href: "/configuracion", icon: Settings },
 ]
@@ -60,8 +60,10 @@ export function Sidebar() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center gap-3 p-6 border-b border-sidebar-border">
-            <div className="p-2 bg-sidebar-primary rounded-xl shadow-sm">
-              <Layers3 className="h-6 w-6 text-sidebar-primary-foreground" />
+            <div className="p-2 bg-sidebar-primary/10 rounded-lg">
+
+              {/* Icono de imagen */}
+              <img src="/favicon.ico" alt="Logo" className="h-6 w-6 text-sidebar-primary-foreground" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-sidebar-foreground">PrintCost Pro</h1>

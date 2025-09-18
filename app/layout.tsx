@@ -11,7 +11,10 @@ import { SystemConfigProvider } from "./systenConfigContext"
 export const metadata: Metadata = {
   title: "Calculadora 3D - Gestión de Impresión 3D",
   description: "Sistema completo para calcular costos de impresión 3D y gestionar clientes, ventas y materiales",
-  generator: "v0.app",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+  }
 }
 
 export default function RootLayout({
