@@ -130,7 +130,7 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
                       <img
                         src={product.imageUrl || "/placeholder.svg"}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-8 h-8 h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = "none"
                           e.currentTarget.nextElementSibling?.classList.remove("hidden")
