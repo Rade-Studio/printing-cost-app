@@ -1,30 +1,49 @@
 import { AuthService } from "./auth"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://ahernand53-001-site1.stempurl.com"
 
 class ApiClient {
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`
-    const config: RequestInit = {
-      headers: {
-        "Content-Type": "application/json",
-        ...AuthService.getAuthHeaders(),
-        ...options.headers,
-      },
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
+    const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const url = `${API_BASE_URL}${path}`;
+
+    // Solo agrega Content-Type si hay body; evita preflights innecesarios en GET/DELETE.
+    const baseHeaders: Record<string, string> = {
+      ...AuthService.getAuthHeaders(), // ej: { Authorization: `Bearer ...` }
+    };
+    if (options.body && !("Content-Type" in (options.headers ?? {}))) {
+      baseHeaders["Content-Type"] = "application/json";
+    }
+
+    const res = await fetch(url, {
+      method: options.method ?? "GET",
+      mode: "cors",
+      // credentials: "include", // <-- solo si usas cookies/sesiones
       ...options,
+      headers: {
+        ...baseHeaders,
+        ...(options.headers as Record<string, string>),
+      },
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status} ${res.statusText} @ ${url}\n${errText}`);
     }
 
-    const response = await fetch(url, config)
+    // 204 No Content
+    if (res.status === 204) return null;
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`)
+    // Manejo de cuerpo vacío con 200/201
+    const text = await res.text();
+    if (!text) return null;
+
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      // Si no es JSON, devuelve texto (ajusta si tu API siempre es JSON)
+      return text as unknown as T;
     }
-
-    if (response.status === 204) {
-      return null
-    }
-
-    return response.json()
   }
 
   // Client endpoints
