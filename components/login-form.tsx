@@ -39,7 +39,7 @@ export function LoginForm() {
         <CardHeader className="text-center pb-8 pt-8">
           <div className="flex justify-center mb-6">
             <div className="p-3 bg-primary rounded-xl shadow-lg">
-              <Layers3 className="h-8 w-8 text-primary-foreground" />
+              <img src="/favicon.ico" alt="Logo" className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-foreground mb-2">PrintCost Pro</CardTitle>

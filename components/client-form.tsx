@@ -102,7 +102,7 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
               <Input
                 id="city"
                 type="text"
-                placeholder="Ciudad de México"
+                placeholder="Ciudad"
                 value={formData.city}
                 onChange={(e) => handleChange("city", e.target.value)}
                 required
