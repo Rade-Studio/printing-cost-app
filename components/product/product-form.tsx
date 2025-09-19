@@ -10,14 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { apiClient } from "@/lib/api"
 import { Loader2, Briefcase, ImageIcon, FileText } from "lucide-react"
-
-interface Product {
-  id?: string
-  name: string
-  description: string
-  modelUrl: string
-  imageUrl: string
-}
+import { Product } from "@/lib/types"
 
 interface ProductFormProps {
   product?: Product
@@ -42,7 +35,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
 
     try {
       if (product?.id) {
-        await apiClient.updateProduct(product.id, { ...formData, Id: product.id })
+        await apiClient.updateProduct(product.id, { ...formData, id: product.id })
       } else {
         await apiClient.createProduct(formData)
       }

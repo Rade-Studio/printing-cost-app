@@ -7,11 +7,11 @@ import { Product } from "@/lib/types"
 
 export default function ProductosPage() {
   const [view, setView] = useState<"list" | "form">("list")
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleAdd = () => {
-    setEditingProduct(null)
+    setEditingProduct(undefined)
     setView("form")
   }
 
@@ -22,13 +22,13 @@ export default function ProductosPage() {
 
   const handleSuccess = () => {
     setView("list")
-    setEditingProduct(null)
+    setEditingProduct(undefined)
     setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleCancel = () => {
     setView("list")
-    setEditingProduct(null)
+    setEditingProduct(undefined)
   }
 
   return (
