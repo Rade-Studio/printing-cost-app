@@ -12,14 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiClient } from "@/lib/api"
 import { Loader2, Briefcase, Calculator } from "lucide-react"
 import { useLocale } from "@/app/localContext"
-
-interface WorkPackage {
-  Id?: string
-  Name: string
-  Description: string
-  CalculationType: string
-  Value: number
-}
+import { WorkPackage } from "@/lib/types"
 
 interface WorkPackageFormProps {
   workPackage?: WorkPackage
@@ -29,10 +22,10 @@ interface WorkPackageFormProps {
 
 export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackageFormProps) {
   const [formData, setFormData] = useState<WorkPackage>({
-    Name: workPackage?.Name || "",
-    Description: workPackage?.Description || "",
-    CalculationType: workPackage?.CalculationType || "Fixed",
-    Value: workPackage?.Value || 0,
+    name: workPackage?.name || "",
+    description: workPackage?.description || "",
+    calculationType: workPackage?.calculationType || "Fixed",
+    value: workPackage?.value || 0,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -44,8 +37,8 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
     setError("")
 
     try {
-      if (workPackage?.Id) {
-        await apiClient.updateWorkPackage(workPackage.Id, { ...formData, Id: workPackage.Id })
+      if (workPackage?.id) {
+        await apiClient.updateWorkPackage(workPackage.id, { ...formData, id: workPackage.id })
       } else {
         await apiClient.createWorkPackage(formData)
       }
@@ -62,7 +55,7 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
   }
 
   const getCalculationDescription = () => {
-    switch (formData.CalculationType) {
+    switch (formData.calculationType) {
       case "Fixed":
         return "Se aplicará un costo fijo independientemente del tiempo de impresión"
       case "Multiply":
@@ -93,8 +86,8 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
               id="name"
               type="text"
               placeholder="Ej: Diseño básico, Postprocesado, Soporte técnico"
-              value={formData.Name}
-              onChange={(e) => handleChange("Name", e.target.value)}
+              value={formData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
               required
             />
           </div>
@@ -104,8 +97,8 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
             <Textarea
               id="description"
               placeholder="Describe qué incluye este paquete de trabajo..."
-              value={formData.Description}
-              onChange={(e) => handleChange("Description", e.target.value)}
+              value={formData.description}
+              onChange={(e) => handleChange("description", e.target.value)}
               rows={3}
               required
             />
@@ -115,8 +108,8 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
             <div className="space-y-2">
               <Label htmlFor="calculationType">Tipo de Cálculo</Label>
               <Select
-                value={formData.CalculationType}
-                onValueChange={(value) => handleChange("CalculationType", value)}
+                value={formData.calculationType}
+                onValueChange={(value) => handleChange("calculationType", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona el tipo" />
@@ -131,15 +124,15 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
             <div className="space-y-2">
               <Label htmlFor="value">
                 Valor ($)
-                {formData.CalculationType === "Fixed" ? " - Costo Total" : " - Por Hora"}
+                {formData.calculationType === "Fixed" ? " - Costo Total" : " - Por Hora"}
               </Label>
               <Input
                 id="value"
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                value={formData.Value}
-                onChange={(e) => handleChange("Value", Number.parseFloat(e.target.value) || 0)}
+                value={formData.value}
+                onChange={(e) => handleChange("value", Number.parseFloat(e.target.value) || 0)}
                 required
               />
             </div>
@@ -152,16 +145,16 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
               Ejemplo de Cálculo
             </h3>
             <div className="text-sm">
-              {formData.CalculationType === "Fixed" ? (
+              {formData.calculationType === "Fixed" ? (
                 <p>
-                  Para cualquier trabajo: <span className="font-medium">{formatCurrency(formData.Value || 0)}</span>
+                  Para cualquier trabajo: <span className="font-medium">{formatCurrency(formData.value || 0)}</span>
                 </p>
               ) : (
                 <div>
                   <p>Para un trabajo de 2.5 horas:</p>
                   <p>
-                    2.5 × {formatCurrency((formData.Value || 0))} ={" "}
-                    <span className="font-medium">{formatCurrency((2.5 * (formData.Value || 0)))}</span>
+                    2.5 × {formatCurrency((formData.value || 0))} ={" "}
+                    <span className="font-medium">{formatCurrency((2.5 * (formData.value || 0)))}</span>
                   </p>
                 </div>
               )}

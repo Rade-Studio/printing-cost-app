@@ -7,11 +7,11 @@ import { WorkPackage } from "@/lib/types"
 
 export default function PaquetesTrabajoPage() {
   const [view, setView] = useState<"list" | "form">("list")
-  const [editingWorkPackage, setEditingWorkPackage] = useState<WorkPackage | null>(null)
+  const [editingWorkPackage, setEditingWorkPackage] = useState<WorkPackage | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleAdd = () => {
-    setEditingWorkPackage(null)
+    setEditingWorkPackage(undefined)
     setView("form")
   }
 
@@ -22,13 +22,13 @@ export default function PaquetesTrabajoPage() {
 
   const handleSuccess = () => {
     setView("list")
-    setEditingWorkPackage(null)
+    setEditingWorkPackage(undefined)
     setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleCancel = () => {
     setView("list")
-    setEditingWorkPackage(null)
+    setEditingWorkPackage(undefined)
   }
 
   return (
