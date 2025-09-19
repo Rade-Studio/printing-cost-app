@@ -1,4 +1,5 @@
 import { AuthService } from "./auth"
+import { Client, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
@@ -47,11 +48,11 @@ class ApiClient {
   }
 
   // Client endpoints
-  async getClients() {
+  async getClients(): Promise<Client[] | null> {
     return this.request("/client/")
   }
 
-  async createClient(client: any) {
+  async createClient(client: any): Promise<Client | null> {
     return this.request("/client/", {
       method: "POST",
       body: JSON.stringify(client),
@@ -72,11 +73,11 @@ class ApiClient {
   }
 
   // Sale endpoints
-  async getSales() {
+  async getSales(): Promise<Sale[] | null> {
     return this.request("/sale/")
   }
 
-  async createSale(sale: any) {
+  async createSale(sale: any): Promise<Sale | null> {
     return this.request("/sale/", {
       method: "POST",
       body: JSON.stringify(sale),
@@ -97,11 +98,11 @@ class ApiClient {
   }
 
   // Sale details endpoints
-  async getSaleDetails(saleId: string) {
+  async getSaleDetails(saleId: string): Promise<SaleDetail[] | null> {
     return this.request(`/sale/${saleId}/details`)
   }
 
-  async createSaleDetail(saleId: string, detail: any) {
+  async createSaleDetail(saleId: string, detail: any): Promise<SaleDetail | null> {
     return this.request(`/sale/${saleId}/details`, {
       method: "POST",
       body: JSON.stringify(detail),
@@ -122,11 +123,11 @@ class ApiClient {
   }
 
   // Filament endpoints
-  async getFilaments() {
+  async getFilaments(): Promise<Filament[] | null> {
     return this.request("/filament/")
   }
 
-  async createFilament(filament: any) {
+  async createFilament(filament: any): Promise<Filament | null> {
     return this.request("/filament/", {
       method: "POST",
       body: JSON.stringify(filament),
@@ -147,11 +148,11 @@ class ApiClient {
   }
 
   // WorkPackage endpoints
-  async getWorkPackages() {
+  async getWorkPackages(): Promise<WorkPackage[] | null> {
     return this.request("/workpackage/")
   }
 
-  async createWorkPackage(workPackage: any) {
+  async createWorkPackage(workPackage: any): Promise<WorkPackage | null> {
     return this.request("/workpackage/", {
       method: "POST",
       body: JSON.stringify(workPackage),
@@ -171,12 +172,12 @@ class ApiClient {
     })
   }
 
-  // Product endpoints
-  async getProducts() {
+  // Products endpoints
+  async getProducts(): Promise<Product[] | null> {
     return this.request("/product/")
   }
 
-  async createProduct(product: any) {
+  async createProduct(product: any): Promise<Product | null> {
     return this.request("/product/", {
       method: "POST",
       body: JSON.stringify(product),
@@ -197,11 +198,11 @@ class ApiClient {
   }
 
   // Expense endpoints
-  async getExpenses() {
+  async getExpenses(): Promise<Expense[] | null> {
     return this.request("/expense/")
   }
 
-  async createExpense(expense: any) {
+  async createExpense(expense: any): Promise<Expense | null> {
     return this.request("/expense/", {
       method: "POST",
       body: JSON.stringify(expense),
@@ -222,11 +223,11 @@ class ApiClient {
   }
 
   // SystemConfig endpoints
-  async getSystemConfig() {
+  async getSystemConfig(): Promise<SystemConfig[] | null> {
     return this.request("/systemconfig")
   }
 
-  async createSystemConfig(config: any) {
+  async createSystemConfig(config: any): Promise<SystemConfig | null> {
     return this.request("/systemconfig", {
       method: "POST",
       body: JSON.stringify(config),
@@ -242,6 +243,56 @@ class ApiClient {
 
   async deleteSystemConfig(id: string) {
     return this.request(`/systemconfig/${id}`, {
+      method: "DELETE",
+    })
+  }
+
+  // Printer endpoints
+  async getPrinters(): Promise<Printer[] | null> {
+    return this.request<Printer[] | null>("/printer/")
+  }
+
+  async createPrinter(printer: Printer) {
+    return this.request("/printer/", {
+      method: "POST",
+      body: JSON.stringify(printer),
+    })
+  }
+
+  async updatePrinter(id: string, printer: Printer) {
+    return this.request(`/printer/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(printer),
+    })
+  }
+
+  async deletePrinter(id: string) {
+    return this.request(`/printer/${id}`, {
+      method: "DELETE",
+    })
+  }
+
+  // PrintingHistory endpoints
+  async getPrintingHistory() : Promise<PrintingHistory[] | null> {
+    return this.request<PrintingHistory[] | null>("/printinghistory/")
+  }
+
+  async createPrintingHistory(printingHistory: any) {
+    return this.request("/printinghistory/", {
+      method: "POST",
+      body: JSON.stringify(printingHistory),
+    })
+  }
+
+  async updatePrintingHistory(id: string, printingHistory: any) {
+    return this.request(`/printinghistory/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(printingHistory),
+    })
+  }
+
+  async deletePrintingHistory(id: string) {
+    return this.request(`/printinghistory/${id}`, {
       method: "DELETE",
     })
   }

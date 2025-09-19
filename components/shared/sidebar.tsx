@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   Layers3,
-  HammerIcon
+  HammerIcon,
+  Printer
 } from "lucide-react"
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
   { name: "Ventas", href: "/ventas", icon: ShoppingCart },
   { name: "Filamentos", href: "/filamentos", icon: Layers3 },
   { name: "Productos", href: "/productos", icon: Package },
+  { name: "Impresoras", href: "/impresoras", icon: Printer },
   { name: "Paquetes de Trabajo", href: "/paquetes-trabajo", icon: HammerIcon },
   { name: "Gastos", href: "/gastos", icon: Receipt },
   { name: "Configuración", href: "/configuracion", icon: Settings },

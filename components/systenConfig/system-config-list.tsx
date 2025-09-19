@@ -19,12 +19,7 @@ import {
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Settings, DollarSign, Percent, Mail, Phone, Building } from "lucide-react"
 import { useLocale } from "@/app/localContext"
-
-interface SystemConfig {
-  id: string
-  key: string
-  value: string
-}
+import { SystemConfig } from "@/lib/types"
 
 interface SystemConfigListProps {
   onEdit: (config: SystemConfig) => void
@@ -89,7 +84,7 @@ const configInfo: Record<string, { label: string; description: string; icon: any
 }
 
 export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfigListProps) {
-  const [configs, setConfigs] = useState<SystemConfig[]>([])
+  const [configs, setConfigs] = useState<SystemConfig[] | null>([])
   const [filteredConfigs, setFilteredConfigs] = useState<SystemConfig[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
@@ -100,8 +95,8 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
     try {
       setIsLoading(true)
       const data = await apiClient.getSystemConfig()
-      setConfigs(data)
-      setFilteredConfigs(data)
+      setConfigs(data || [])
+      setFilteredConfigs(data || [])
     } catch (error) {
       console.error("Error fetching system configs:", error)
     } finally {
@@ -114,7 +109,7 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
   }, [refreshTrigger])
 
   useEffect(() => {
-    const filtered = configs.filter((config) => {
+    const filtered = configs?.filter((config) => {
       const info = configInfo[config.key]
       return (
         (config.key || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -122,10 +117,11 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
         (config.value || "").toLowerCase().includes(searchTerm.toLowerCase())
       )
     })
-    setFilteredConfigs(filtered)
+    setFilteredConfigs(filtered || [])
   }, [searchTerm, configs])
 
   const handleDelete = async (config: SystemConfig) => {
+    if (!config.id) return
     try {
       await apiClient.deleteSystemConfig(config.id)
       await fetchConfigs()

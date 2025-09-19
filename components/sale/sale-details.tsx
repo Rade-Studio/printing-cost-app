@@ -17,39 +17,9 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { ArrowLeft, Plus, Edit, Trash2, Package, Clock, Weight, Calculator, Cuboid} from "lucide-react"
-import { Filament, WorkPackage } from "@/lib/types"
+import { Filament, SaleDetail, WorkPackage } from "@/lib/types"
 import { useLocale } from "@/app/localContext"
 
-
-interface Product {
-  id?: string
-  name: string
-  description: string
-  modelUrl: string
-  imageUrl: string
-}
-
-interface SaleDetail {
-  id: string
-  saleId: string
-  filamentId: string
-  productId: string
-  productDescription: string
-  weightGrams: number
-  printTimeHours: number
-  quantity: number
-  comments: string
-  workPackagePerHour: number
-  workPackageId: string
-  machineRateApplied: number
-  filamentType?: string
-  filamentColor?: string
-  workPackageName?: string,
-  subTotal: number,
-  filament?: Filament,
-  workPackage?: WorkPackage,
-  product?: Product,
-}
 
 interface SaleDetailsProps {
   saleId: string
@@ -71,7 +41,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
       const detailsData = await apiClient.getSaleDetails(saleId);
 
       // Enriquecer detalles con información de filamentos y paquetes de trabajo
-      const enrichedDetails = detailsData.map((detail: SaleDetail) => {
+      const enrichedDetails = detailsData?.map((detail: SaleDetail) => {
         const filament =  detail.filament
         const workPackage = detail.workPackage 
         return {
@@ -82,7 +52,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
         }
       })
 
-      setDetails(enrichedDetails)
+      setDetails(enrichedDetails || [])
     } catch (error) {
       console.error("Error fetching sale details:", error)
     } finally {
@@ -95,6 +65,11 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
   }, [saleId, refreshTrigger])
 
   const handleDelete = async (detail: SaleDetail) => {
+    if (!detail.id) {
+      console.error("Detail ID is undefined, cannot delete.")
+      return
+    }
+
     try {
       await apiClient.deleteSaleDetail(saleId, detail.id)
       await fetchDetails()
@@ -173,7 +148,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
                         <TableCell>
                           <div>
                             <p className="font-medium">
-                              {detail.filamentType} - {detail.filamentColor}
+                              {detail.filament?.type} - {detail.filament?.color}
                             </p>
                           </div>
                         </TableCell>

@@ -16,14 +16,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Briefcase, ExternalLink, ImageIcon } from "lucide-react"
-
-interface Product {
-  id: string
-  name: string
-  description: string
-  modelUrl: string
-  imageUrl: string
-}
+import { Product } from "@/lib/types"
 
 interface ProductListProps {
   onEdit: (product: Product) => void
@@ -32,8 +25,8 @@ interface ProductListProps {
 }
 
 export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps) {
-  const [products, setProducts] = useState<Product[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<Product[] | null>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[] | null>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null)
@@ -56,15 +49,19 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
   }, [refreshTrigger])
 
   useEffect(() => {
-    const filtered = products.filter(
+    const filtered = products?.filter(
       (product) =>
         (product.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (product.description || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
-    setFilteredProducts(filtered)
+    setFilteredProducts(filtered || [])
   }, [searchTerm, products])
 
   const handleDelete = async (product: Product) => {
+    if (!product.id) {
+      console.error("Product ID is undefined, cannot delete.")
+      return
+    }
     try {
       await apiClient.deleteProduct(product.id)
       await fetchProducts()
@@ -112,7 +109,7 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
             </div>
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {filteredProducts?.length === 0 ? (
             <div className="text-center py-8">
               <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
@@ -123,7 +120,7 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              {filteredProducts.map((product) => (
+              {filteredProducts?.map((product) => (
                 <Card key={product.id} className="overflow-hidden">
                   <div className="aspect-video bg-muted flex items-center justify-center">
                     {product.imageUrl ? (

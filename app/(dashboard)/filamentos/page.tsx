@@ -1,16 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { FilamentList } from "@/components/filament-list"
-import { FilamentForm } from "@/components/filament-form"
-
-interface Filament {
-  Id: string
-  Type: string
-  Color: string
-  CostPerGram: number
-  StockGrams: number
-}
+import { FilamentList } from "@/components/filament/filament-list"
+import { FilamentForm } from "@/components/filament/filament-form"
+import { Filament } from "@/lib/types"
 
 export default function FilamentosPage() {
   const [view, setView] = useState<"list" | "form">("list")

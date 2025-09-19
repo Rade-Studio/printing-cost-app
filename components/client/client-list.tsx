@@ -26,8 +26,8 @@ interface ClientListProps {
 }
 
 export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
-  const [clients, setClients] = useState<Client[]>([])
-  const [filteredClients, setFilteredClients] = useState<Client[]>([])
+  const [clients, setClients] = useState<Client[] | null>([])
+  const [filteredClients, setFilteredClients] = useState<Client[] | null>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteClient, setDeleteClient] = useState<Client | null>(null)
@@ -50,14 +50,14 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
   }, [refreshTrigger])
 
   useEffect(() => {
-    const filtered = clients.filter(
+    const filtered = clients?.filter(
       (client) =>
         (client.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (client.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (client.phone || "").includes(searchTerm) ||
         (client.city || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
-    setFilteredClients(filtered)
+    setFilteredClients(filtered || [])
   }, [searchTerm, clients])
 
   const handleDelete = async (client: Client) => {
@@ -108,7 +108,7 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
             </div>
           </div>
 
-          {filteredClients.length === 0 ? (
+          {filteredClients?.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 {searchTerm
@@ -128,7 +128,7 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredClients.map((client) => (
+                  {filteredClients?.map((client) => (
                     <TableRow key={client.id}>
                       <TableCell>
                         <div>

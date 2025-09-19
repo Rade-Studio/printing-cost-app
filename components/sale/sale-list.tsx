@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Eye, DollarSign } from "lucide-react"
-import type { Sale } from "@/lib/types"
+import type { Client, Sale } from "@/lib/types"
 import { useLocale } from "@/app/localContext"
 
 interface SaleListProps {
@@ -47,9 +47,9 @@ const statusLabels = {
 }
 
 export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleListProps) {
-  const [sales, setSales] = useState<Sale[]>([])
-  const [clients, setClients] = useState<any[]>([])
-  const [filteredSales, setFilteredSales] = useState<Sale[]>([])
+  const [sales, setSales] = useState<Sale[] | null>([])
+  const [clients, setClients] = useState<Client[] | null>([])
+  const [filteredSales, setFilteredSales] = useState<Sale[] | null>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteSale, setDeleteSale] = useState<Sale | null>(null)
@@ -60,17 +60,17 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
       setIsLoading(true)
       const [salesData, clientsData] = await Promise.all([apiClient.getSales(), apiClient.getClients()])
 
-      const enrichedSales = salesData.map((sale: Sale) => {
-        const client = clientsData.find((c: any) => c.id === sale.clientId)
+      const enrichedSales = salesData?.map((sale: Sale) => {
+        const client = clientsData?.find((c) => c.id === sale.clientId)
         return {
           ...sale,
           clientName: client?.name || "Cliente no encontrado",
         }
       })
 
-      setSales(enrichedSales)
-      setClients(clientsData)
-      setFilteredSales(enrichedSales)
+      setSales(enrichedSales || [])
+      setClients(clientsData || [])
+      setFilteredSales(enrichedSales || [])
     } catch (error) {
       console.error("Error fetching data:", error)
     } finally {
@@ -83,13 +83,13 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
   }, [refreshTrigger])
 
   useEffect(() => {
-    const filtered = sales.filter(
+    const filtered = sales?.filter(
       (sale) =>
         (sale.clientName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (sale.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (sale.id || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
-    setFilteredSales(filtered)
+    setFilteredSales(filtered || [])
   }, [searchTerm, sales])
 
   const handleDelete = async (sale: Sale) => {
@@ -140,7 +140,7 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
             </div>
           </div>
 
-          {filteredSales.length === 0 ? (
+          {filteredSales?.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">
                 {searchTerm ? "No se encontraron ventas que coincidan con tu búsqueda." : "No hay ventas registradas."}
@@ -160,7 +160,7 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSales.map((sale) => (
+                  {filteredSales?.map((sale) => (
                     <TableRow key={sale.id}>
                       <TableCell>
                         <code className="text-xs bg-muted px-2 py-1 rounded">

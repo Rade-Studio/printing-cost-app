@@ -13,7 +13,7 @@ import { apiClient } from "@/lib/api"
 import { Loader2, Calculator } from "lucide-react"
 import { useLocale } from "@/app/localContext"
 import { useSystemConfig } from "@/app/systenConfigContext"
-import { ProductSelect } from "./shared/select-product"
+import { ProductSelect } from "@/components/shared/select-product"
 
 interface Filament {
   id: string

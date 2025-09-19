@@ -1,14 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { SystemConfigList } from "@/components/system-config-list"
-import { SystemConfigForm } from "@/components/system-config-form"
-
-interface SystemConfig {
-  Id: string
-  Key: string
-  Value: string
-}
+import { SystemConfigList } from "@/components/systenConfig/system-config-list"
+import { SystemConfigForm } from "@/components/systenConfig/system-config-form"
+import { SystemConfig } from "@/lib/types"
 
 export default function ConfiguracionPage() {
   const [view, setView] = useState<"list" | "form">("list")

@@ -1,16 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { WorkPackageList } from "@/components/work-package-list"
-import { WorkPackageForm } from "@/components/work-package-form"
-
-interface WorkPackage {
-  Id: string
-  Name: string
-  Description: string
-  CalculationType: string
-  Value: number
-}
+import { WorkPackageList } from "@/components/workPackage/work-package-list"
+import { WorkPackageForm } from "@/components/workPackage/work-package-form"
+import { WorkPackage } from "@/lib/types"
 
 export default function PaquetesTrabajoPage() {
   const [view, setView] = useState<"list" | "form">("list")

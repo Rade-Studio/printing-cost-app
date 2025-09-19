@@ -1,16 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { ExpenseList } from "@/components/expense-list"
-import { ExpenseForm } from "@/components/expense-form"
-
-interface Expense {
-  Id: string
-  Description: string
-  Amount: number
-  ExpenseDate: string
-  Category: string
-}
+import { ExpenseList } from "@/components/expense/expense-list"
+import { ExpenseForm } from "@/components/expense/expense-form"
+import { Expense } from "@/lib/types"
 
 export default function GastosPage() {
   const [view, setView] = useState<"list" | "form">("list")

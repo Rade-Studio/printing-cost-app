@@ -1,17 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { ClientList } from "@/components/client-list"
-import { ClientForm } from "@/components/client-form"
-
-interface Client {
-  Id: string
-  Name: string
-  Email: string
-  Phone: string
-  Address: string
-  City: string
-}
+import { ClientList } from "@/components/client/client-list"
+import { ClientForm } from "@/components/client/client-form"
+import { Client } from "@/lib/types"
 
 export default function ClientesPage() {
   const [view, setView] = useState<"list" | "form">("list")

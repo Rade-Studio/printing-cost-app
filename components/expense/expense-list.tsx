@@ -42,8 +42,8 @@ const categoryColors: Record<string, string> = {
 }
 
 export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps) {
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([])
+  const [expenses, setExpenses] = useState<Expense[] | null>([])
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[] | null>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null)
@@ -68,12 +68,12 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
   }, [refreshTrigger])
 
   useEffect(() => {
-    const filtered = expenses.filter(
+    const filtered = expenses?.filter(
       (expense) =>
         (expense.description || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (expense.category || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
-    setFilteredExpenses(filtered)
+    setFilteredExpenses(filtered || [])
   }, [searchTerm, expenses])
 
   const handleDelete = async (expense: Expense) => {
@@ -94,21 +94,21 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
     })
   }
 
-  const totalExpenses = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0)
+  const totalExpenses = expenses?.reduce((sum, expense) => sum + (expense.amount || 0), 0)
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
-  const monthlyExpenses = expenses
+  const monthlyExpenses = (expenses || [])
     .filter((expense) => {
-      const expenseDate = new Date(expense.expenseDate || expense.createdAt || "")
+      const expenseDate = new Date(expense.expenseDate || "")
       return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear
     })
     .reduce((sum, expense) => sum + (expense.amount || 0), 0)
 
   const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1
   const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear
-  const lastMonthExpenses = expenses
+  const lastMonthExpenses = (expenses || [])
     .filter((expense) => {
-      const expenseDate = new Date(expense.expenseDate || expense.createdAt || "")
+      const expenseDate = new Date(expense.expenseDate || "")
       return expenseDate.getMonth() === lastMonth && expenseDate.getFullYear() === lastMonthYear
     })
     .reduce((sum, expense) => sum + (expense.amount || 0), 0)
@@ -189,7 +189,7 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
             </div>
           </div>
 
-          {filteredExpenses.length === 0 ? (
+          {filteredExpenses?.length === 0 ? (
             <div className="text-center py-8">
               <Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
@@ -209,11 +209,11 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredExpenses
+                  {(filteredExpenses || [])
                     .sort(
                       (a, b) =>
-                        new Date(b.expenseDate || b.createdAt || "").getTime() -
-                        new Date(a.expenseDate || a.createdAt || "").getTime(),
+                        new Date(b.expenseDate || "").getTime() -
+                        new Date(a.expenseDate || "").getTime(),
                     )
                     .map((expense) => (
                       <TableRow key={expense.id}>
@@ -231,7 +231,7 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
                             <span className="text-sm">
-                              {formatDate(expense.expenseDate || expense.createdAt || "")}
+                              {formatDate(expense.expenseDate || "")}
                             </span>
                           </div>
                         </TableCell>

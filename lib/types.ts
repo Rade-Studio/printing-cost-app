@@ -13,6 +13,7 @@ export interface Sale {
   status: string
   estimatedTotal?: number | null
   finalTotal?: number | null
+  clientName?: string
 }
 
 export interface Filament {
@@ -57,7 +58,8 @@ export interface SaleDetail {
   // Propiedades anidadas de la API
   sale?: Sale
   workPackage?: WorkPackage
-  filament?: Filament
+  filament?: Filament,
+  product?: Product,
 }
 
 export interface Expense {
@@ -73,4 +75,23 @@ export interface SystemConfig {
   key: string
   value: string
   description: string
+}
+
+export interface Printer {
+  id?: string
+  name: string
+  description: string
+  model: string
+  status: string
+}
+
+export interface PrintingHistory {
+  id?: string
+  saleDetailId: string
+  filamentId: string
+  printerId: string
+  printTimeHours: number
+  valueVolumePrinted: number
+  filament?: Filament
+  printer?: Printer
 }

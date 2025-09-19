@@ -1,16 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { ProductList } from "@/components/product-list"
-import { ProductForm } from "@/components/product-form"
-
-interface Product {
-  Id: string
-  Name: string
-  Description: string
-  ModelUrl: string
-  ImageUrl: string
-}
+import { ProductList } from "@/components/product/product-list"
+import { ProductForm } from "@/components/product/product-form"
+import { Product } from "@/lib/types"
 
 export default function ProductosPage() {
   const [view, setView] = useState<"list" | "form">("list")
