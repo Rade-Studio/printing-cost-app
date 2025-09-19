@@ -6,28 +6,7 @@ import { SaleForm } from "@/components/sale/sale-form"
 import { SaleDetails } from "@/components/sale/sale-details"
 import { SaleDetailForm } from "@/components/sale/sale-detail-form"
 import { apiClient } from "@/lib/api"
-
-interface Sale {
-  id: string
-  clientId: string
-  status: string
-  estimatedTotal: number
-  finalTotal: number
-}
-
-interface SaleDetail {
-  id: string
-  saleId: string
-  filamentId: string
-  productDescription: string
-  weightGrams: number
-  printTimeHours: number
-  quantity: number
-  comments: string
-  workPackagePerHour: number
-  workPackageId: string
-  machineRateApplied: number
-}
+import { Sale, SaleDetail } from "@/lib/types"
 
 type View = "list" | "form" | "details" | "detail-form"
 

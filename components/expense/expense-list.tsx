@@ -134,7 +134,7 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
             <CardTitle className="text-sm font-medium">Total de Gastos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalExpenses)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(totalExpenses || 0)}</div>
             <p className="text-xs text-muted-foreground">Histórico</p>
           </CardContent>
         </Card>

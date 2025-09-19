@@ -12,13 +12,13 @@ import { apiClient } from "@/lib/api"
 import { Loader2 } from "lucide-react"
 
 interface SaleFormProps {
-  sale?: Sale
+  sale?: Sale | null
   onSuccess: () => void
   onCancel: () => void
 }
 
 export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
-  const [clients, setClients] = useState<Client[]>([])
+  const [clients, setClients] = useState<Client[] | null>([])
   const [formData, setFormData] = useState<Sale>({
     clientId: sale?.clientId || "",
     status: sale?.status || "cotizacion",
@@ -88,7 +88,7 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                   <SelectValue placeholder="Selecciona un cliente" />
                 </SelectTrigger>
                 <SelectContent>
-                  {clients.map((client) => (
+                  {clients?.map((client) => (
                     <SelectItem key={client.id} value={client.id || ""}>
                       {client.name} - {client.email}
                     </SelectItem>

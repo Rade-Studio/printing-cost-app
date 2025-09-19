@@ -44,6 +44,7 @@ export interface Product {
 export interface SaleDetail {
   id?: string
   saleId: string
+  productId?: string
   productDescription: string
   filamentId: string
   weightGrams: number

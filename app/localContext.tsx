@@ -1,10 +1,18 @@
 // context/LocaleContext.tsx
 "use client"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState, ReactNode } from "react"
 
-const LocaleContext = createContext(null)
+type LocaleContextType = {
+  locale: string
+  setLocale: (value: string) => void
+  currency: string
+  setCurrency: (value: string) => void
+  formatCurrency: (value: number) => string
+}
 
-export function LocaleProvider({ children }) {
+const LocaleContext = createContext<LocaleContextType | undefined>(undefined)
+
+export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState("es-CO")
   const [currency, setCurrency] = useState("COP")
 
@@ -18,4 +26,11 @@ export function LocaleProvider({ children }) {
   )
 }
 
-export const useLocale = () => useContext(LocaleContext)
+export const useLocale = () => {
+  const context = useContext(LocaleContext)
+  if (!context) {
+    throw new Error("useLocale must be used within a LocaleProvider")
+  }
+  return context
+}
+

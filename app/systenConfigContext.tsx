@@ -35,11 +35,11 @@ export function SystemConfigProvider({ children }: { children: ReactNode }) {
   const fetchConfigs = async () => {
     try {
       setIsLoading(true)
-      const data: SystemConfig[] = await apiClient.getSystemConfig()
+      const data: SystemConfig[] | null = await apiClient.getSystemConfig()
 
       // fusiona configs con valores por defecto
       const merged = { ...defaultValues }
-      data.forEach((c) => {
+      data?.forEach((c) => {
         merged[c.key] = c.value
       })
 

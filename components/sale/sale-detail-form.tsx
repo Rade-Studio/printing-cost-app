@@ -14,70 +14,37 @@ import { Loader2, Calculator } from "lucide-react"
 import { useLocale } from "@/app/localContext"
 import { useSystemConfig } from "@/app/systenConfigContext"
 import { ProductSelect } from "@/components/shared/select-product"
-
-interface Filament {
-  id: string
-  type: string
-  color: string
-  costPerGram: number
-}
-
-interface Product {
-  id?: string
-  name: string
-  description: string
-  modelUrl: string
-  imageUrl: string
-}
-
-interface WorkPackage {
-  id: string
-  name: string
-  description: string
-  calculationType: string
-  value: number
-}
-
-interface SaleDetail {
-  id?: string
-  saleId: string
-  filamentId: string
-  productId: string
-  productDescription: string
-  weightGrams: number
-  printTimeHours: number
-  quantity: number
-  comments: string
-  workPackagePerHour: number
-  workPackageId: string
-  machineRateApplied: number,
-}
+import type { Filament, Product, SaleDetail, WorkPackage } from "@/lib/types"
 
 interface SaleDetailFormProps {
   saleId: string
-  detail?: SaleDetail
+  detail: SaleDetail | null
   onSuccess: () => void
   onCancel: () => void
   refreshTrigger: () => void
 }
 
 export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTrigger }: SaleDetailFormProps) {
-  const [filaments, setFilaments] = useState<Filament[]>([])
-  const [workPackages, setWorkPackages] = useState<WorkPackage[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [formData, setFormData] = useState<SaleDetail>({
-    saleId: saleId,
-    filamentId: detail?.filamentId || "",
-    productId: detail?.productId || "",
-    productDescription: detail?.productDescription || "",
-    weightGrams: detail?.weightGrams || 0,
-    printTimeHours: detail?.printTimeHours || 0,
-    quantity: detail?.quantity || 1,
-    comments: detail?.comments || "",
-    workPackagePerHour: detail?.workPackagePerHour || 0,
-    workPackageId: detail?.workPackageId || "",
-    machineRateApplied: detail?.machineRateApplied || 0,
-  })
+  const [filaments, setFilaments] = useState<Filament[] | null>([])
+  const [workPackages, setWorkPackages] = useState<WorkPackage[] | null>([])
+  const [products, setProducts] = useState<Product[] | null>([])
+  const [formData, setFormData] = useState<SaleDetail>(
+    detail || {
+      saleId: saleId,
+      productId: '',
+      productDescription: '',
+      filamentId: '',
+      weightGrams: 0,
+      printTimeHours: 0,
+      quantity: 1,
+      comments: '',
+      workPackageId: '',
+      machineRateApplied: 0,
+      workPackagePerHour: 0,
+      laborCost: 0,
+      subTotal: 0
+    }
+  )
   const [calculatedCost, setCalculatedCost] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
@@ -114,8 +81,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
   }, [formData, filaments, workPackages])
 
   const calculateCost = () => {
-    const selectedFilament = filaments.find((f) => f.id === formData.filamentId)
-    const selectedWorkPackage = workPackages.find((wp) => wp.id === formData.workPackageId)
+    const selectedFilament = filaments?.find((f) => f.id === formData?.filamentId)
+    const selectedWorkPackage = workPackages?.find((wp) => wp.id === formData?.workPackageId)
 
     if (!selectedFilament) {
       setCalculatedCost(0)
@@ -123,7 +90,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
     }
 
     // Costo del material
-    const filamentCostPerGram = ((formData.weightGrams || 0) * (selectedFilament.costPerGram || 0))
+    const filamentCostPerGram = ((formData?.weightGrams || 0) * (selectedFilament.costPerGram || 0))
 
     // Costo de trabajo
     let workPackageCost = 0
@@ -131,24 +98,24 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
       if (selectedWorkPackage.calculationType === "Fixed") {
         workPackageCost = selectedWorkPackage.value || 0 
       } else if (selectedWorkPackage.calculationType === "Multiply") {
-        workPackageCost = (formData.workPackagePerHour || 0) * (selectedWorkPackage.value || 0)
+        workPackageCost = (formData?.workPackagePerHour || 0) * (selectedWorkPackage.value || 0)
       }
     }
 
 
     // Costo de máquina
-    const machineCost = (formData.machineRateApplied || 0)
+    const machineCost = (formData?.machineRateApplied || 0)
 
     // Tarifa de energia
     const electricityCost = Number(configs.ElectricityCostPerKwh) || 0 
 
-    const machineElectricityCost = (formData.printTimeHours || 0) * electricityCost
+    const machineElectricityCost = (formData?.printTimeHours || 0) * electricityCost
 
     // Costo total por unidad
     const subTotal = filamentCostPerGram + machineCost
 
     // Costo total considerando cantidad
-    const totalCost = (subTotal * (formData.quantity || 1)) + workPackageCost + machineElectricityCost
+    const totalCost = (subTotal * (formData?.quantity || 1)) + workPackageCost + machineElectricityCost
 
     // Valor minimo de pedido
     const minimumOrderValue = Number(configs.MinimumOrderValue) || 0
@@ -249,7 +216,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                     <SelectValue placeholder="Selecciona filamento" />
                   </SelectTrigger>
                   <SelectContent>
-                    {filaments.map((filament) => (
+                    {filaments?.map((filament) => (
                       <SelectItem key={filament.id} value={filament.id}>
                         {filament.type} - {filament.color} ({formatCurrency(filament.costPerGram || 0)}/g)
                       </SelectItem>
@@ -321,8 +288,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                     <SelectValue placeholder="Selecciona paquete" />
                   </SelectTrigger>
                   <SelectContent>
-                    {workPackages.map((wp) => (
-                      <SelectItem key={wp.id} value={wp.id}>
+                    {workPackages?.map((wp) => (
+                      <SelectItem key={wp.id ?? ''} value={wp.id ?? ''}>
                         {wp.name} - {wp.calculationType} ({formatCurrency(wp.value)})
                       </SelectItem>
                     ))}
