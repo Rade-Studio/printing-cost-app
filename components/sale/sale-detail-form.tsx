@@ -21,7 +21,7 @@ interface SaleDetailFormProps {
   detail: SaleDetail | null
   onSuccess: () => void
   onCancel: () => void
-  refreshTrigger: () => void
+  refreshTrigger: number 
 }
 
 export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTrigger }: SaleDetailFormProps) {

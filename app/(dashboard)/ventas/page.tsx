@@ -5,7 +5,6 @@ import { SaleList } from "@/components/sale/sale-list"
 import { SaleForm } from "@/components/sale/sale-form"
 import { SaleDetails } from "@/components/sale/sale-details"
 import { SaleDetailForm } from "@/components/sale/sale-detail-form"
-import { apiClient } from "@/lib/api"
 import { Sale, SaleDetail } from "@/lib/types"
 
 type View = "list" | "form" | "details" | "detail-form"
@@ -103,6 +102,7 @@ export default function VentasPage() {
           detail={editingDetail}
           onSuccess={handleDetailSuccess}
           onCancel={handleCancel}
+          refreshTrigger={refreshTrigger}
         />
       )}
     </div>
