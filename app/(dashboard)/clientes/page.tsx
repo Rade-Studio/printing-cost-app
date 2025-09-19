@@ -7,11 +7,11 @@ import { Client } from "@/lib/types"
 
 export default function ClientesPage() {
   const [view, setView] = useState<"list" | "form">("list")
-  const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [editingClient, setEditingClient] = useState<Client | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleAdd = () => {
-    setEditingClient(null)
+    setEditingClient(undefined)
     setView("form")
   }
 
@@ -22,13 +22,13 @@ export default function ClientesPage() {
 
   const handleSuccess = () => {
     setView("list")
-    setEditingClient(null)
+    setEditingClient(undefined)
     setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleCancel = () => {
     setView("list")
-    setEditingClient(null)
+    setEditingClient(undefined)
   }
 
   return (

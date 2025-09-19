@@ -7,11 +7,11 @@ import { SystemConfig } from "@/lib/types"
 
 export default function ConfiguracionPage() {
   const [view, setView] = useState<"list" | "form">("list")
-  const [editingConfig, setEditingConfig] = useState<SystemConfig | null>(null)
+  const [editingConfig, setEditingConfig] = useState<SystemConfig | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleAdd = () => {
-    setEditingConfig(null)
+    setEditingConfig(undefined)
     setView("form")
   }
 
@@ -22,13 +22,13 @@ export default function ConfiguracionPage() {
 
   const handleSuccess = () => {
     setView("list")
-    setEditingConfig(null)
+    setEditingConfig(undefined)
     setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleCancel = () => {
     setView("list")
-    setEditingConfig(null)
+    setEditingConfig(undefined)
   }
 
   return (

@@ -20,14 +20,7 @@ import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Package, AlertTriangle } from "lucide-react"
 
 import { useLocale } from "@/app/localContext"
-
-interface Filament {
-  id: string
-  type: string
-  color: string
-  costPerGram: number
-  stockGrams?: number
-}
+import { Filament } from "@/lib/types"
 
 interface FilamentListProps {
   onEdit: (filament: Filament) => void
@@ -36,8 +29,8 @@ interface FilamentListProps {
 }
 
 export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProps) {
-  const [filaments, setFilaments] = useState<Filament[]>([])
-  const [filteredFilaments, setFilteredFilaments] = useState<Filament[]>([])
+  const [filaments, setFilaments] = useState<Filament[] | null>([])
+  const [filteredFilaments, setFilteredFilaments] = useState<Filament[] | null>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteFilament, setDeleteFilament] = useState<Filament | null>(null)
@@ -61,12 +54,12 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
   }, [refreshTrigger])
 
   useEffect(() => {
-    const filtered = filaments.filter(
+    const filtered = filaments?.filter(
       (filament) =>
         (filament.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (filament.color || "").toLowerCase().includes(searchTerm.toLowerCase()),
     )
-    setFilteredFilaments(filtered)
+    setFilteredFilaments(filtered || [])
   }, [searchTerm, filaments])
 
   const handleDelete = async (filament: Filament) => {
@@ -85,7 +78,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
     return { label: "Disponible", color: "bg-green-100 text-green-800", icon: Package }
   }
 
-  const totalValue = filaments.reduce(
+  const totalValue = filaments?.reduce(
     (sum, filament) => sum + (filament.costPerGram || 0) * (filament.stockGrams || 0),
     0,
   )
@@ -108,7 +101,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
             <CardTitle className="text-sm font-medium">Total de Filamentos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filaments.length}</div>
+            <div className="text-2xl font-bold">{filaments?.length}</div>
             <p className="text-xs text-muted-foreground">Tipos diferentes</p>
           </CardContent>
         </Card>
@@ -117,7 +110,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
             <CardTitle className="text-sm font-medium">Valor Total del Inventario</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(totalValue || 0)}</div>
             <p className="text-xs text-muted-foreground">En stock</p>
           </CardContent>
         </Card>
@@ -127,7 +120,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
-              {filaments.filter((f) => (f.stockGrams || 0) <= 500).length}
+              {filaments?.filter((f) => (f.stockGrams || 0) <= 500).length}
             </div>
             <p className="text-xs text-muted-foreground">Requieren reposición</p>
           </CardContent>
@@ -160,7 +153,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
             </div>
           </div>
 
-          {filteredFilaments.length === 0 ? (
+          {filteredFilaments?.length === 0 ? (
             <div className="text-center py-8">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
@@ -183,7 +176,7 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredFilaments.map((filament) => {
+                  {filteredFilaments?.map((filament) => {
                     const stockStatus = getStockStatus(filament.stockGrams || 0)
                     const totalValue = (filament.costPerGram || 0) * (filament.stockGrams || 0)
                     return (

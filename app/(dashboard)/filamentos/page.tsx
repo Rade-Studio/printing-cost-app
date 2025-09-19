@@ -7,11 +7,11 @@ import { Filament } from "@/lib/types"
 
 export default function FilamentosPage() {
   const [view, setView] = useState<"list" | "form">("list")
-  const [editingFilament, setEditingFilament] = useState<Filament | null>(null)
+  const [editingFilament, setEditingFilament] = useState<Filament | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleAdd = () => {
-    setEditingFilament(null)
+    setEditingFilament(undefined)
     setView("form")
   }
 
@@ -22,13 +22,13 @@ export default function FilamentosPage() {
 
   const handleSuccess = () => {
     setView("list")
-    setEditingFilament(null)
+    setEditingFilament(undefined)
     setRefreshTrigger((prev) => prev + 1)
   }
 
   const handleCancel = () => {
     setView("list")
-    setEditingFilament(null)
+    setEditingFilament(undefined)
   }
 
   return (
