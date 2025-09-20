@@ -190,7 +190,7 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
               <SelectContent>
                 <SelectItem value="all">Todos los filamentos</SelectItem>
                 {uniqueFilaments.map((filament) => (
-                  <SelectItem key={filament?.id} value={filament?.id}>
+                  <SelectItem key={filament?.id} value={filament?.id!}>
                     {filament?.type} - {filament?.color}
                   </SelectItem>
                 ))}
