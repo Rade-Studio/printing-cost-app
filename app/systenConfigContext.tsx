@@ -18,6 +18,7 @@ const defaultValues: Record<string, string> = {
   CompanyName: "Mi Empresa",
   CompanyEmail: "contacto@miempresa.com",
   CompanyPhone: "+57 3000000000",
+  DefaultCurrency: "COP",
 }
 
 interface SystemConfigContextProps {

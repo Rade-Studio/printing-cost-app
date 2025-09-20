@@ -269,13 +269,11 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3 text-muted-foreground" />
                               <span>{formatCurrency(sale.estimatedTotal || 0)}</span>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3 text-muted-foreground" />
                               <span className="font-medium">{formatCurrency(sale.finalTotal || 0)}</span>
                             </div>
                           </TableCell>

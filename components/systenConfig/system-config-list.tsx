@@ -20,6 +20,7 @@ import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Settings, DollarSign, Percent, Mail, Phone, Building } from "lucide-react"
 import { useLocale } from "@/app/localContext"
 import { SystemConfig } from "@/lib/types"
+import { CurrencyConfig } from "./currency-config"
 
 interface SystemConfigListProps {
   onEdit: (config: SystemConfig) => void
@@ -152,7 +153,13 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
     return "General"
   }
 
-  const groupedConfigs = filteredConfigs.reduce(
+  // Filtrar configuraciones de moneda para que no aparezcan en la tabla
+  const filteredConfigsWithoutCurrency = filteredConfigs.filter(config => 
+    !config.key?.toLowerCase().includes('currency') && 
+    !config.key?.toLowerCase().includes('moneda')
+  )
+
+  const groupedConfigs = filteredConfigsWithoutCurrency.reduce(
     (groups, config) => {
       const category = getConfigCategory(config.key)
       if (!groups[category]) groups[category] = []
@@ -174,6 +181,10 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
 
   return (
     <>
+
+      {/* Configuración de Moneda */}
+      <CurrencyConfig />
+
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -200,7 +211,7 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
             </div>
           </div>
 
-          {filteredConfigs.length === 0 ? (
+          {filteredConfigsWithoutCurrency.length === 0 ? (
             <div className="text-center py-8">
               <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
