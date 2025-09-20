@@ -274,25 +274,25 @@ class ApiClient {
 
   // PrintingHistory endpoints
   async getPrintingHistory() : Promise<PrintingHistory[] | null> {
-    return this.request<PrintingHistory[] | null>("/printinghistory/")
+    return this.request<PrintingHistory[] | null>("/printing-history/")
   }
 
   async createPrintingHistory(printingHistory: any) {
-    return this.request("/printinghistory/", {
+    return this.request("/printing-history/", {
       method: "POST",
       body: JSON.stringify(printingHistory),
     })
   }
 
   async updatePrintingHistory(id: string, printingHistory: any) {
-    return this.request(`/printinghistory/${id}`, {
+    return this.request(`/printing-history/${id}`, {
       method: "PUT",
       body: JSON.stringify(printingHistory),
     })
   }
 
   async deletePrintingHistory(id: string) {
-    return this.request(`/printinghistory/${id}`, {
+    return this.request(`/printing-history/${id}`, {
       method: "DELETE",
     })
   }

@@ -107,7 +107,7 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total de Filamentos</CardTitle>
+            <CardTitle className="text-sm font-medium">Total de Impresoras</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{printers?.length}</div>

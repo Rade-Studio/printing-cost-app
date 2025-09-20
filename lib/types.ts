@@ -93,6 +93,7 @@ export interface PrintingHistory {
   printerId: string
   printTimeHours: number
   valueVolumePrinted: number
+  type: string
   filament?: Filament
   printer?: Printer
 }
