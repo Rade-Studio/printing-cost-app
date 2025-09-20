@@ -119,48 +119,65 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredProducts?.map((product) => (
-                <Card key={product.id} className="overflow-hidden">
-                  <div className="aspect-video bg-muted flex items-center justify-center">
+                <Card key={product.id} className="overflow-hidden h-72 flex flex-col relative">
+                  {/* Imagen en esquina superior derecha */}
+                  <div className="absolute top-3 right-3 z-10">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl || "/placeholder.svg"}
                         alt={product.name}
-                        className="w-100/12 object-cover"
+                        className="h-12 w-12 object-cover rounded-md border-2 border-background shadow-sm"
                         onError={(e) => {
                           e.currentTarget.style.display = "none"
                           e.currentTarget.nextElementSibling?.classList.remove("hidden")
                         }}
                       />
                     ) : null}
-                    <div className={`flex flex-col items-center gap-2 ${product.imageUrl ? "hidden" : ""}`}>
-                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Sin imagen</p>
+                    <div className={`h-12 w-12 bg-muted rounded-md border-2 border-background shadow-sm flex flex-col items-center justify-center ${product.imageUrl ? "hidden" : ""}`}>
+                      <ImageIcon className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>
+                  
+                  {/* Contenido del card */}
+                  <CardContent className="p-4 flex-1 flex flex-col pr-20">
+                    {/* Título con espacio para la imagen */}
+                    <div className="space-y-2 flex-1">
+                      <h3 className="font-semibold text-base line-clamp-2 leading-tight pr-2">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                        {product.description && product.description.length > 80 
+                          ? `${product.description.substring(0, 80)}...` 
+                          : product.description}
+                      </p>
                     </div>
 
-                    <div className="flex items-center gap-2 mt-4">
+                    {/* Enlaces externos - más compactos */}
+                    <div className="flex flex-wrap gap-1 mt-3">
                       {product.modelUrl && (
-                        <Button variant="outline" size="sm" asChild>
+                        <Button variant="outline" size="sm" asChild className="text-xs h-7 px-2">
                           <a href={product.modelUrl} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-3 w-3 mr-1" />
                             Modelo
                           </a>
                         </Button>
                       )}
+                      {product.externalLink && (
+                        <Button variant="outline" size="sm" asChild className="text-xs h-7 px-2">
+                          <a href={product.externalLink} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            Enlace
+                          </a>
+                        </Button>
+                      )}
                     </div>
 
-                    <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
-                      <Button variant="outline" size="sm" onClick={() => onEdit(product)}>
+                    {/* Botones de acción - más compactos */}
+                    <div className="flex justify-end gap-1 mt-3 pt-2 border-t">
+                      <Button variant="outline" size="sm" onClick={() => onEdit(product)} className="h-7 w-7 p-0">
                         <Edit className="h-3 w-3" />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => setDeleteProduct(product)}>
+                      <Button variant="outline" size="sm" onClick={() => setDeleteProduct(product)} className="h-7 w-7 p-0">
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
