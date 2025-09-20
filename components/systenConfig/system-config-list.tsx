@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
-import { Search, Plus, Edit, Trash2, Settings, DollarSign, Percent, Mail, Phone, Building, Globe } from "lucide-react"
+import { Search, Plus, Edit, Trash2, Settings, DollarSign, Percent, Mail, Phone, Building } from "lucide-react"
 import { useLocale } from "@/app/localContext"
 import { SystemConfig } from "@/lib/types"
 
@@ -82,22 +81,7 @@ const configInfo: Record<string, { label: string; description: string; icon: any
     icon: Phone,
     type: "phone",
   },
-  DefaultCurrency: {
-    label: "Moneda por Defecto",
-    description: "Moneda utilizada para cálculos y reportes",
-    icon: Globe,
-    type: "currency-select",
-  },
 }
-
-const availableCurrencies = [
-  { code: "COP", name: "Peso Colombiano", symbol: "$" },
-  { code: "USD", name: "Dólar Estadounidense", symbol: "$" },
-  { code: "EUR", name: "Euro", symbol: "€" },
-  { code: "MXN", name: "Peso Mexicano", symbol: "$" },
-  { code: "ARS", name: "Peso Argentino", symbol: "$" },
-  { code: "BRL", name: "Real Brasileño", symbol: "R$" },
-]
 
 export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfigListProps) {
   const [configs, setConfigs] = useState<SystemConfig[] | null>([])
@@ -105,7 +89,7 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteConfig, setDeleteConfig] = useState<SystemConfig | null>(null)
-  const { formatCurrency, setCurrency } = useLocale()
+  const { formatCurrency } = useLocale()
 
   const fetchConfigs = async () => {
     try {
@@ -147,35 +131,6 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
     }
   }
 
-  const handleCurrencyChange = async (currencyCode: string) => {
-    try {
-      // Buscar la configuración de moneda existente
-      const currencyConfig = configs?.find(config => config.key === "DefaultCurrency")
-
-      if (currencyConfig) {
-        // Actualizar configuración existente
-        await apiClient.updateSystemConfig(currencyConfig.id!, {
-          key: "DefaultCurrency",
-          value: currencyCode
-        })
-      } else {
-        // Crear nueva configuración
-        await apiClient.createSystemConfig({
-          key: "DefaultCurrency",
-          value: currencyCode
-        })
-      }
-
-      // Actualizar el contexto de localización
-      setCurrency(currencyCode)
-
-      // Refrescar la lista
-      await fetchConfigs()
-    } catch (error) {
-      console.error("Error updating currency:", error)
-    }
-  }
-
   const formatValue = (config: SystemConfig) => {
     const info = configInfo[config.key]
     if (!info) return config.value
@@ -186,9 +141,6 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
         return `${numValue}`
       case "percentage":
         return `${config.value}%`
-      case "currency-select":
-        const currency = availableCurrencies.find(c => c.code === config.value)
-        return currency ? `${currency.name} (${currency.code})` : config.value
       default:
         return config.value
     }
@@ -197,7 +149,6 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
   const getConfigCategory = (key: string | undefined) => {
     if (key?.includes("Company")) return "Empresa"
     if (key?.includes("Rate") || key?.includes("Cost") || key?.includes("Margin") || key?.includes("Value")) return "Costos"
-    if (key?.includes("Currency")) return "Localización"
     return "General"
   }
 
@@ -291,29 +242,7 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
                                 </div>
                               </TableCell>
                               <TableCell>
-                                {info?.type === "currency-select" ? (
-                                  <Select
-                                    value={config.value}
-                                    onValueChange={handleCurrencyChange}
-                                  >
-                                    <SelectTrigger className="w-[200px]">
-                                      <SelectValue placeholder="Seleccionar moneda" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {availableCurrencies.map((currency) => (
-                                        <SelectItem key={currency.code} value={currency.code}>
-                                          <div className="flex items-center gap-2">
-                                            <span className="font-medium">{currency.symbol}</span>
-                                            <span>{currency.name}</span>
-                                            <span className="text-muted-foreground">({currency.code})</span>
-                                          </div>
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                ) : (
-                                  <div className="font-medium">{formatValue(config)}</div>
-                                )}
+                                <div className="font-medium">{formatValue(config)}</div>
                               </TableCell>
                               <TableCell>
                                 <p className="text-sm text-muted-foreground">
@@ -321,20 +250,14 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
                                 </p>
                               </TableCell>
                               <TableCell className="text-right">
-                                {info?.type === "currency-select" ? (
-                                  <div className="text-sm text-muted-foreground">
-                                    Selecciona directamente arriba
-                                  </div>
-                                ) : (
-                                  <div className="flex justify-end gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => onEdit(config)}>
-                                      <Edit className="h-3 w-3" />
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => setDeleteConfig(config)}>
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                )}
+                                <div className="flex justify-end gap-2">
+                                  <Button variant="outline" size="sm" onClick={() => onEdit(config)}>
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => setDeleteConfig(config)}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               </TableCell>
                             </TableRow>
                           )

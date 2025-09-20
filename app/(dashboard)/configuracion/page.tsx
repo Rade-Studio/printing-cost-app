@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { SystemConfigList } from "@/components/systenConfig/system-config-list"
 import { SystemConfigForm } from "@/components/systenConfig/system-config-form"
+import { CurrencyConfig } from "@/components/systenConfig/currency-config"
 import { SystemConfig } from "@/lib/types"
 
 export default function ConfiguracionPage() {
@@ -38,11 +39,17 @@ export default function ConfiguracionPage() {
         <p className="text-muted-foreground">Parámetros globales para cálculos de costos y personalización</p>
       </div>
 
-      {view === "list" ? (
-        <SystemConfigList onEdit={handleEdit} onAdd={handleAdd} refreshTrigger={refreshTrigger} />
-      ) : (
-        <SystemConfigForm config={editingConfig} onSuccess={handleSuccess} onCancel={handleCancel} />
-      )}
+      <div className="grid gap-6">
+        {/* Configuración de Moneda */}
+        <CurrencyConfig />
+
+        {/* Configuraciones del Sistema */}
+        {view === "list" ? (
+          <SystemConfigList onEdit={handleEdit} onAdd={handleAdd} refreshTrigger={refreshTrigger} />
+        ) : (
+          <SystemConfigForm config={editingConfig} onSuccess={handleSuccess} onCancel={handleCancel} />
+        )}
+      </div>
     </div>
   )
 }

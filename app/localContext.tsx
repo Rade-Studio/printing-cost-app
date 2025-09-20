@@ -1,6 +1,7 @@
 // context/LocaleContext.tsx
 "use client"
-import { createContext, useContext, useState, ReactNode } from "react"
+import { createContext, useContext, useState, ReactNode, useEffect } from "react"
+import { apiClient } from "@/lib/api"
 
 type LocaleContextType = {
   locale: string
@@ -18,6 +19,24 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat(locale, { style: "currency", currency }).format(value)
+
+  // Cargar configuración de moneda desde la base de datos
+  useEffect(() => {
+    const loadCurrencyConfig = async () => {
+      try {
+        const configs = await apiClient.getSystemConfig()
+        const currencyConfig = configs?.find(config => config.key === "DefaultCurrency")
+
+        if (currencyConfig) {
+          setCurrency(currencyConfig.value)
+        }
+      } catch (error) {
+        console.error("Error loading currency config:", error)
+      }
+    }
+
+    loadCurrencyConfig()
+  }, [])
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale, currency, setCurrency, formatCurrency }}>
