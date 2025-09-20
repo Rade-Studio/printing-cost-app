@@ -64,7 +64,11 @@ export function FilamentList({ onEdit, onAdd, refreshTrigger }: FilamentListProp
 
   const handleDelete = async (filament: Filament) => {
     try {
-      await apiClient.deleteFilament(filament.id)
+      if (!filament.id) {
+        console.error("Filament ID is undefined, cannot delete.")
+        return
+      }
+      await apiClient.deleteFilament(filament.id!)
       await fetchFilaments()
       setDeleteFilament(null)
     } catch (error) {

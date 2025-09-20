@@ -17,11 +17,12 @@ export interface Sale {
 }
 
 export interface Filament {
-  id: string
+  id?: string
   type: string
   color: string
   costPerGram: number
   stockGrams: number
+  density: number
 }
 
 export interface WorkPackage {
