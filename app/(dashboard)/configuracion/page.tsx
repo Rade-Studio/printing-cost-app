@@ -40,8 +40,6 @@ export default function ConfiguracionPage() {
       </div>
 
       <div className="grid gap-6">
-        {/* Configuración de Moneda */}
-        <CurrencyConfig />
 
         {/* Configuraciones del Sistema */}
         {view === "list" ? (

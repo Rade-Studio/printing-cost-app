@@ -69,6 +69,7 @@ export function CurrencyConfig() {
             if (currencyConfig) {
                 // Actualizar configuración existente
                 await apiClient.updateSystemConfig(currencyConfig.id!, {
+                    id: currencyConfig.id,
                     key: "DefaultCurrency",
                     value: selectedCurrency
                 })

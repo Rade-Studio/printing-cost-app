@@ -6,6 +6,7 @@ import { Users, Package, TrendingUp, DollarSign, Activity, Printer, History, Wre
 import { apiClient } from "@/lib/api"
 import { Client, Sale, Filament, Printer as PrinterType, PrintingHistory, Expense, WorkPackage, Product } from "@/lib/types"
 import { Loader2 } from "lucide-react"
+import { useLocale } from "@/app/localContext"
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [workPackages, setWorkPackages] = useState<WorkPackage[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const { formatCurrency } = useLocale()
 
   // Cargar todos los datos
   useEffect(() => {
@@ -155,7 +157,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">${totalSalesAmount.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-foreground">{formatCurrency(totalSalesAmount)}</div>
             <p className="text-sm text-muted-foreground font-medium">{totalSales} ventas registradas</p>
           </CardContent>
         </Card>
@@ -183,7 +185,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">${profit.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-foreground">{formatCurrency(profit)}</div>
             <p className="text-sm text-muted-foreground font-medium">
               {profit >= 0 ? 'Ganancia positiva' : 'Pérdida registrada'}
             </p>
@@ -275,7 +277,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-primary">
-                        ${(sale.finalTotal || sale.estimatedTotal || 0).toLocaleString()}
+                        {formatCurrency(sale.finalTotal || sale.estimatedTotal || 0)}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {sale.status === 'completed' ? 'Completada' : 
@@ -321,7 +323,7 @@ export default function DashboardPage() {
                     <div key={filament.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                       <div>
                         <p className="font-semibold text-foreground">{filament.type} {filament.color}</p>
-                        <p className="text-sm text-muted-foreground">Costo: ${filament.costPerGram.toFixed(3)}/g</p>
+                        <p className="text-sm text-muted-foreground">Costo: {formatCurrency(filament.costPerGram)}/g</p>
                       </div>
                       <div className="text-right">
                         <p className={`font-bold ${statusColor}`}>{filament.stockGrams}g</p>
