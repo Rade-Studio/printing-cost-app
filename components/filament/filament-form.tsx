@@ -11,14 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiClient } from "@/lib/api"
 import { Loader2, Package } from "lucide-react"
 import { useLocale } from "@/app/localContext"
-
-interface Filament {
-  id?: string
-  type: string
-  color: string
-  costPerGram: number
-  stockGrams: number
-}
+import { Filament } from "@/lib/types"
 
 interface FilamentFormProps {
   filament?: Filament
@@ -49,6 +42,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
     color: filament?.color || "",
     costPerGram: filament?.costPerGram || 0,
     stockGrams: filament?.stockGrams || 0,
+    density: filament?.density || 1,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -121,7 +115,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="costPerGram">Costo por Gramo ($)</Label>
               <Input
@@ -134,6 +128,18 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
                 required
               />
               <p className="text-xs text-muted-foreground">Equivale a ${costPerKg.toFixed(2)} por kilogramo</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="density">Densidad (g/cm³)</Label>
+              <Input
+                id="density"
+                type="number"
+                step="1"
+                placeholder="1.23"
+                value={formData.density}
+                onChange={(e) => handleChange("density", Number.parseFloat(e.target.value) || 0)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="stockGrams">Stock Disponible (gramos)</Label>

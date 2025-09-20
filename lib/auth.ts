@@ -23,6 +23,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
 export class AuthService {
   private static TOKEN_KEY = "3d_calculator_token"
+  private static TOKEN_EXPIRY_KEY = "3d_calculator_token_expiry"
 
   static async login(email: string, password: string): Promise<LoginResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -49,13 +50,29 @@ export class AuthService {
 
   static setToken(token: string): void {
     if (typeof window !== "undefined") {
+      const expiryTime = Date.now() + (3 * 60 * 60 * 1000) // 3 horas en milisegundos
       localStorage.setItem(this.TOKEN_KEY, token)
+      localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString())
     }
   }
 
   static getToken(): string | null {
     if (typeof window !== "undefined") {
-      return localStorage.getItem(this.TOKEN_KEY)
+      const token = localStorage.getItem(this.TOKEN_KEY)
+      const expiryTime = localStorage.getItem(this.TOKEN_EXPIRY_KEY)
+      
+      if (!token || !expiryTime) {
+        return null
+      }
+      
+      // Verificar si el token ha expirado
+      if (Date.now() > parseInt(expiryTime)) {
+        // Token expirado, limpiar localStorage
+        this.removeToken()
+        return null
+      }
+      
+      return token
     }
     return null
   }
@@ -63,6 +80,7 @@ export class AuthService {
   static removeToken(): void {
     if (typeof window !== "undefined") {
       localStorage.removeItem(this.TOKEN_KEY)
+      localStorage.removeItem(this.TOKEN_EXPIRY_KEY)
     }
   }
 
@@ -77,5 +95,21 @@ export class AuthService {
   static getAuthHeaders(): Record<string, string> {
     const token = this.getToken()
     return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
+  static getTokenTimeRemaining(): number | null {
+    if (typeof window !== "undefined") {
+      const expiryTime = localStorage.getItem(this.TOKEN_EXPIRY_KEY)
+      if (!expiryTime) return null
+      
+      const remaining = parseInt(expiryTime) - Date.now()
+      return remaining > 0 ? remaining : 0
+    }
+    return null
+  }
+
+  static isTokenExpired(): boolean {
+    const timeRemaining = this.getTokenTimeRemaining()
+    return timeRemaining === null || timeRemaining <= 0
   }
 }
