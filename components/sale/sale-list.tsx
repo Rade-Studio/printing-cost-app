@@ -48,52 +48,19 @@ const statusLabels = {
 
 export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleListProps) {
   const [sales, setSales] = useState<Sale[] | null>([])
-  const [clients, setClients] = useState<Client[] | null>([])
   const [filteredSales, setFilteredSales] = useState<Sale[] | null>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deleteSale, setDeleteSale] = useState<Sale | null>(null)
-  const [expandedSales, setExpandedSales] = useState<Set<string>>(new Set())
-  const [saleDetails, setSaleDetails] = useState<Record<string, SaleDetail[]>>({})
-  const [loadingDetails, setLoadingDetails] = useState<Set<string>>(new Set())
   const { formatCurrency } = useLocale()
 
   const fetchData = async () => {
     try {
       setIsLoading(true)
-      const [salesData, clientsData] = await Promise.all([apiClient.getSales(), apiClient.getClients()])
+      const [salesData] = await Promise.all([apiClient.getSales()])
 
-      const enrichedSales = salesData?.map((sale: Sale) => {
-        const client = clientsData?.find((c) => c.id === sale.clientId)
-        return {
-          ...sale,
-          clientName: client?.name || "Cliente no encontrado",
-        }
-      })
-
-      setSales(enrichedSales || [])
-      setClients(clientsData || [])
-      setFilteredSales(enrichedSales || [])
-      
-      // Cargar detalles de venta para búsqueda por productos
-      if (enrichedSales && enrichedSales.length > 0) {
-        const detailsMap: Record<string, SaleDetail[]> = {}
-        
-        // Cargar detalles de cada venta en paralelo
-        const detailPromises = enrichedSales.map(async (sale) => {
-          try {
-            const details = await apiClient.getSaleDetails(sale.id!)
-            if (details) {
-              detailsMap[sale.id!] = details
-            }
-          } catch (error) {
-            console.error(`Error loading details for sale ${sale.id}:`, error)
-          }
-        })
-        
-        await Promise.all(detailPromises)
-        setSaleDetails(detailsMap)
-      }
+      setSales(salesData?.toReversed() || [])
+      setFilteredSales(salesData?.toReversed() || [])
     } catch (error) {
       console.error("Error fetching data:", error)
     } finally {
@@ -106,25 +73,14 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
   }, [refreshTrigger])
 
   useEffect(() => {
-    const filtered = sales?.filter((sale) => {
-      // Búsqueda básica en campos de la venta
-      const basicMatch = 
-        (sale.clientName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const filtered = sales?.filter(
+      (sale) =>
+        (sale.client?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (sale.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (sale.id || "").toLowerCase().includes(searchTerm.toLowerCase())
-      
-      // Búsqueda en productos de la venta
-      const productMatch = searchTerm ? (() => {
-        const details = saleDetails[sale.id!] || []
-        return details.some(detail => 
-          detail.productDescription?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      })() : false
-      
-      return basicMatch || productMatch
-    })
+        (sale.id || "").toLowerCase().includes(searchTerm.toLowerCase()),
+    )
     setFilteredSales(filtered || [])
-  }, [searchTerm, sales, saleDetails])
+  }, [searchTerm, sales])
 
   const handleDelete = async (sale: Sale) => {
     try {
@@ -133,41 +89,6 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
       setDeleteSale(null)
     } catch (error) {
       console.error("Error deleting sale:", error)
-    }
-  }
-
-  const toggleExpanded = async (saleId: string) => {
-    const isExpanded = expandedSales.has(saleId)
-    
-    if (isExpanded) {
-      // Colapsar
-      setExpandedSales(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(saleId)
-        return newSet
-      })
-    } else {
-      // Expandir y cargar detalles si no están cargados
-      setExpandedSales(prev => new Set(prev).add(saleId))
-      
-      if (!saleDetails[saleId]) {
-        setLoadingDetails(prev => new Set(prev).add(saleId))
-        try {
-          const details = await apiClient.getSaleDetails(saleId)
-          setSaleDetails(prev => ({
-            ...prev,
-            [saleId]: details || []
-          }))
-        } catch (error) {
-          console.error("Error loading sale details:", error)
-        } finally {
-          setLoadingDetails(prev => {
-            const newSet = new Set(prev)
-            newSet.delete(saleId)
-            return newSet
-          })
-        }
-      }
     }
   }
 
@@ -201,7 +122,7 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Buscar ventas por cliente, estado, ID o producto..."
+                placeholder="Buscar ventas por cliente, estado o ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -220,147 +141,63 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12"></TableHead>
                     <TableHead>ID</TableHead>
                     <TableHead>Cliente</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Total Estimado</TableHead>
                     <TableHead>Total Final</TableHead>
+                    <TableHead>Fecha de Creación</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSales?.map((sale) => {
-                    const isExpanded = expandedSales.has(sale.id!)
-                    const details = saleDetails[sale.id!] || []
-                    const isLoadingDetails = loadingDetails.has(sale.id!)
-                    
-                    return (
-                      <>
-                        <TableRow key={sale.id}>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleExpanded(sale.id!)}
-                              className="h-8 w-8 p-0"
-                            >
-                              {isExpanded ? (
-                                <ChevronDown className="h-4 w-4" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableCell>
-                          <TableCell>
-                            <code className="text-xs bg-muted px-2 py-1 rounded">
-                              {sale.id ? sale.id.slice(0, 8) + "..." : "N/A"}
-                            </code>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{sale.clientName}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={statusColors[sale.status as keyof typeof statusColors] || "bg-gray-100"}>
-                              {statusLabels[sale.status as keyof typeof statusLabels] || sale.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <span>{formatCurrency(sale.estimatedTotal || 0)}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium">{formatCurrency(sale.finalTotal || 0)}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button variant="outline" size="sm" onClick={() => onViewDetails(sale.id!)}>
-                                <Eye className="h-3 w-3" />
-                              </Button>
-                              <Button variant="outline" size="sm" onClick={() => onEdit(sale)}>
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button variant="outline" size="sm" onClick={() => setDeleteSale(sale)}>
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                        
-                        {/* Fila expandible con productos */}
-                        {isExpanded && (
-                          <TableRow>
-                            <TableCell colSpan={7} className="p-0">
-                              <div className="bg-muted/30 p-4">
-                                <div className="flex items-center gap-2 mb-3">
-                                  <Package className="h-4 w-4 text-muted-foreground" />
-                                  <h4 className="font-medium text-sm">Productos en esta venta</h4>
-                                </div>
-                                
-                                {isLoadingDetails ? (
-                                  <div className="flex items-center justify-center py-4">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                                    <span className="ml-2 text-sm text-muted-foreground">Cargando productos...</span>
-                                  </div>
-                                ) : details.length === 0 ? (
-                                  <div className="text-center py-4 text-muted-foreground text-sm">
-                                    No hay productos registrados en esta venta
-                                  </div>
-                                ) : (
-                                  <div className="space-y-2">
-                                    {details.map((detail, index) => (
-                                      <div key={detail.id || index} className="bg-background rounded-lg p-3 border">
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-sm">
-                                          <div>
-                                            <p className="font-medium text-foreground">{detail.productDescription}</p>
-                                            <p className="text-muted-foreground">Cantidad: {detail.quantity}</p>
-                                          </div>
-                                          <div>
-                                            <p className="text-muted-foreground">Filamento:</p>
-                                            <p className="font-medium">{detail.filament?.type} - {detail.filament?.color}</p>
-                                          </div>
-                                          <div>
-                                            <p className="text-muted-foreground">Tiempo: {detail.printTimeHours}h</p>
-                                            <p className="text-muted-foreground">Peso: {detail.weightGrams}g</p>
-                                          </div>
-                                          <div className="text-right">
-                                            <p className="font-medium text-primary">{formatCurrency(detail.subTotal)}</p>
-                                            <p className="text-xs text-muted-foreground">Subtotal</p>
-                                          </div>
-                                        </div>
-                                        {detail.comments && (
-                                          <div className="mt-2 pt-2 border-t">
-                                            <p className="text-xs text-muted-foreground">
-                                              <strong>Comentarios:</strong> {detail.comments}
-                                            </p>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ))}
-                                    
-                                    {/* Resumen de la venta */}
-                                    <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
-                                      <div className="flex justify-between items-center text-sm">
-                                        <span className="font-medium">Total de productos: {details.length}</span>
-                                        <span className="font-bold text-primary">
-                                          Total: {formatCurrency(details.reduce((sum, detail) => sum + detail.subTotal, 0))}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </>
-                    )
-                  })}
+                  {filteredSales?.map((sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell>
+                        <code className="text-xs bg-muted px-2 py-1 rounded">
+                          {sale.id ? sale.id.slice(0, 8) : "N/A"}
+                        </code>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{sale.client?.name}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={statusColors[sale.status as keyof typeof statusColors] || "bg-gray-100"}>
+                          {statusLabels[sale.status as keyof typeof statusLabels] || sale.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <span>{formatCurrency(sale.estimatedTotal || 0)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">{formatCurrency(sale.finalTotal || 0)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <span>{sale.createdAt.slice(0, 10)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => onViewDetails(sale.id!)}>
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => onEdit(sale)}>
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setDeleteSale(sale)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
