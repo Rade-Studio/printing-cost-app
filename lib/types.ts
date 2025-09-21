@@ -87,6 +87,7 @@ export interface Printer {
   description: string
   model: string
   status: string
+  kwhPerHour: number
 }
 
 export interface PrintingHistory {

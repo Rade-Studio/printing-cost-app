@@ -54,6 +54,7 @@ export function PrinterForm({ printer, onSuccess, onCancel }: PrinterFormProps) 
     description: printer?.description || "",
     model: printer?.model || "",
     status: printer?.status || "active",
+    kwhPerHour: printer?.kwhPerHour || 0,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -135,7 +136,7 @@ export function PrinterForm({ printer, onSuccess, onCancel }: PrinterFormProps) 
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="model">Modelo</Label>
               <Select 
@@ -178,6 +179,16 @@ export function PrinterForm({ printer, onSuccess, onCancel }: PrinterFormProps) 
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="kwhPerHour">Consumo de Energía</Label>
+              <Input
+                id="kwhPerHour"
+                type="number"
+                placeholder="0"
+                value={formData.kwhPerHour}
+                onChange={(e) => handleChange("kwhPerHour", e.target.value)}
+              />
             </div>
           </div>
 
