@@ -198,8 +198,8 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{totalFilamentGramsConsump.toFixed(0)}cm³</div>
-            <p className="text-sm text-muted-foreground font-medium">Peso total impreso</p>
+            <div className="text-3xl font-bold text-foreground">{totalFilamentGramsConsump.toFixed(2)}g</div>
+            <p className="text-sm text-muted-foreground font-medium">Total Filamento Gastado</p>
           </CardContent>
         </Card>
 
@@ -378,8 +378,8 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">Tiempo Total</p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-primary">{totalFilamentGramsConsump.toFixed(0)}cm³</p>
-                  <p className="text-sm text-muted-foreground">Volumen Total</p>
+                  <p className="text-2xl font-bold text-primary">{totalFilamentGramsConsump.toFixed(2)}g</p>
+                  <p className="text-sm text-muted-foreground">Total Filamento Gastado</p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg text-center">
                   <p className="text-2xl font-bold text-primary">
