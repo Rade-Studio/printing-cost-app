@@ -14,6 +14,7 @@ export interface Sale {
   estimatedTotal?: number | null
   finalTotal?: number | null
   clientName?: string
+  createdAt: string
   client?: Client
 }
 
@@ -86,6 +87,7 @@ export interface Printer {
   description: string
   model: string
   status: string
+  kwhPerHour: number
 }
 
 export interface PrintingHistory {
@@ -114,5 +116,7 @@ export interface Dashboard {
   activePrintersCount: number
   totalPrintTimeHours: number
   totalFilamentConsumptionGrams: number
-  recentSales: Sale[]
+  recentSales: Sale[],
+  printers: Printer[],
+  filaments: Filament[],
 }

@@ -169,8 +169,8 @@ export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refr
                 </SelectTrigger>
                 <SelectContent>
                   {filaments.map((filament) => (
-                    <SelectItem key={filament.id} value={filament.id}>
-                      {getFilamentDescription(filament.id)}
+                    <SelectItem key={filament.id} value={filament.id!}>
+                      {getFilamentDescription(filament.id!)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -207,7 +207,7 @@ export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refr
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="valueVolumePrinted">Volumen Impreso (cm³)</Label>
+              <Label htmlFor="valueVolumePrinted">Peso de la Impresión (g)</Label>
               <Input
                 id="valueVolumePrinted"
                 type="number"
@@ -229,8 +229,8 @@ export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refr
                 <p className="font-medium">{formData.printTimeHours} horas</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Volumen Total:</p>
-                <p className="font-medium">{formData.valueVolumePrinted} cm³</p>
+                <p className="text-muted-foreground">Peso Total:</p>
+                <p className="font-medium">{formData.valueVolumePrinted} g</p>
               </div>
             </div>
           </div>

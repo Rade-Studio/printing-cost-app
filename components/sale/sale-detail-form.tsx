@@ -102,20 +102,11 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
       }
     }
 
-
-    // Costo de máquina
-    const machineCost = (formData?.machineRateApplied || 0)
-
-    // Tarifa de energia
-    const electricityCost = Number(configs.ElectricityCostPerKwh) || 0 
-
-    const machineElectricityCost = (formData?.printTimeHours || 0) * electricityCost
-
     // Costo total por unidad
-    const subTotal = filamentCostPerGram + machineCost
+    const subTotal = filamentCostPerGram 
 
     // Costo total considerando cantidad
-    const totalCost = (subTotal * (formData?.quantity || 1)) + workPackageCost + machineElectricityCost
+    const totalCost = (subTotal * (formData?.quantity || 1)) + workPackageCost 
 
     // Valor minimo de pedido
     const minimumOrderValue = Number(configs.MinimumOrderValue) || 0
@@ -217,8 +208,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                   </SelectTrigger>
                   <SelectContent>
                     {filaments?.map((filament) => (
-                      <SelectItem key={filament.id} value={filament.id}>
-                        {filament.type} - {filament.color} ({formatCurrency(filament.costPerGram || 0)}/g)
+                      <SelectItem key={filament.id} value={filament.id!}>
+                        {filament.type} - {filament.color} ({formatCurrency(filament.costPerGram)}/g)
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -229,10 +220,9 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                 <Input
                   id="weightGrams"
                   type="number"
-                  step="1"
                   placeholder="0"
                   value={formData.weightGrams}
-                  onChange={(e) => handleChange("weightGrams", Number.parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleChange("weightGrams", Number.parseFloat(e.target.value))}
                   required
                 />
               </div>
@@ -241,10 +231,9 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                 <Input
                   id="printTimeHours"
                   type="number"
-                  step="1"
                   placeholder="0"
                   value={formData.printTimeHours}
-                  onChange={(e) => handleChange("printTimeHours", Number.parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleChange("printTimeHours", Number.parseFloat(e.target.value))}
                   required
                 />
               </div>
@@ -267,10 +256,9 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                 <Input
                   id="machineRateApplied"
                   type="number"
-                  step="0.01"
                   placeholder="0"
                   value={formData.machineRateApplied}
-                  onChange={(e) => handleChange("machineRateApplied", Number.parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleChange("machineRateApplied", Number.parseFloat(e.target.value))}
                   required
                 />
               </div>
@@ -301,10 +289,9 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                 <Input
                   id="workPackagePerHour"
                   type="number"
-                  step="1"
                   placeholder="0"
                   value={formData.workPackagePerHour}
-                  onChange={(e) => handleChange("workPackagePerHour", Number.parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleChange("workPackagePerHour", Number.parseFloat(e.target.value))}
                 />
               </div>
             </div>

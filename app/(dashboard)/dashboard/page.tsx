@@ -24,17 +24,13 @@ export default function DashboardPage() {
       try {
         setIsLoading(true)
         const [
-          filamentsData,
-          printersData,
           dashboardData
         ] = await Promise.all([
-          apiClient.getFilaments(),
-          apiClient.getPrinters(),
           apiClient.getDashboard()
         ])
 
-        setFilaments(filamentsData || [])
-        setPrinters(printersData || [])
+        setFilaments(dashboardData?.filaments || [])
+        setPrinters(dashboardData?.printers || [])
         setDashboard(dashboardData || null)
       } catch (err) {
         setError("Error al cargar los datos del dashboard")
@@ -280,7 +276,7 @@ export default function DashboardPage() {
                   No hay filamentos registrados
                 </div>
               ) : (
-                filaments.slice(0, 3).map((filament) => {
+                filaments.map((filament) => {
                   const stockStatus = filament.stockGrams < 100 ? 'critical' : 
                                     filament.stockGrams < 200 ? 'low' : 'normal'
                   const statusColor = stockStatus === 'critical' ? 'text-red-600' : 

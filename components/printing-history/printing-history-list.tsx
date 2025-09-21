@@ -43,7 +43,7 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
     try {
       setIsLoading(true)
       const data = await apiClient.getPrintingHistory()
-      setPrintingHistories(data || [])
+      setPrintingHistories(data?.toReversed() || [])
     } catch (err) {
       setError("Error al cargar el historial de impresión")
     } finally {

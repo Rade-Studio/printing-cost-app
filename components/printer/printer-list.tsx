@@ -20,14 +20,7 @@ import { apiClient } from "@/lib/api"
 import { Search, Plus, Edit, Trash2, Package, AlertTriangle } from "lucide-react"
 
 import { useLocale } from "@/app/localContext"
-
-interface Printer {
-  id?: string
-  name: string
-  description: string
-  model: string
-  status: string
-}
+import { Printer } from "@/lib/types"
 
 interface FilamentListProps {
   onEdit: (filament: Printer) => void
@@ -170,6 +163,7 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
                     <TableHead>Descripción</TableHead>
                     <TableHead>Modelo</TableHead>
                     <TableHead>Estado</TableHead>
+                    <TableHead>Consumo de Energía</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -194,6 +188,9 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
                         </TableCell>
                         <TableCell>
                           <p className="font-medium">{printer.status}</p>
+                        </TableCell>
+                        <TableCell>
+                          <p className="font-medium">{printer.kwhPerHour.toFixed(2) + " kWh"}</p>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
