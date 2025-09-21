@@ -129,9 +129,9 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Volumen total:</p>
+                  <p className="text-muted-foreground">Total de filamento gastado:</p>
                   <p className="font-medium">
-                    {filteredHistories.reduce((sum, h) => sum + h.valueVolumePrinted, 0).toFixed(2)} cm³
+                    {filteredHistories.reduce((sum, h) => sum + h.valueVolumePrinted, 0).toFixed(2)} g
                   </p>
                 </div>
                 <div>

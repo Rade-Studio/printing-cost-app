@@ -14,6 +14,7 @@ export interface Sale {
   estimatedTotal?: number | null
   finalTotal?: number | null
   clientName?: string
+  client?: Client
 }
 
 export interface Filament {
@@ -97,4 +98,21 @@ export interface PrintingHistory {
   type: string
   filament?: Filament
   printer?: Printer
+}
+
+export interface Dashboard {
+  totalClients: number
+  totalSales: number
+  totalFilaments: number
+  totalPrinters: number
+  totalPrintingHistories: number
+  totalProducts: number
+  totalSalesAmount: number
+  totalExpensesAmount: number
+  profit: number
+  lowStockFilamentsCount: number
+  activePrintersCount: number
+  totalPrintTimeHours: number
+  totalFilamentConsumptionGrams: number
+  recentSales: Sale[]
 }

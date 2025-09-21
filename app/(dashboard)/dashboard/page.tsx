@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Package, TrendingUp, DollarSign, Activity, Printer, History, Wrench } from "lucide-react"
+import { Users, Package, TrendingUp, DollarSign, Activity, Printer, History, Wrench, Weight} from "lucide-react"
 import { apiClient } from "@/lib/api"
-import { Client, Sale, Filament, Printer as PrinterType, PrintingHistory, Expense, WorkPackage, Product } from "@/lib/types"
+import { Filament, Printer as PrinterType, Dashboard } from "@/lib/types"
 import { Loader2 } from "lucide-react"
 import { useLocale } from "@/app/localContext"
 
@@ -13,14 +13,9 @@ export default function DashboardPage() {
   const [error, setError] = useState("")
   
   // Datos del dashboard
-  const [clients, setClients] = useState<Client[]>([])
-  const [sales, setSales] = useState<Sale[]>([])
   const [filaments, setFilaments] = useState<Filament[]>([])
   const [printers, setPrinters] = useState<PrinterType[]>([])
-  const [printingHistory, setPrintingHistory] = useState<PrintingHistory[]>([])
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [workPackages, setWorkPackages] = useState<WorkPackage[]>([])
-  const [products, setProducts] = useState<Product[]>([])
+  const [dashboard, setDashboard] = useState<Dashboard | null>(null)
   const { formatCurrency } = useLocale()
 
   // Cargar todos los datos
@@ -29,33 +24,18 @@ export default function DashboardPage() {
       try {
         setIsLoading(true)
         const [
-          clientsData,
-          salesData,
           filamentsData,
           printersData,
-          printingHistoryData,
-          expensesData,
-          workPackagesData,
-          productsData
+          dashboardData
         ] = await Promise.all([
-          apiClient.getClients(),
-          apiClient.getSales(),
           apiClient.getFilaments(),
           apiClient.getPrinters(),
-          apiClient.getPrintingHistory(),
-          apiClient.getExpenses(),
-          apiClient.getWorkPackages(),
-          apiClient.getProducts()
+          apiClient.getDashboard()
         ])
 
-        setClients(clientsData || [])
-        setSales(salesData || [])
         setFilaments(filamentsData || [])
         setPrinters(printersData || [])
-        setPrintingHistory(printingHistoryData || [])
-        setExpenses(expensesData || [])
-        setWorkPackages(workPackagesData || [])
-        setProducts(productsData || [])
+        setDashboard(dashboardData || null)
       } catch (err) {
         setError("Error al cargar los datos del dashboard")
         console.error("Error loading dashboard data:", err)
@@ -68,47 +48,36 @@ export default function DashboardPage() {
   }, [])
 
   // Cálculos de estadísticas
-  const totalClients = clients.length
-  const totalSales = sales.length
-  const totalFilaments = filaments.length
-  const totalPrinters = printers.length
-  const totalPrintingHistory = printingHistory.length
-  const totalExpenses = expenses.length
-  const totalWorkPackages = workPackages.length
-  const totalProducts = products.length
-
-  // Ventas del mes actual
-  const currentMonth = new Date().getMonth()
-  const currentYear = new Date().getFullYear()
-  const monthlySales = sales.filter(sale => {
-    const saleDate = new Date(sale.id || '') // Asumiendo que el ID contiene fecha o hay un campo de fecha
-    return saleDate.getMonth() === currentMonth && saleDate.getFullYear() === currentYear
-  })
+  const totalClients = dashboard?.totalClients || 0
+  const totalSales = dashboard?.totalSales || 0
+  const totalFilaments = dashboard?.totalFilaments || 0
+  const totalPrinters = dashboard?.totalPrinters || 0
+  const totalPrintingHistory = dashboard?.totalPrintingHistories || 0
+  const totalProducts = dashboard?.totalProducts || 0
 
   // Calcular totales de ventas
-  const totalSalesAmount = sales.reduce((sum, sale) => sum + (sale.finalTotal || sale.estimatedTotal || 0), 0)
-  const monthlySalesAmount = monthlySales.reduce((sum, sale) => sum + (sale.finalTotal || sale.estimatedTotal || 0), 0)
+  const totalSalesAmount = dashboard?.totalSalesAmount || 0
 
   // Calcular gastos totales
-  const totalExpensesAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0)
+  const totalExpensesAmount = dashboard?.totalExpensesAmount || 0
 
   // Calcular ganancia
-  const profit = totalSalesAmount - totalExpensesAmount
+  const profit = dashboard?.profit || 0
 
   // Filamentos con stock bajo (menos de 200g)
-  const lowStockFilaments = filaments.filter(filament => filament.stockGrams < 200)
+  const lowStockFilaments = dashboard?.lowStockFilamentsCount || 0
 
   // Impresoras activas
-  const activePrinters = printers.filter(printer => printer.status === 'active')
+  const activePrinters = dashboard?.activePrintersCount || 0
 
   // Tiempo total de impresión
-  const totalPrintTime = printingHistory.reduce((sum, history) => sum + history.printTimeHours, 0)
+  const totalPrintTime = dashboard?.totalPrintTimeHours || 0
 
   // Volumen total impreso
-  const totalVolumePrinted = printingHistory.reduce((sum, history) => sum + history.valueVolumePrinted, 0)
+  const totalFilamentGramsConsump = dashboard?.totalFilamentConsumptionGrams || 0
 
   // Ventas recientes (últimas 5)
-  const recentSales = sales.slice(0, 5)
+  const recentSales = dashboard?.recentSales || []
 
   if (isLoading) {
     return (
@@ -172,7 +141,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-3xl font-bold text-foreground">{totalFilaments}</div>
             <p className="text-sm text-muted-foreground font-medium">
-              {lowStockFilaments.length > 0 ? `${lowStockFilaments.length} con stock bajo` : 'Stock normal'}
+              {lowStockFilaments > 0 ? `${lowStockFilaments} con stock bajo` : 'Stock normal'}
             </p>
           </CardContent>
         </Card>
@@ -203,7 +172,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{activePrinters.length}</div>
+            <div className="text-3xl font-bold text-foreground">{activePrinters}</div>
             <p className="text-sm text-muted-foreground font-medium">de {totalPrinters} impresoras</p>
           </CardContent>
         </Card>
@@ -223,14 +192,14 @@ export default function DashboardPage() {
 
         <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-            <CardTitle className="text-sm font-semibold text-muted-foreground">Volumen Impreso</CardTitle>
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Peso Impreso</CardTitle>
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Activity className="h-4 w-4 text-primary" />
+              <Weight className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{totalVolumePrinted.toFixed(0)}cm³</div>
-            <p className="text-sm text-muted-foreground font-medium">Volumen total impreso</p>
+            <div className="text-3xl font-bold text-foreground">{totalFilamentGramsConsump.toFixed(2)}g</div>
+            <p className="text-sm text-muted-foreground font-medium">Total Filamento Gastado</p>
           </CardContent>
         </Card>
 
@@ -273,7 +242,7 @@ export default function DashboardPage() {
                   <div key={sale.id || index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                     <div>
                       <p className="font-semibold text-foreground">Venta #{sale.id?.slice(-6) || 'N/A'}</p>
-                      <p className="text-sm text-muted-foreground">Cliente: {sale.clientName || 'Sin nombre'}</p>
+                      <p className="text-sm text-muted-foreground">Cliente: {sale.client?.name || 'Sin nombre'}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-primary">
@@ -409,8 +378,8 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">Tiempo Total</p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-primary">{totalVolumePrinted.toFixed(0)}cm³</p>
-                  <p className="text-sm text-muted-foreground">Volumen Total</p>
+                  <p className="text-2xl font-bold text-primary">{totalFilamentGramsConsump.toFixed(2)}g</p>
+                  <p className="text-sm text-muted-foreground">Total Filamento Gastado</p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg text-center">
                   <p className="text-2xl font-bold text-primary">
