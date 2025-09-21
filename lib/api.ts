@@ -1,5 +1,5 @@
 import { AuthService } from "./auth"
-import { Client, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
+import { Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
@@ -295,6 +295,11 @@ class ApiClient {
     return this.request(`/printing-history/${id}`, {
       method: "DELETE",
     })
+  }
+
+  // Dashboard endpoints
+  async getDashboard(): Promise<Dashboard | null> {
+    return this.request<Dashboard | null>("/dashboard/")
   }
 }
 
