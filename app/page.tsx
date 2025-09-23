@@ -11,7 +11,7 @@ export default function HomePage() {
     if (AuthService.isAuthenticated()) {
       router.push("/dashboard")
     } else {
-      router.push("/login")
+      router.push("/landing")
     }
   }, [router])
 

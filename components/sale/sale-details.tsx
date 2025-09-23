@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { apiClient } from "@/lib/api"
 import { ArrowLeft, Plus, Edit, Trash2, Package, Clock, Weight, Calculator, Cuboid} from "lucide-react"
-import { Filament, SaleDetail, WorkPackage } from "@/lib/types"
+import { SaleDetail } from "@/lib/types"
 import { useLocale } from "@/app/localContext"
 
 
@@ -42,12 +42,9 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
 
       // Enriquecer detalles con información de filamentos y paquetes de trabajo
       const enrichedDetails = detailsData?.map((detail: SaleDetail) => {
-        const filament =  detail.filament
         const workPackage = detail.workPackage 
         return {
           ...detail,
-          filamentType: filament?.type,
-          filamentColor: filament?.color,
           workPackageName: workPackage?.name,
         }
       })
@@ -127,9 +124,9 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
                   <TableHeader>
                     <TableRow>
                       <TableHead>Producto</TableHead>
-                      <TableHead>Filamento</TableHead>
                       <TableHead>Especificaciones</TableHead>
                       <TableHead>Costo Estimado</TableHead>
+                      <TableHead>Costo Mano de Obra</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -138,7 +135,7 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
                       <TableRow key={detail.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{detail.productDescription}</p>
+                            <p className="font-medium">{detail.product?.name}</p>
                             {detail.comments && <p className="text-sm text-muted-foreground">{detail.comments}</p>}
                             <div className="flex items-center gap-2 mt-1">
                               <Badge variant="outline">Cantidad: {detail.quantity}</Badge>
@@ -146,25 +143,18 @@ export function SaleDetails({ saleId, onBack, onAddDetail, onEditDetail, refresh
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div>
-                            <p className="font-medium">
-                              {detail.filament?.type} - {detail.filament?.color}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
                           <div className="space-y-1 text-sm">
                             <div className="flex items-center gap-2">
                               <Weight className="h-3 w-3 text-muted-foreground" />
-                              <span>{detail.weightGrams}g</span>
+                              <span>{detail.PrintingHistory?.totalGramsUsed}g</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="h-3 w-3 text-muted-foreground" />
-                              <span>{detail.printTimeHours}h</span>
+                              <span>{detail.PrintingHistory?.printTimeHours}h</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Calculator className="h-3 w-3 text-muted-foreground" />
-                              <span>${detail.machineRateApplied}/h</span>
+                              <span>${detail.PrintingHistory?.totalEnergyCost}/h</span>
                             </div>
                           </div>
                         </TableCell>

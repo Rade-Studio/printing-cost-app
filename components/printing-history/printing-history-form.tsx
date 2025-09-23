@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-import type { PrintingHistory, Filament, Printer, SaleDetail } from "@/lib/types"
-import { useState, useEffect } from "react"
+import type { PrintingHistory, Filament, Printer, SaleDetail, Product, FilamentConsumption } from "@/lib/types"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
 import { Loader2, History } from "lucide-react"
+import { ProductSelect } from "../shared/select-product"
+import MultiFilamentSelector from "./multi-filament-selector"
 
 interface PrintingHistoryFormProps {
   printingHistory?: PrintingHistory
@@ -31,43 +33,36 @@ const printingTypes = [
 
 export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refreshTrigger }: PrintingHistoryFormProps) {
   const [formData, setFormData] = useState<PrintingHistory>({
-    saleDetailId: printingHistory?.saleDetailId || "",
-    filamentId: printingHistory?.filamentId || "",
     printerId: printingHistory?.printerId || "",
+    productId: printingHistory?.productId || "",
+    totalCost: printingHistory?.totalCost || undefined,
+    totalEnergyCost: printingHistory?.totalEnergyCost || undefined,
+    totalFilamentCost: printingHistory?.totalFilamentCost || undefined,
+    totalGramsUsed: printingHistory?.totalGramsUsed || undefined,
     printTimeHours: printingHistory?.printTimeHours || 0,
-    valueVolumePrinted: printingHistory?.valueVolumePrinted || 0,
     type: printingHistory?.type || "prototype",
+    filaments: printingHistory?.filaments || [],
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [filaments, setFilaments] = useState<Filament[]>([])
   const [printers, setPrinters] = useState<Printer[]>([])
-  const [saleDetails, setSaleDetails] = useState<SaleDetail[]>([])
+  const [products, setProducts] = useState<Product[]>([])
 
   // Cargar datos necesarios para los selects
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [filamentsData, printersData, salesData] = await Promise.all([
+        const [filamentsData, printersData, productsData] = await Promise.all([
           apiClient.getFilaments(),
           apiClient.getPrinters(),
-          apiClient.getSales()
+          apiClient.getProducts()
         ])
         
         setFilaments(filamentsData || [])
         setPrinters(printersData || [])
+        setProducts(productsData || [])
         
-        // Obtener todos los detalles de venta
-        if (salesData) {
-          const allDetails: SaleDetail[] = []
-          for (const sale of salesData) {
-            const details = await apiClient.getSaleDetails(sale.id!)
-            if (details) {
-              allDetails.push(...details)
-            }
-          }
-          setSaleDetails(allDetails)
-        }
       } catch (err) {
         console.error("Error loading data:", err)
       }
@@ -75,6 +70,18 @@ export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refr
     
     loadData()
   }, [refreshTrigger])
+
+  const handleConsumptionsChange = (next: FilamentConsumption[]) => {
+    setFormData(prev => ({ ...prev, filamentConsumptions: next }))
+  }
+
+  const getFilamentDescription = (f: Filament) => `${f.type ?? ""} ${f.color ?? ""}`.trim()
+
+  // Ejemplo de “componente reactivo” que responde a los cambios:
+  const totalGrams = useMemo(
+    () => formData.filaments?.reduce((acc, x) => acc + (x.gramsUsed || 0), 0),
+    [formData.filaments]
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,16 +106,6 @@ export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refr
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const getSaleDetailDescription = (saleDetailId: string) => {
-    const detail = saleDetails.find(d => d.id === saleDetailId)
-    return detail ? `${detail.productDescription} - Cantidad: ${detail.quantity}` : "Selecciona un detalle"
-  }
-
-  const getFilamentDescription = (filamentId: string) => {
-    const filament = filaments.find(f => f.id === filamentId)
-    return filament ? `${filament.type} - ${filament.color}` : "Selecciona un filamento"
-  }
-
   const getPrinterDescription = (printerId: string) => {
     const printer = printers.find(p => p.id === printerId)
     return printer ? `${printer.name} - ${printer.model}` : "Selecciona una impresora"
@@ -129,19 +126,7 @@ export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refr
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="saleDetailId">Detalle de Venta</Label>
-              <Select value={formData.saleDetailId} onValueChange={(value) => handleChange("saleDetailId", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un detalle de venta" />
-                </SelectTrigger>
-                <SelectContent>
-                  {saleDetails.map((detail) => (
-                    <SelectItem key={detail.id} value={detail.id!}>
-                      {getSaleDetailDescription(detail.id!)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ProductSelect products={products} formData={formData} handleChange={handleChange} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="type">Tipo de Impresión</Label>
@@ -162,19 +147,12 @@ export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refr
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="filamentId">Filamento</Label>
-              <Select value={formData.filamentId} onValueChange={(value) => handleChange("filamentId", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un filamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filaments.map((filament) => (
-                    <SelectItem key={filament.id} value={filament.id!}>
-                      {getFilamentDescription(filament.id!)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiFilamentSelector 
+                filaments={filaments} 
+                value={formData.filaments ?? []} 
+                label="Filamentos" 
+                onChange={handleConsumptionsChange} 
+                getDescription={getFilamentDescription} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="printerId">Impresora</Label>
@@ -206,34 +184,9 @@ export function PrintingHistoryForm({ printingHistory, onSuccess, onCancel, refr
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="valueVolumePrinted">Peso de la Impresión (g)</Label>
-              <Input
-                id="valueVolumePrinted"
-                type="number"
-                step="0.01"
-                placeholder="15.75"
-                value={formData.valueVolumePrinted}
-                onChange={(e) => handleChange("valueVolumePrinted", Number.parseFloat(e.target.value) || 0)}
-                required
-              />
-            </div>
           </div>
 
           {/* Información calculada */}
-          <div className="bg-muted p-4 rounded-lg">
-            <h3 className="text-sm font-semibold mb-2">Información de la Impresión</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Tiempo Total:</p>
-                <p className="font-medium">{formData.printTimeHours} horas</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Peso Total:</p>
-                <p className="font-medium">{formData.valueVolumePrinted} g</p>
-              </div>
-            </div>
-          </div>
 
           {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
 

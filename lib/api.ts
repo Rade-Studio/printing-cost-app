@@ -8,6 +8,10 @@ class ApiClient {
     const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
     const url = `${API_BASE_URL}${path}`;
 
+    if (AuthService.isTokenExpired()) {
+      window.location.href = "/login"
+    }
+
     // Solo agrega Content-Type si hay body; evita preflights innecesarios en GET/DELETE.
     const baseHeaders: Record<string, string> = {
       ...AuthService.getAuthHeaders(), // ej: { Authorization: `Bearer ...` }

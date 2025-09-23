@@ -2,6 +2,7 @@
 "use client"
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import { apiClient } from "@/lib/api"
+import { AuthService } from "@/lib/auth"
 
 export interface SystemConfig {
   id?: string
@@ -35,6 +36,10 @@ export function SystemConfigProvider({ children }: { children: ReactNode }) {
 
   const fetchConfigs = async () => {
     try {
+      if (!AuthService.isAuthenticated()) {
+        return
+      }
+
       setIsLoading(true)
       const data: SystemConfig[] | null = await apiClient.getSystemConfig()
 

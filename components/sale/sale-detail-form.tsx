@@ -32,20 +32,15 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
     detail || {
       saleId: saleId,
       productId: '',
-      productDescription: '',
       filamentId: '',
-      weightGrams: 0,
-      printTimeHours: 0,
       quantity: 1,
       comments: '',
       workPackageId: '',
-      machineRateApplied: 0,
       workPackagePerHour: 0,
-      laborCost: 0,
-      subTotal: 0
     }
   )
   const [calculatedCost, setCalculatedCost] = useState(0)
+  const [laborCost, setLaborCost] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(true)
   const [error, setError] = useState("")
@@ -81,16 +76,14 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
   }, [formData, filaments, workPackages])
 
   const calculateCost = () => {
-    const selectedFilament = filaments?.find((f) => f.id === formData?.filamentId)
+    const productSelected = products?.find((f) => f.id === formData?.productId)
     const selectedWorkPackage = workPackages?.find((wp) => wp.id === formData?.workPackageId)
 
-    if (!selectedFilament) {
+    if (!productSelected) {
       setCalculatedCost(0)
+      setLaborCost(0)
       return
     }
-
-    // Costo del material
-    const filamentCostPerGram = ((formData?.weightGrams || 0) * (selectedFilament.costPerGram || 0))
 
     // Costo de trabajo
     let workPackageCost = 0
@@ -102,22 +95,19 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
       }
     }
 
-    // Costo total por unidad
-    const subTotal = filamentCostPerGram 
 
     // Costo total considerando cantidad
-    const totalCost = (subTotal * (formData?.quantity || 1)) + workPackageCost 
+    const totalCost = ((formData.PrintingHistory?.totalCost || 0 ) + workPackageCost) * formData?.quantity || 0
+    const marginPercent = Number(
+      Array.isArray(configs)
+        ? configs.find(c => c.key === 'DefaultProfitMargin')?.value
+        : undefined
+    ) || 30
 
-    // Valor minimo de pedido
-    const minimumOrderValue = Number(configs.MinimumOrderValue) || 0
+    const margin = totalCost * marginPercent / 100
 
-    if (totalCost < minimumOrderValue) {
-      setCalculatedCost(minimumOrderValue)
-      setError("El costo total no puede ser menor a " + formatCurrency(minimumOrderValue) + " por el valor mínimo de pedido.")
-      return
-    }
-
-    setCalculatedCost(totalCost)
+    setLaborCost(workPackageCost)
+    setCalculatedCost(totalCost + margin)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,17 +164,6 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
 
           {/* Información del producto */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Información del Producto</h3>
-            <div className="space-y-2">
-              <Label htmlFor="productDescription">Descripción del Producto</Label>
-              <Textarea
-                id="productDescription"
-                placeholder="Describe el producto a imprimir..."
-                value={formData.productDescription}
-                onChange={(e) => handleChange("productDescription", e.target.value)}
-                required
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="comments">Comentarios</Label>
               <Textarea
@@ -199,45 +178,6 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
           {/* Especificaciones técnicas */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Especificaciones Técnicas</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="filament">Filamento</Label>
-                <Select value={formData.filamentId} onValueChange={(value) => handleChange("filamentId", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona filamento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filaments?.map((filament) => (
-                      <SelectItem key={filament.id} value={filament.id!}>
-                        {filament.type} - {filament.color} ({formatCurrency(filament.costPerGram)}/g)
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="weightGrams">Peso (gramos)</Label>
-                <Input
-                  id="weightGrams"
-                  type="number"
-                  placeholder="0"
-                  value={formData.weightGrams}
-                  onChange={(e) => handleChange("weightGrams", Number.parseFloat(e.target.value))}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="printTimeHours">Tiempo de Impresión (horas)</Label>
-                <Input
-                  id="printTimeHours"
-                  type="number"
-                  placeholder="0"
-                  value={formData.printTimeHours}
-                  onChange={(e) => handleChange("printTimeHours", Number.parseFloat(e.target.value))}
-                  required
-                />
-              </div>
-            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="quantity">Cantidad</Label>
@@ -248,17 +188,6 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                   placeholder="1"
                   value={formData.quantity}
                   onChange={(e) => handleChange("quantity", Number.parseInt(e.target.value) || 1)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="machineRateApplied">Tarifa de Máquina (por hora)</Label>
-                <Input
-                  id="machineRateApplied"
-                  type="number"
-                  placeholder="0"
-                  value={formData.machineRateApplied}
-                  onChange={(e) => handleChange("machineRateApplied", Number.parseFloat(e.target.value))}
                   required
                 />
               </div>
@@ -302,8 +231,8 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
           <div className="bg-muted p-4 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Cálculo de Costos</h3>
             <div className="text-2xl font-bold text-primary">{ formatCurrency(calculatedCost || 0) }</div>
-            <p className="text-sm text-muted-foreground">Costo total estimado</p>
-            <p className="text-sm text-muted-foreground">No se incluye el costo de consumo de energia, por lo que el precio real estimado se calcula al guardar el producto.</p>
+          
+            <p className="text-sm text-muted-foreground">Costo de mano de obra: {formatCurrency(laborCost || 0)}</p>
           </div>
 
           {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}

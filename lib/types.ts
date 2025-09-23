@@ -48,22 +48,16 @@ export interface SaleDetail {
   id?: string
   saleId: string
   productId?: string
-  productDescription: string
   filamentId: string
-  weightGrams: number
-  printTimeHours: number
   quantity: number
   comments: string
   workPackageId: string
-  machineRateApplied: number
   workPackagePerHour: number
-  laborCost: number
-  subTotal: number
   // Propiedades anidadas de la API
   sale?: Sale
   workPackage?: WorkPackage
-  filament?: Filament,
   product?: Product,
+  PrintingHistory?: PrintingHistory
 }
 
 export interface Expense {
@@ -90,16 +84,30 @@ export interface Printer {
   kwhPerHour: number
 }
 
+export interface FilamentConsumption {
+  filamentId: string
+  gramsUsed: number
+}
+
 export interface PrintingHistory {
   id?: string
-  saleDetailId: string
-  filamentId: string
   printerId: string
+  productId?: string
   printTimeHours: number
-  valueVolumePrinted: number
+  totalGramsUsed?: number
+  totalCost?: number
+  totalEnergyCost?: number
+  totalFilamentCost?: number
   type: string
-  filament?: Filament
+  filaments?: FilamentConsumption[]
   printer?: Printer
+}
+
+export interface PrintingHistoryCalculation {
+  totalGramsUsed: number
+  totalEnergyCost: number
+  totalFilamentCost: number
+  totalCost: number
 }
 
 export interface Dashboard {
