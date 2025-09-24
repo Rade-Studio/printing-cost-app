@@ -1,5 +1,5 @@
 import { AuthService } from "./auth"
-import { Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
+import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
@@ -298,6 +298,13 @@ class ApiClient {
   async deletePrintingHistory(id: string) {
     return this.request(`/printing-history/${id}`, {
       method: "DELETE",
+    })
+  }
+
+  async calculatePrintingHistory(printingHistory: any): Promise<CalculatePrintingHistoryResponse | null> {
+    return this.request<CalculatePrintingHistoryResponse | null>("/printing-history/calculate", {
+      method: "POST",
+      body: JSON.stringify(printingHistory),
     })
   }
 

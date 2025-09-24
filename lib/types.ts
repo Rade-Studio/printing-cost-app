@@ -128,3 +128,10 @@ export interface Dashboard {
   printers: Printer[],
   filaments: Filament[],
 }
+
+export interface CalculatePrintingHistoryResponse {
+  totalGramsUsed: number
+  totalEnergyCost: number
+  totalFilamentCost: number
+  totalCost: number
+}
