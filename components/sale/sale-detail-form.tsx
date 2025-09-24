@@ -25,7 +25,6 @@ interface SaleDetailFormProps {
 }
 
 export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTrigger }: SaleDetailFormProps) {
-  const [filaments, setFilaments] = useState<Filament[] | null>([])
   const [workPackages, setWorkPackages] = useState<WorkPackage[] | null>([])
   const [products, setProducts] = useState<Product[] | null>([])
   const [formData, setFormData] = useState<SaleDetail>(
@@ -50,12 +49,10 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [filamentsData, workPackagesData, productsData] = await Promise.all([
-          apiClient.getFilaments(),
+        const [workPackagesData, productsData] = await Promise.all([
           apiClient.getWorkPackages(),
           apiClient.getProducts(),
         ])
-        setFilaments(filamentsData)
         setWorkPackages(workPackagesData)
         setProducts(productsData)
       } catch (error) {
@@ -73,13 +70,13 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
 
   useEffect(() => {
     calculateCost()
-  }, [formData, filaments, workPackages])
+  }, [formData, products, workPackages])
 
   const calculateCost = () => {
     const productSelected = products?.find((f) => f.id === formData?.productId)
-    const selectedWorkPackage = workPackages?.find((wp) => wp.id === formData?.workPackageId)
+    const workPackageSelected = workPackages?.find((wp) => wp.id === formData?.workPackageId)
 
-    if (!productSelected) {
+    if (!productSelected || !workPackageSelected) {
       setCalculatedCost(0)
       setLaborCost(0)
       return
@@ -87,11 +84,11 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
 
     // Costo de trabajo
     let workPackageCost = 0
-    if (selectedWorkPackage) {
-      if (selectedWorkPackage.calculationType === "Fixed") {
-        workPackageCost = selectedWorkPackage.value || 0 
-      } else if (selectedWorkPackage.calculationType === "Multiply") {
-        workPackageCost = (formData?.workPackagePerHour || 0) * (selectedWorkPackage.value || 0)
+    if (workPackageSelected) {
+      if (workPackageSelected.calculationType === "Fixed") {
+        workPackageCost = workPackageSelected.value || 0 
+      } else if (workPackageSelected.calculationType === "Multiply") {
+        workPackageCost = (formData?.workPackagePerHour || 0) * (workPackageSelected.value || 0)
       }
     }
 

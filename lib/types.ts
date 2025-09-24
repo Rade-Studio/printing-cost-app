@@ -21,7 +21,7 @@ export interface Sale {
 export interface Filament {
   id?: string
   type: string
-  color: string
+  color: string[]
   costPerGram: number
   stockGrams: number
   density: number
@@ -41,7 +41,8 @@ export interface Product {
   description: string
   imageUrl?: string
   modelUrl?: string
-  externalLink?: string
+  externalLink?: string,
+  printingHistory?: PrintingHistory
 }
 
 export interface SaleDetail {
@@ -85,8 +86,12 @@ export interface Printer {
 }
 
 export interface FilamentConsumption {
+  id?: string
+  printingHistoryId?: string
   filamentId: string
   gramsUsed: number
+  filamentCost?: number
+  filament?: Filament
 }
 
 export interface PrintingHistory {
@@ -99,7 +104,7 @@ export interface PrintingHistory {
   totalEnergyCost?: number
   totalFilamentCost?: number
   type: string
-  filaments?: FilamentConsumption[]
+  filamentConsumptions?: FilamentConsumption[]
   printer?: Printer
 }
 

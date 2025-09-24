@@ -64,7 +64,7 @@ export function PrintingHistoryForm({
     totalGramsUsed: printingHistory?.totalGramsUsed || undefined,
     printTimeHours: printingHistory?.printTimeHours || 0,
     type: printingHistory?.type || "prototype",
-    filaments: printingHistory?.filaments || [],
+    filamentConsumptions: printingHistory?.filamentConsumptions || [],
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -81,16 +81,12 @@ export function PrintingHistoryForm({
       try {
         const [filamentsData, printersData, productsData] = await Promise.all([
           apiClient.getFilaments(),
-
           apiClient.getPrinters(),
-
           apiClient.getProducts(),
         ]);
 
         setFilaments(filamentsData || []);
-
         setPrinters(printersData || []);
-
         setProducts(productsData || []);
       } catch (err) {
         console.error("Error loading data:", err);
@@ -104,7 +100,7 @@ export function PrintingHistoryForm({
     var data = {
       printerId: formData.printerId,
       printTimeHours: formData.printTimeHours,
-      FilamentConsumptions: formData.filaments,
+      filamentConsumptions: formData.filamentConsumptions,
     };
 
     const result = await apiClient.calculatePrintingHistory(data);
@@ -126,9 +122,7 @@ export function PrintingHistoryForm({
 
     setFormData((prev) => ({
       ...prev,
-
-      filaments: next,
-
+      filamentConsumptions: next,
       totalGramsUsed: next.length ? calculatedGrams : undefined,
     }));
   };
@@ -136,12 +130,15 @@ export function PrintingHistoryForm({
   const addFilamentUsage = () => {
     const newUsage: FilamentConsumption = { filamentId: "", gramsUsed: 0 };
 
-    handleConsumptionsChange([...(formData.filaments ?? []), newUsage]);
+    handleConsumptionsChange([
+      ...(formData.filamentConsumptions ?? []),
+      newUsage,
+    ]);
   };
 
   const removeFilamentUsage = (index: number) => {
     handleConsumptionsChange(
-      (formData.filaments ?? []).filter((_, i) => i !== index)
+      (formData.filamentConsumptions ?? []).filter((_, i) => i !== index)
     );
   };
 
@@ -150,7 +147,7 @@ export function PrintingHistoryForm({
     field: keyof FilamentConsumption,
     value: string | number
   ) => {
-    const next = (formData.filaments ?? []).map((usage, i) => {
+    const next = (formData.filamentConsumptions ?? []).map((usage, i) => {
       if (i !== index) {
         return usage;
       }
@@ -168,18 +165,17 @@ export function PrintingHistoryForm({
     handleConsumptionsChange(next);
   };
 
-  const getFilamentDescription = (f: Filament) =>
-    `${f.type ?? ""} ${f.color ?? ""}`.trim();
-
-  // Ejemplo de “componente reactivo” que responde a los cambios:
-
   const totalGrams = useMemo(
-    () => formData.filaments?.reduce((acc, x) => acc + (x.gramsUsed || 0), 0),
+    () =>
+      formData.filamentConsumptions?.reduce(
+        (acc, x) => acc + (x.gramsUsed || 0),
+        0
+      ),
 
-    [formData.filaments]
+    [formData.filamentConsumptions]
   );
 
-  const hasFilamentUsage = (formData.filaments?.length ?? 0) > 0;
+  const hasFilamentUsage = (formData.filamentConsumptions?.length ?? 0) > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,7 +287,7 @@ export function PrintingHistoryForm({
 
             <div className="space-y-3">
               {hasFilamentUsage ? (
-                formData.filaments?.map((usage, index) => (
+                formData.filamentConsumptions?.map((usage, index) => (
                   <div
                     key={index}
                     className="grid gap-3 rounded-md border border-border bg-muted/20 p-3 sm:grid-cols-[minmax(0,1fr)_160px_auto] sm:items-center"
@@ -309,7 +305,23 @@ export function PrintingHistoryForm({
                       <SelectContent>
                         {filaments.map((filament) => (
                           <SelectItem key={filament.id!} value={filament.id!}>
-                            {getFilamentDescription(filament)}
+                            <div className="flex items-center justify-between w-full">
+                              {/* Descripción del filamento */}
+                              <span className="font-medium">{filament.type.toUpperCase()}</span>
+
+                              {/* Colores (máximo 3) */}
+                              <div className="flex gap-1 ml-2">
+                                {filament.color
+                                  .split(",")
+                                  .map((c: string, i: number) => (
+                                    <div
+                                      key={i}
+                                      className="w-4 h-4 rounded-full border"
+                                      style={{ backgroundColor: c }}
+                                    />
+                                  ))}
+                              </div>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -327,7 +339,7 @@ export function PrintingHistoryForm({
                       className="w-full"
                     />
 
-                    {(formData.filaments?.length ?? 0) > 1 && (
+                    {(formData.filamentConsumptions?.length ?? 0) > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
@@ -350,7 +362,7 @@ export function PrintingHistoryForm({
             {hasFilamentUsage ? (
               <p className="text-sm text-muted-foreground">
                 Total de gramos utilizados:{" "}
-                <span className="font-medium">{totalGrams.toFixed(2)}</span>
+                <span className="font-medium">{totalGrams?.toFixed(2)}</span>
               </p>
             ) : null}
           </section>

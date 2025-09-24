@@ -70,14 +70,12 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
 
   const filteredHistories = printingHistories.filter(history => {
     const matchesSearch = 
-      history.filament?.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      history.filament?.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
       history.printer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       history.printer?.model.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesType = typeFilter === "all" || history.type === typeFilter
     const matchesPrinter = printerFilter === "all" || history.printerId === printerFilter
-    const matchesFilament = filamentFilter === "all" || history.filamentId === filamentFilter
+    const matchesFilament = filamentFilter === "all" || history.filamentConsumptions?.some(f => f.filamentId === filamentFilter)
 
     return matchesSearch && matchesType && matchesPrinter && matchesFilament
   })
@@ -86,8 +84,8 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
     .map(id => printingHistories.find(h => h.printerId === id)?.printer)
     .filter(Boolean)
 
-  const uniqueFilaments = Array.from(new Set(printingHistories.map(h => h.filamentId)))
-    .map(id => printingHistories.find(h => h.filamentId === id)?.filament)
+  const uniqueFilaments = Array.from(new Set(printingHistories.map(h => h.filamentConsumptions?.map(f => f.filamentId)).flat()))
+    .map(id => printingHistories.find(h => h.filamentConsumptions?.some(f => f.filamentId === id))?.filamentConsumptions?.find(f => f.filamentId === id)?.filament)
     .filter(Boolean)
 
   if (isLoading) {
