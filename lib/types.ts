@@ -13,7 +13,6 @@ export interface Sale {
   status: string
   estimatedTotal?: number | null
   finalTotal?: number | null
-  clientName?: string
   createdAt: string
   client?: Client
 }
@@ -49,16 +48,16 @@ export interface SaleDetail {
   id?: string
   saleId: string
   productId?: string
-  filamentId: string
   quantity: number
   comments: string
   workPackageId: string
   workPackagePerHour: number
+  laborCost: number
+  subTotal: number
   // Propiedades anidadas de la API
   sale?: Sale
   workPackage?: WorkPackage
   product?: Product,
-  PrintingHistory?: PrintingHistory
 }
 
 export interface Expense {

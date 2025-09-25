@@ -62,7 +62,7 @@ export function FilamentList({
   const [isLoading, setIsLoading] = useState(true);
   const [deleteFilament, setDeleteFilament] = useState<Filament | null>(null);
   const [availableColors, setAvailableColors] = useState<string[]>([]);
-  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedColor, setSelectedColor] = useState<string[]>([]);
   const { formatCurrency } = useLocale();
 
   const fetchFilaments = async () => {
@@ -92,17 +92,29 @@ export function FilamentList({
   }, [refreshTrigger]);
 
   useEffect(() => {
-    const filtered = filaments?.filter(
-      (filament) =>
-        (filament.type || "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        (filament.color || "")
-          .map((c) => c.toLowerCase().trim())
-          .includes(searchTerm.toLowerCase())
-    );
-    setFilteredFilaments(filtered || []);
-  }, [searchTerm, filaments]);
+    if (!filaments) {
+      setFilteredFilaments([]);
+      return;
+    }
+
+    const filtered = filaments.filter((filament) => {
+      const matchesSearch = (filament.type || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+      const matchesColor =
+        selectedColor.length === 0 ||
+        selectedColor.some((c) =>
+          (filament.color || []).some((fc) =>
+            fc.toLowerCase().includes(c.toLowerCase())
+          )
+        );
+
+      return matchesSearch && matchesColor;
+    });
+
+    setFilteredFilaments(filtered);
+  }, [searchTerm, filaments, selectedColor]);
 
   const handleDelete = async (filament: Filament) => {
     try {
@@ -152,6 +164,10 @@ export function FilamentList({
         </CardContent>
       </Card>
     );
+  }
+
+  function removeColorFromSelected(color: string): void {
+    setSelectedColor((prev) => prev.filter((c) => c !== color));
   }
 
   return (
@@ -227,9 +243,10 @@ export function FilamentList({
             {/* Filtro de colores */}
             <div className="flex items-center justify-end gap-2">
               <MultiColorPicker
-                value={selectedColor.split(",")}
-                onChange={(colors) => setSelectedColor(colors.join(","))}
+                value={selectedColor}
+                onChange={(colors) => setSelectedColor(colors)}
                 availableColors={availableColors}
+                limitSelection={5}
               />
             </div>
           </div>

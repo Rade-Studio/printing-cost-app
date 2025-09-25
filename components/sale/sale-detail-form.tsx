@@ -92,9 +92,9 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
       }
     }
 
-
     // Costo total considerando cantidad
-    const totalCost = ((formData.PrintingHistory?.totalCost || 0 ) + workPackageCost) * formData?.quantity || 0
+    const totalCost = ((productSelected?.printingHistory?.totalCost || 0 ) + workPackageCost) * formData?.quantity || 0
+    console.log("totalCost", totalCost)
     const marginPercent = Number(
       Array.isArray(configs)
         ? configs.find(c => c.key === 'DefaultProfitMargin')?.value

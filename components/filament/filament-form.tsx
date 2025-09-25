@@ -62,7 +62,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
           Id: filament.id 
         })
       } else {
-        await apiClient.createFilament(formData)
+        await apiClient.createFilament({ ...formData, color: formData.color.join(",") })
       }
       onSuccess()
     } catch (err) {

@@ -3,6 +3,7 @@
 import * as Popover from "@radix-ui/react-popover";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { on } from "events";
 
 const PRESET_COLORS = [
   "#D91E1E",
@@ -23,17 +24,22 @@ interface MultiColorPickerProps {
   value?: string[];
   onChange?: (colors: string[]) => void;
   availableColors?: string[];
+  limitSelection?: number;
 }
 
 export function MultiColorPicker({
   value = [],
   onChange,
   availableColors,
+  limitSelection,
 }: MultiColorPickerProps) {
   const [selectedColors, setSelectedColors] = useState<string[]>(value);
   const [tempColor, setTempColor] = useState<string>("#000000");
   const [availableColorsToShow, setAvailableColorsToShow] = useState<string[]>(
     availableColors || PRESET_COLORS
+  );
+  const [limitValue, setLimitSelectionToShow] = useState<number>(
+    limitSelection || 2
   );
 
   const updateColors = (newColors: string[]) => {
@@ -44,13 +50,13 @@ export function MultiColorPicker({
   const handleTogglePreset = (color: string) => {
     if (selectedColors.includes(color)) {
       updateColors(selectedColors.filter((c) => c !== color)); // quitar
-    } else if (selectedColors.length < 3) {
+    } else if (selectedColors.length < limitValue) {
       updateColors([...selectedColors, color]); // agregar
     }
   };
 
   const handleAddCustomColor = () => {
-    if (!selectedColors.includes(tempColor) && selectedColors.length < 3) {
+    if (!selectedColors.includes(tempColor) && selectedColors.length < limitValue) {
       updateColors([...selectedColors, tempColor]);
     }
   };
@@ -100,46 +106,48 @@ export function MultiColorPicker({
           </button>
         </Popover.Trigger>
 
-        <Popover.Content
-          className="bg-white p-3 rounded-xl shadow-md w-56"
-          sideOffset={5}
-          collisionPadding={8}
-        >
-          {/* Presets (toggle) */}
-          <div className="grid grid-cols-6 gap-2 mb-3">
-            {availableColorsToShow.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={`w-8 h-8 rounded-full border hover:scale-110 transition ${
-                  selectedColors.includes(c) ? "ring-2 ring-blue-500" : ""
-                }`}
-                style={{ backgroundColor: c }}
-                onClick={() => handleTogglePreset(c)}
-              />
-            ))}
-          </div>
-
-          {/* Custom color + agregar */}
-          {!availableColors ? (
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={tempColor}
-                onChange={(e) => setTempColor(e.target.value)}
-                className="w-12 h-10 border rounded cursor-pointer"
-              />
-              <button
-                type="button"
-                onClick={handleAddCustomColor}
-                disabled={selectedColors.length >= 3}
-                className="px-3 py-1 bg-blue-500 text-white text-sm rounded disabled:opacity-50"
-              >
-                Agregar
-              </button>
+        <Popover.Portal>
+          <Popover.Content
+            className="bg-white p-3 rounded-xl shadow-xs w-56"
+            sideOffset={5}
+            collisionPadding={8}
+          >
+            {/* Presets (toggle) */}
+            <div className="grid grid-cols-6 gap-2 mb-3">
+              {availableColorsToShow.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`w-8 h-8 rounded-full border hover:scale-110 transition ${
+                    selectedColors.includes(c) ? "ring-2 ring-blue-500" : ""
+                  }`}
+                  style={{ backgroundColor: c }}
+                  onClick={() => handleTogglePreset(c)}
+                />
+              ))}
             </div>
-          ) : null}
-        </Popover.Content>
+
+            {/* Custom color + agregar */}
+            {!availableColors ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={tempColor}
+                  onChange={(e) => setTempColor(e.target.value)}
+                  className="w-12 h-10 border rounded cursor-pointer"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomColor}
+                  disabled={selectedColors.length >= 3}
+                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded disabled:opacity-50"
+                >
+                  Agregar
+                </button>
+              </div>
+            ) : null}
+          </Popover.Content>
+        </Popover.Portal>
       </Popover.Root>
     </div>
   );

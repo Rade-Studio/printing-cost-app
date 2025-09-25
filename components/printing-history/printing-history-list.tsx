@@ -1,92 +1,179 @@
-"use client"
+"use client";
 
-import type React from "react"
-import type { PrintingHistory } from "@/lib/types"
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { apiClient } from "@/lib/api"
-import { Loader2, Plus, Edit, Trash2, History, Filter, Search } from "lucide-react"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import type React from "react";
+import type { PrintingHistory } from "@/lib/types";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { apiClient } from "@/lib/api";
+import {
+  Loader2,
+  Plus,
+  Edit,
+  Trash2,
+  History,
+  Filter,
+  Search,
+  Weight,
+  Lightbulb,
+  Calculator,
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { MultiColorPicker } from "../filament/multiply-color-picker";
+import { useLocale } from "@/app/localContext";
 
 interface PrintingHistoryListProps {
-  onEdit: (printingHistory: PrintingHistory) => void
-  onAdd: () => void
-  refreshTrigger: number
+  onEdit: (printingHistory: PrintingHistory) => void;
+  onAdd: () => void;
+  refreshTrigger: number;
 }
 
 const printingTypes = [
-  { value: "prototype", label: "Prototipo", color: "bg-blue-100 text-blue-800" },
+  {
+    value: "prototype",
+    label: "Prototipo",
+    color: "bg-blue-100 text-blue-800",
+  },
   { value: "final", label: "Definitivo", color: "bg-green-100 text-green-800" },
-  { value: "calibration", label: "Calibración", color: "bg-yellow-100 text-yellow-800" },
+  {
+    value: "calibration",
+    label: "Calibración",
+    color: "bg-yellow-100 text-yellow-800",
+  },
   { value: "test", label: "Prueba", color: "bg-orange-100 text-orange-800" },
   { value: "rework", label: "Retrabajo", color: "bg-red-100 text-red-800" },
   { value: "sample", label: "Muestra", color: "bg-purple-100 text-purple-800" },
-  { value: "production", label: "Producción", color: "bg-indigo-100 text-indigo-800" },
-  { value: "other", label: "Otro", color: "bg-gray-100 text-gray-800" }
-]
+  {
+    value: "production",
+    label: "Producción",
+    color: "bg-indigo-100 text-indigo-800",
+  },
+  { value: "other", label: "Otro", color: "bg-gray-100 text-gray-800" },
+];
 
-export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingHistoryListProps) {
-  const [printingHistories, setPrintingHistories] = useState<PrintingHistory[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
-  const [printerFilter, setPrinterFilter] = useState("all")
-  const [filamentFilter, setFilamentFilter] = useState("all")
+export function PrintingHistoryList({
+  onEdit,
+  onAdd,
+  refreshTrigger,
+}: PrintingHistoryListProps) {
+  const [printingHistories, setPrintingHistories] = useState<PrintingHistory[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [printerFilter, setPrinterFilter] = useState("all");
+  const [filamentFilter, setFilamentFilter] = useState("all");
+  const [selectedColor, setSelectedColor] = useState<string[]>([]);
+  const { formatCurrency } = useLocale();
 
   const loadPrintingHistories = async () => {
     try {
-      setIsLoading(true)
-      const data = await apiClient.getPrintingHistory()
-      setPrintingHistories(data?.toReversed() || [])
+      setIsLoading(true);
+      const data = await apiClient.getPrintingHistory();
+      setPrintingHistories(data?.toReversed() || []);
     } catch (err) {
-      setError("Error al cargar el historial de impresión")
+      setError("Error al cargar el historial de impresión");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadPrintingHistories()
-  }, [refreshTrigger])
+    loadPrintingHistories();
+  }, [refreshTrigger]);
 
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.deletePrintingHistory(id)
-      loadPrintingHistories()
+      await apiClient.deletePrintingHistory(id);
+      loadPrintingHistories();
     } catch (err) {
-      setError("Error al eliminar el historial de impresión")
+      setError("Error al eliminar el historial de impresión");
     }
-  }
+  };
 
   const getTypeInfo = (type: string) => {
-    return printingTypes.find(t => t.value === type) || { label: type, color: "bg-gray-100 text-gray-800" }
-  }
+    return (
+      printingTypes.find((t) => t.value === type) || {
+        label: type,
+        color: "bg-gray-100 text-gray-800",
+      }
+    );
+  };
 
-  const filteredHistories = printingHistories.filter(history => {
-    const matchesSearch = 
+  const filteredHistories = printingHistories.filter((history) => {
+    const matchesSearch =
       history.printer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      history.printer?.model.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesType = typeFilter === "all" || history.type === typeFilter
-    const matchesPrinter = printerFilter === "all" || history.printerId === printerFilter
-    const matchesFilament = filamentFilter === "all" || history.filamentConsumptions?.some(f => f.filamentId === filamentFilter)
+      history.printer?.model.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesType && matchesPrinter && matchesFilament
-  })
+    const matchesType = typeFilter === "all" || history.type === typeFilter;
+    const matchesPrinter =
+      printerFilter === "all" || history.printerId === printerFilter;
 
-  const uniquePrinters = Array.from(new Set(printingHistories.map(h => h.printerId)))
-    .map(id => printingHistories.find(h => h.printerId === id)?.printer)
-    .filter(Boolean)
+    const matchesColor =
+      selectedColor.length === 0 ||
+      selectedColor.some((c) =>
+        history.filamentConsumptions?.some((fc) =>
+          fc.filament?.color
+            .split(",")
+            .some((c) => c.toLowerCase().includes(c.toLowerCase()))
+        )
+      );
 
-  const uniqueFilaments = Array.from(new Set(printingHistories.map(h => h.filamentConsumptions?.map(f => f.filamentId)).flat()))
-    .map(id => printingHistories.find(h => h.filamentConsumptions?.some(f => f.filamentId === id))?.filamentConsumptions?.find(f => f.filamentId === id)?.filament)
-    .filter(Boolean)
+    return matchesSearch && matchesType && matchesPrinter && matchesColor;
+  });
+
+  const uniquePrinters = Array.from(
+    new Set(printingHistories.map((h) => h.printerId))
+  )
+    .map((id) => printingHistories.find((h) => h.printerId === id)?.printer)
+    .filter(Boolean);
+
+  const uniqueColors = Array.from(
+    new Set(
+      printingHistories
+        .map((h) =>
+          h.filamentConsumptions
+            ?.map((fc) => fc.filament?.color?.split(","))
+            .flat()
+        )
+        .flat()
+    )
+  );
 
   if (isLoading) {
     return (
@@ -94,7 +181,7 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
         <Loader2 className="h-8 w-8 animate-spin" />
         <span className="ml-2">Cargando historial de impresión...</span>
       </div>
-    )
+    );
   }
 
   return (
@@ -110,7 +197,6 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
           </CardDescription>
         </CardHeader>
         <CardContent>
-
           {/* Resumen */}
           {filteredHistories.length > 0 && (
             <div className="mt-4 p-4 bg-muted rounded-lg">
@@ -123,19 +209,41 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
                 <div>
                   <p className="text-muted-foreground">Tiempo total:</p>
                   <p className="font-medium">
-                    {filteredHistories.reduce((sum, h) => sum + h.printTimeHours, 0).toFixed(1)} h
+                    {filteredHistories
+                      .reduce((sum, h) => sum + h.printTimeHours, 0)
+                      .toFixed(1)}{" "}
+                    h
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Total de filamento gastado:</p>
+                  <p className="text-muted-foreground">
+                    Total de filamento gastado:
+                  </p>
                   <p className="font-medium">
-                    {filteredHistories.reduce((sum, h) => sum + h.valueVolumePrinted, 0).toFixed(2)} g
+                    {filteredHistories
+                      .reduce(
+                        (sum, h) =>
+                          sum +
+                          (h.filamentConsumptions?.reduce(
+                            (sum, fc) => sum + fc.gramsUsed,
+                            0
+                          ) ?? 0),
+                        0
+                      )
+                      .toFixed(2)}{" "}
+                    g
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Tiempo promedio:</p>
                   <p className="font-medium">
-                    {(filteredHistories.reduce((sum, h) => sum + h.printTimeHours, 0) / filteredHistories.length).toFixed(1)} h
+                    {(
+                      filteredHistories.reduce(
+                        (sum, h) => sum + h.printTimeHours,
+                        0
+                      ) / filteredHistories.length
+                    ).toFixed(1)}{" "}
+                    h
                   </p>
                 </div>
               </div>
@@ -181,19 +289,12 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
                 ))}
               </SelectContent>
             </Select>
-            <Select value={filamentFilter} onValueChange={setFilamentFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Filamento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los filamentos</SelectItem>
-                {uniqueFilaments.map((filament) => (
-                  <SelectItem key={filament?.id} value={filament?.id!}>
-                    {filament?.type} - {filament?.color}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <MultiColorPicker
+              value={selectedColor}
+              onChange={setSelectedColor}
+              availableColors={uniqueColors}
+              limitSelection={5}
+            />
           </div>
 
           {/* Botón agregar */}
@@ -213,10 +314,12 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
           {/* Tabla */}
           {filteredHistories.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              {searchTerm || typeFilter !== "all" || printerFilter !== "all" || filamentFilter !== "all" 
+              {searchTerm ||
+              typeFilter !== "all" ||
+              printerFilter !== "all" ||
+              filamentFilter !== "all"
                 ? "No se encontraron impresiones con los filtros aplicados"
-                : "No hay historial de impresión registrado"
-              }
+                : "No hay historial de impresión registrado"}
             </div>
           ) : (
             <div className="rounded-md border">
@@ -227,13 +330,14 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
                     <TableHead>Filamento</TableHead>
                     <TableHead>Impresora</TableHead>
                     <TableHead>Tiempo (h)</TableHead>
-                    <TableHead>Volumen (cm³)</TableHead>
+                    <TableHead>Gramos (cm³)</TableHead>
+                    <TableHead>Costos</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredHistories.map((history) => {
-                    const typeInfo = getTypeInfo(history.type)
+                    const typeInfo = getTypeInfo(history.type);
                     return (
                       <TableRow key={history.id}>
                         <TableCell>
@@ -243,18 +347,67 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{history.filament?.type}</div>
-                            <div className="text-sm text-muted-foreground">{history.filament?.color}</div>
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex gap-1 ml-2">
+                                {history.filamentConsumptions &&
+                                  Array.from(
+                                    new Set(
+                                      history.filamentConsumptions
+                                        .map((fc) => fc.filament?.color)
+                                        .filter(Boolean)
+                                        .flatMap((colorStr) =>
+                                          colorStr!.split(",")
+                                        )
+                                    )
+                                  ).slice(0, 4).map((c: string, i: number) => (
+                                    <div
+                                      key={i}
+                                      className="w-4 h-4 rounded-full border"
+                                      style={{ backgroundColor: c }}
+                                    />
+                                  ))}
+                              </div>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{history.printer?.name}</div>
-                            <div className="text-sm text-muted-foreground">{history.printer?.model}</div>
+                            <div className="font-medium">
+                              {history.printer?.name}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {history.printer?.model}
+                            </div>
                           </div>
                         </TableCell>
-                        <TableCell className="font-mono">{history.printTimeHours}</TableCell>
-                        <TableCell className="font-mono">{history.valueVolumePrinted}</TableCell>
+                        <TableCell className="font-mono">
+                          {history.printTimeHours}
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          {history.totalGramsUsed}
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          <div className="space-y-1 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Weight className="h-3 w-3 text-muted-foreground" />
+                              <span>
+                                {formatCurrency(history.totalFilamentCost || 0)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Lightbulb className="h-3 w-3 text-muted-foreground" />
+                              <span>
+                                {formatCurrency(history.totalEnergyCost || 0)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calculator className="h-3 w-3 text-muted-foreground" />
+                              <span>
+                                {formatCurrency(history.totalCost || 0)}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -272,14 +425,19 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>¿Eliminar impresión?</AlertDialogTitle>
+                                  <AlertDialogTitle>
+                                    ¿Eliminar impresión?
+                                  </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Esta acción no se puede deshacer. Se eliminará permanentemente
-                                    este registro del historial de impresión.
+                                    Esta acción no se puede deshacer. Se
+                                    eliminará permanentemente este registro del
+                                    historial de impresión.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogCancel>
+                                    Cancelar
+                                  </AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => handleDelete(history.id!)}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -292,15 +450,14 @@ export function PrintingHistoryList({ onEdit, onAdd, refreshTrigger }: PrintingH
                           </div>
                         </TableCell>
                       </TableRow>
-                    )
+                    );
                   })}
                 </TableBody>
               </Table>
             </div>
           )}
-
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
