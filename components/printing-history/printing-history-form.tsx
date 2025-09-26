@@ -57,7 +57,7 @@ export function PrintingHistoryForm({
 }: PrintingHistoryFormProps) {
   const [formData, setFormData] = useState<PrintingHistory>({
     printerId: printingHistory?.printerId || "",
-    productId: printingHistory?.productId || "",
+    productId: printingHistory?.productId || undefined,
     totalCost: printingHistory?.totalCost || undefined,
     totalEnergyCost: printingHistory?.totalEnergyCost || undefined,
     totalFilamentCost: printingHistory?.totalFilamentCost || undefined,
