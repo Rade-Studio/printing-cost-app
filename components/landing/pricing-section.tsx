@@ -21,7 +21,7 @@ const features = [
 export function PricingSection() {
   return (
     <section id="pricing" className="py-20 lg:py-32">
-      <div className="container">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-balance">
             Precios simples y transparentes

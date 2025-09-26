@@ -23,9 +23,9 @@ export default function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="landing-page min-h-screen bg-background overflow-x-hidden">
       <Header />
-      <main className="relative">
+      <main className="relative pt-16">
         <HeroSection />
         <DemoSection />
         <FeaturesSection />

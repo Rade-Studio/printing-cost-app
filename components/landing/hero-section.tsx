@@ -37,7 +37,7 @@ export function HeroSection() {
   return (
     <section
       ref={heroRef}
-      className="relative py-16 sm:py-20 lg:py-32 opacity-0 translate-y-8 transition-all duration-1000 ease-out"
+      className="relative py-16 sm:py-20 lg:py-32 fade-in-up"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="mx-auto max-w-4xl text-center">
