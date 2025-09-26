@@ -20,7 +20,7 @@ export interface Sale {
 export interface Filament {
   id?: string
   type: string
-  color: string[]
+  color: string[] | string
   costPerGram: number
   stockGrams: number
   density: number

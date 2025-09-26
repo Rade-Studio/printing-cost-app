@@ -1,6 +1,35 @@
 import { AuthService } from "./auth"
 import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, Subscription, SystemConfig, WorkPackage } from "./types";
 
+// Interfaces para paginación
+export interface PaginationRequest {
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  sortBy?: string;
+  sortDescending?: boolean;
+}
+
+export interface PaginationMetadata {
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMetadata;
+}
+
+export interface FilamentFilters extends PaginationRequest {
+  type?: string;
+  color?: string;
+  threshold?: number;
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
 class ApiClient {
@@ -127,7 +156,40 @@ class ApiClient {
   }
 
   // Filament endpoints
-  async getFilaments(): Promise<Filament[] | null> {
+  async getFilaments(filters: FilamentFilters = {}): Promise<PaginatedResponse<Filament> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+    if (filters.threshold) params.append('threshold', filters.threshold.toString());
+
+    let url: string;
+    if (filters.type) {
+      url = `/filament/type/${filters.type}?${params}`;
+    } else if (filters.color) {
+      // Para colores múltiples, usar el endpoint general con searchTerm
+      if (filters.searchTerm) {
+        // Si ya hay un searchTerm, combinar con colores
+        params.set('searchTerm', `${filters.searchTerm} ${filters.color}`);
+      } else {
+        // Si no hay searchTerm, usar solo los colores
+        params.set('searchTerm', filters.color);
+      }
+      url = `/filament/?${params}`;
+    } else if (filters.threshold !== undefined) {
+      url = `/filament/low-stock?${params}`;
+    } else {
+      url = `/filament/?${params}`;
+    }
+
+    return this.request<PaginatedResponse<Filament> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllFilaments(): Promise<Filament[] | null> {
     return this.request("/filament/")
   }
 
