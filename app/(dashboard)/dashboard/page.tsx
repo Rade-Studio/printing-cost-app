@@ -286,9 +286,23 @@ export default function DashboardPage() {
                   
                   return (
                     <div key={filament.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                      <div>
-                        <p className="font-semibold text-foreground">{filament.type} {filament.color}</p>
-                        <p className="text-sm text-muted-foreground">Costo: {formatCurrency(filament.costPerGram)}/g</p>
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <p className="font-semibold text-foreground">{filament.type}</p>
+                          <p className="text-sm text-muted-foreground">Costo: {formatCurrency(filament.costPerGram)}/g</p>
+                        </div>
+                        <div className="flex gap-1">
+                          {(Array.isArray(filament.color) 
+                            ? filament.color 
+                            : filament.color.split(',').map(c => c.trim())
+                          ).map((c, i) => (
+                            <div
+                              key={i}
+                              className="w-8 h-8 rounded-full border"
+                              style={{ backgroundColor: c }}
+                            />
+                          ))}
+                        </div>
                       </div>
                       <div className="text-right">
                         <p className={`font-bold ${statusColor}`}>{filament.stockGrams}g</p>
