@@ -27,8 +27,8 @@ export function Header() {
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 w-full border-b transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-sm' 
-          : 'bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60'
+          ? 'bg-[#E6F3F4]/95 backdrop-blur-md shadow-sm' 
+          : 'bg-[#E6F3F4]/95 backdrop-blur supports-[backdrop-filter]:bg-[#E6F3F4]/60'
       }`}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -77,7 +77,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-white border-b shadow-lg">
+        <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-[#E6F3F4] border-b shadow-lg">
           <div className="px-4 py-6 space-y-4">
             <nav className="space-y-4">
               <a

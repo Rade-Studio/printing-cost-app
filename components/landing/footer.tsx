@@ -2,7 +2,7 @@ import { Printer } from "lucide-react"
 
 export function Footer() {
   return (
-    <footer className="border-t bg-gray-50/30">
+    <footer className="border-t bg-[#E6F3F4]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid gap-8 md:grid-cols-4">
           <div className="space-y-4">

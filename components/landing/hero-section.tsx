@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Play } from "lucide-react"
 import { useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { PrinterAnimation } from "./printer-animation"
 
 export function HeroSection() {
   const heroRef = useRef<HTMLElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -35,6 +37,10 @@ export function HeroSection() {
     }
   }
 
+  const handleStartNow = () => {
+    router.push("/signup")
+  }
+
   return (
     <section
       ref={heroRef}
@@ -58,7 +64,7 @@ export function HeroSection() {
             </p>
 
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
-              <Button size="lg" className="w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base">
+              <Button size="lg" className="w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base" onClick={handleStartNow}>
                 Comenzar Ahora
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
