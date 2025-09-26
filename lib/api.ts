@@ -1,5 +1,5 @@
 import { AuthService } from "./auth"
-import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
+import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, Subscription, SystemConfig, WorkPackage } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
@@ -311,6 +311,24 @@ class ApiClient {
   // Dashboard endpoints
   async getDashboard(): Promise<Dashboard | null> {
     return this.request<Dashboard | null>("/dashboard/")
+  }
+
+  // Subscription endpoints
+  async getSubscription(): Promise<Subscription | null> {
+    return this.request<Subscription | null>("/subscription")
+  }
+
+  async updateSubscription(subscription: any): Promise<Subscription | null> {
+    return this.request<Subscription | null>("/subscription", {
+      method: "PUT",
+      body: JSON.stringify(subscription),
+    })
+  }
+
+  async renewSubscription(): Promise<Subscription | null> {
+    return this.request<Subscription | null>("/subscription/renew", {
+      method: "POST",
+    })
   }
 }
 

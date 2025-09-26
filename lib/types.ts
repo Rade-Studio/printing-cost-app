@@ -139,3 +139,10 @@ export interface CalculatePrintingHistoryResponse {
   totalFilamentCost: number
   totalCost: number
 }
+
+export interface Subscription {
+  startDate: string
+  endDate: string
+  isActive: boolean
+  isTrial: boolean
+}

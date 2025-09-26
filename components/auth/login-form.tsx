@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AuthService } from "@/lib/auth"
 import { Loader2, Layers3 } from "lucide-react"
+import { useSubscriptionValidationAfterLogin } from "@/lib/hooks/use-subscription-validation-after-login"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -17,6 +18,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
+  const { validateSubscriptionAfterLogin, isValidating } = useSubscriptionValidationAfterLogin()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,8 +26,18 @@ export function LoginForm() {
     setError("")
 
     try {
+      // Primero hacer login
       await AuthService.login(email, password)
-      router.push("/dashboard")
+      
+      // Luego validar suscripción
+      const isSubscriptionValid = await validateSubscriptionAfterLogin()
+      
+      if (isSubscriptionValid) {
+        // Solo redirigir al dashboard si la suscripción es válida
+        router.push("/dashboard")
+      }
+      // Si no es válida, el hook ya redirigió a renovar-suscripcion
+      
     } catch (err) {
       setError("Credenciales incorrectas. Por favor, intenta de nuevo.")
     } finally {
@@ -86,12 +98,17 @@ export function LoginForm() {
             <Button
               type="submit"
               className="w-full h-12 text-base font-medium rounded-lg shadow-sm"
-              disabled={isLoading}
+              disabled={isLoading || isValidating}
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Iniciando sesión...
+                </>
+              ) : isValidating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Validando suscripción...
                 </>
               ) : (
                 "Iniciar sesión"
