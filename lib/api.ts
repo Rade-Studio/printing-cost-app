@@ -1,5 +1,5 @@
 import { AuthService } from "./auth"
-import { Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
+import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
@@ -7,6 +7,10 @@ class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
     const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
     const url = `${API_BASE_URL}${path}`;
+
+    if (AuthService.isTokenExpired()) {
+      window.location.href = "/login"
+    }
 
     // Solo agrega Content-Type si hay body; evita preflights innecesarios en GET/DELETE.
     const baseHeaders: Record<string, string> = {
@@ -294,6 +298,13 @@ class ApiClient {
   async deletePrintingHistory(id: string) {
     return this.request(`/printing-history/${id}`, {
       method: "DELETE",
+    })
+  }
+
+  async calculatePrintingHistory(printingHistory: any): Promise<CalculatePrintingHistoryResponse | null> {
+    return this.request<CalculatePrintingHistoryResponse | null>("/printing-history/calculate", {
+      method: "POST",
+      body: JSON.stringify(printingHistory),
     })
   }
 

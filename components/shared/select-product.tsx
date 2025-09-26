@@ -24,7 +24,6 @@ export function ProductSelect({ products, formData, handleChange }: any) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Producto</h3>
       <div className="grid grid-cols-3 md:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="product">Producto</Label>

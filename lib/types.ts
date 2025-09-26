@@ -13,7 +13,6 @@ export interface Sale {
   status: string
   estimatedTotal?: number | null
   finalTotal?: number | null
-  clientName?: string
   createdAt: string
   client?: Client
 }
@@ -21,7 +20,7 @@ export interface Sale {
 export interface Filament {
   id?: string
   type: string
-  color: string
+  color: string[]
   costPerGram: number
   stockGrams: number
   density: number
@@ -41,28 +40,23 @@ export interface Product {
   description: string
   imageUrl?: string
   modelUrl?: string
-  externalLink?: string
+  externalLink?: string,
+  printingHistory?: PrintingHistory
 }
 
 export interface SaleDetail {
   id?: string
   saleId: string
   productId?: string
-  productDescription: string
-  filamentId: string
-  weightGrams: number
-  printTimeHours: number
   quantity: number
   comments: string
   workPackageId: string
-  machineRateApplied: number
   workPackagePerHour: number
   laborCost: number
   subTotal: number
   // Propiedades anidadas de la API
   sale?: Sale
   workPackage?: WorkPackage
-  filament?: Filament,
   product?: Product,
 }
 
@@ -90,16 +84,34 @@ export interface Printer {
   kwhPerHour: number
 }
 
+export interface FilamentConsumption {
+  id?: string
+  printingHistoryId?: string
+  filamentId: string
+  gramsUsed: number
+  filamentCost?: number
+  filament?: Filament
+}
+
 export interface PrintingHistory {
   id?: string
-  saleDetailId: string
-  filamentId: string
   printerId: string
+  productId?: string
   printTimeHours: number
-  valueVolumePrinted: number
+  totalGramsUsed?: number
+  totalCost?: number
+  totalEnergyCost?: number
+  totalFilamentCost?: number
   type: string
-  filament?: Filament
+  filamentConsumptions?: FilamentConsumption[]
   printer?: Printer
+}
+
+export interface PrintingHistoryCalculation {
+  totalGramsUsed: number
+  totalEnergyCost: number
+  totalFilamentCost: number
+  totalCost: number
 }
 
 export interface Dashboard {
@@ -119,4 +131,11 @@ export interface Dashboard {
   recentSales: Sale[],
   printers: Printer[],
   filaments: Filament[],
+}
+
+export interface CalculatePrintingHistoryResponse {
+  totalGramsUsed: number
+  totalEnergyCost: number
+  totalFilamentCost: number
+  totalCost: number
 }

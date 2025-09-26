@@ -2,6 +2,7 @@
 "use client"
 import { createContext, useContext, useState, ReactNode, useEffect } from "react"
 import { apiClient } from "@/lib/api"
+import { AuthService } from "@/lib/auth"
 
 type LocaleContextType = {
   locale: string
@@ -24,6 +25,10 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadCurrencyConfig = async () => {
       try {
+        if (!AuthService.isAuthenticated()) {
+          return
+        }
+
         const configs = await apiClient.getSystemConfig()
         const currencyConfig = configs?.find(config => config.key === "DefaultCurrency")
 

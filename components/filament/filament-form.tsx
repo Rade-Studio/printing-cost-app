@@ -12,6 +12,7 @@ import { apiClient } from "@/lib/api"
 import { Loader2, Package } from "lucide-react"
 import { useLocale } from "@/app/localContext"
 import { Filament } from "@/lib/types"
+import { MultiColorPicker } from "./multiply-color-picker"
 
 interface FilamentFormProps {
   filament?: Filament
@@ -39,7 +40,7 @@ const filamentTypes = [
 export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProps) {
   const [formData, setFormData] = useState<Filament>({
     type: filament?.type || "",
-    color: filament?.color || "",
+    color: filament?.color || [],
     costPerGram: filament?.costPerGram || 0,
     stockGrams: filament?.stockGrams || 0,
     density: filament?.density || 1,
@@ -55,9 +56,13 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
 
     try {
       if (filament?.id) {
-        await apiClient.updateFilament(filament.id, { ...formData, Id: filament.id })
+        await apiClient.updateFilament(filament.id, { 
+          ...formData, 
+          color: formData.color.join(","),
+          Id: filament.id 
+        })
       } else {
-        await apiClient.createFilament(formData)
+        await apiClient.createFilament({ ...formData, color: formData.color.join(",") })
       }
       onSuccess()
     } catch (err) {
@@ -67,7 +72,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
     }
   }
 
-  const handleChange = (field: keyof Filament, value: string | number) => {
+  const handleChange = (field: keyof Filament, value: string | number | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -104,14 +109,15 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
             </div>
             <div className="space-y-2">
               <Label htmlFor="color">Color</Label>
-              <Input
+              <MultiColorPicker value={formData.color} onChange={(colors) => handleChange("color", colors)} />
+              {/* <Input
                 id="color"
                 type="text"
                 placeholder="Rojo, Azul, Verde..."
                 value={formData.color}
                 onChange={(e) => handleChange("color", e.target.value)}
                 required
-              />
+              /> */}
             </div>
           </div>
 

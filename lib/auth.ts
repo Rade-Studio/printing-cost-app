@@ -19,6 +19,30 @@ export interface LoginResponse {
   }
 }
 
+export interface SignupResponse {
+  token: {
+    result: string
+    id: number
+    exception: null | string
+    status: string
+    isCanceled: boolean
+    isCompleted: boolean
+    isCompletedSuccessfully: boolean
+    creationOptions: string
+    asyncState: null | any
+    isFaulted: boolean
+  }
+}
+
+export interface SignupCreate {
+  email: string
+  password: string
+  companyName: string
+  fullName: string
+  phoneNumber: string
+  country: string
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
 export class AuthService {
@@ -48,9 +72,28 @@ export class AuthService {
     return data
   }
 
+  static async signup(data: SignupCreate): Promise<SignupResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      throw new Error("Error de registro")
+    }
+
+    const result = await response.json()
+    this.setToken(result.token.result)
+    return result
+  }
+
   static setToken(token: string): void {
     if (typeof window !== "undefined") {
-      const expiryTime = Date.now() + (3 * 60 * 60 * 1000) // 3 horas en milisegundos
+      // expira en 24 horas
+      const expiryTime = Date.now() + (24 * 60 * 60 * 1000)
       localStorage.setItem(this.TOKEN_KEY, token)
       localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString())
     }
@@ -94,6 +137,7 @@ export class AuthService {
 
   static getAuthHeaders(): Record<string, string> {
     const token = this.getToken()
+
     return token ? { Authorization: `Bearer ${token}` } : {}
   }
 
