@@ -32,7 +32,7 @@ export function Header() {
           <Button variant="outline" size="sm" onClick={() => router.push("/login")}>
             Iniciar Sesión
           </Button>
-          <Button size="sm" onClick={() => router.push("/signup")}>Prueba Gratis</Button>
+          {/* <Button size="sm" onClick={() => router.push("/signup")}>Prueba Gratis</Button> */}
         </nav>
       </div>
     </header>
