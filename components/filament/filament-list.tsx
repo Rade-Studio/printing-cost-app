@@ -195,6 +195,7 @@ export function FilamentList({
       searchTerm: "",
       sortBy: "type",
       sortDescending: false,
+      color: undefined,
     });
   };
 
@@ -338,64 +339,126 @@ export function FilamentList({
           </div>
         </CardHeader>
         <CardContent>
-          {/* Barra de búsqueda y controles básicos */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-center">
-            {/* Buscador */}
-            <div className="relative col-span-2">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Buscar filamentos por tipo o color..."
-                value={searchInput}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10"
+          {/* Filtros */}
+          <div className="space-y-4 mb-6">
+            {/* Fila 1: Búsqueda y filtros básicos */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Buscar filamentos por tipo o color..."
+                    value={searchInput}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-10"
+                  />
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
+                <Select value={filters.sortBy} onValueChange={handleSortChange}>
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Ordenar por" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="type">Tipo</SelectItem>
+                    <SelectItem value="costpergram">Costo por gramo</SelectItem>
+                    <SelectItem value="stockgrams">Stock</SelectItem>
+                    <SelectItem value="density">Densidad</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSortDirectionChange(!filters.sortDescending)}
+                >
+                  {filters.sortDescending ? "↓" : "↑"}
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Por página:</span>
+                <Select 
+                  value={filters.pageSize?.toString() || "10"} 
+                  onValueChange={(value) => handlePageSizeChange(Number(value))}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Fila 2: Filtro por colores */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="h-4 w-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">Filtrar por colores de filamento</span>
+                {selectedColor.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {selectedColor.length} seleccionado{selectedColor.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+              <MultiColorPicker
+                value={selectedColor}
+                onChange={(colors) => {
+                  setSelectedColor(colors);
+                  // Aplicar filtro inmediatamente cuando se seleccionan colores
+                  if (colors.length > 0) {
+                    // Hacer join de todos los colores seleccionados con comas
+                    const colorFilter = colors.join(",");
+                    setFilters(prev => ({ 
+                      ...prev, 
+                      color: colorFilter, 
+                      page: 1 
+                    }));
+                  } else {
+                    // Si no hay colores seleccionados, quitar el filtro de color
+                    setFilters(prev => ({ 
+                      ...prev, 
+                      color: undefined, 
+                      page: 1 
+                    }));
+                  }
+                }}
+                availableColors={availableColors}
+                limitSelection={10}
               />
-              {isSearching && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              {selectedColor.length > 0 && (
+                <div className="mt-2 flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedColor([]);
+                      setFilters(prev => ({ 
+                        ...prev, 
+                        color: undefined, 
+                        page: 1 
+                      }));
+                    }}
+                    className="text-xs"
+                  >
+                    Limpiar filtros
+                  </Button>
+                  <span className="text-xs text-gray-500">
+                    Mostrando filamentos que contengan alguno de los colores seleccionados
+                  </span>
                 </div>
               )}
-            </div>
-
-            {/* Ordenamiento */}
-            <div className="flex gap-2">
-              <Select value={filters.sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Ordenar por" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="type">Tipo</SelectItem>
-                  <SelectItem value="costpergram">Costo por gramo</SelectItem>
-                  <SelectItem value="stockgrams">Stock</SelectItem>
-                  <SelectItem value="density">Densidad</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleSortDirectionChange(!filters.sortDescending)}
-              >
-                {filters.sortDescending ? "↓" : "↑"}
-              </Button>
-            </div>
-
-            {/* Tamaño de página */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Por página:</span>
-              <Select 
-                value={filters.pageSize?.toString() || "10"} 
-                onValueChange={(value) => handlePageSizeChange(Number(value))}
-              >
-                <SelectTrigger className="w-20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
@@ -429,36 +492,6 @@ export function FilamentList({
                       {showLowStockOnly ? "Activo" : "Inactivo"}
                     </Button>
                   </div>
-                </div>
-
-                {/* Filtro de colores múltiples */}
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Filtro por Colores</label>
-                  <MultiColorPicker
-                    value={selectedColor}
-                    onChange={(colors) => {
-                      setSelectedColor(colors);
-                      // Aplicar filtro inmediatamente cuando se seleccionan colores
-                      if (colors.length > 0) {
-                        // Hacer join de todos los colores seleccionados con comas
-                        const colorFilter = colors.join(",");
-                        setFilters(prev => ({ 
-                          ...prev, 
-                          color: colorFilter, 
-                          page: 1 
-                        }));
-                      } else {
-                        // Si no hay colores seleccionados, quitar el filtro de color
-                        setFilters(prev => ({ 
-                          ...prev, 
-                          color: undefined, 
-                          page: 1 
-                        }));
-                      }
-                    }}
-                    availableColors={availableColors}
-                    limitSelection={5}
-                  />
                 </div>
               </div>
             </div>

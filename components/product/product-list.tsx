@@ -32,7 +32,7 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null)
   const [paginationParams, setPaginationParams] = useState<PaginationRequest>({
     page: 1,
-    pageSize: 12,
+    pageSize: 5,
     searchTerm: "",
     sortBy: "name",
     sortDescending: false
