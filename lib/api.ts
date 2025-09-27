@@ -106,7 +106,21 @@ class ApiClient {
   }
 
   // Sale endpoints
-  async getSales(): Promise<Sale[] | null> {
+  async getSales(filters: PaginationRequest = {}): Promise<PaginatedResponse<Sale> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/sale/?${params}`;
+    return this.request<PaginatedResponse<Sale> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllSales(): Promise<Sale[] | null> {
     return this.request("/sale/")
   }
 
@@ -239,7 +253,21 @@ class ApiClient {
   }
 
   // Products endpoints
-  async getProducts(): Promise<Product[] | null> {
+  async getProducts(filters: PaginationRequest = {}): Promise<PaginatedResponse<Product> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/product/?${params}`;
+    return this.request<PaginatedResponse<Product> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllProducts(): Promise<Product[] | null> {
     return this.request("/product/")
   }
 
