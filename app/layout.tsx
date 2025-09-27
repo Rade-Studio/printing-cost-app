@@ -25,11 +25,11 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <LocaleProvider>
-          <SystemConfigProvider>
+        <SystemConfigProvider>
+          <LocaleProvider>
             <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
-          </SystemConfigProvider>
-        </LocaleProvider>
+          </LocaleProvider>
+        </SystemConfigProvider>
         <Analytics />
       </body>
     </html>
