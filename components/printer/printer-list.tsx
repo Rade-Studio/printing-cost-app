@@ -16,37 +16,46 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { apiClient } from "@/lib/api"
-import { Search, Plus, Edit, Trash2, Package, AlertTriangle } from "lucide-react"
+import { apiClient, PaginationRequest, PaginatedResponse, PaginationMetadata } from "@/lib/api"
+import { Search, Plus, Edit, Trash2, Package, AlertTriangle, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
 import { useLocale } from "@/app/localContext"
 import { Printer } from "@/lib/types"
 
-interface FilamentListProps {
-  onEdit: (filament: Printer) => void
+interface PrinterListProps {
+  onEdit: (printer: Printer) => void
   onAdd: () => void
   refreshTrigger: number
 }
 
-export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps) {
+export function PrinterList({ onEdit, onAdd, refreshTrigger }: PrinterListProps) {
   const [printers, setPrinters] = useState<Printer[] | null>([])
-  const [filteredPrinters, setFilteredPrinters] = useState<Printer[] | null>([])
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [activePrinters, setActivePrinters] = useState<number>(0)
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deletePrinter, setDeletePrinter] = useState<Printer | null>(null)
+  const [paginationParams, setPaginationParams] = useState<PaginationRequest>({
+    page: 1,
+    pageSize: 10,
+    searchTerm: "",
+    sortBy: "name",
+    sortDescending: false
+  })
   const { formatCurrency } = useLocale()
 
-  const fetchPrinters = async () => {
+  const fetchPrinters = async (params: PaginationRequest = paginationParams) => {
     try {
       setIsLoading(true)
-      const data = await apiClient.getPrinters()
-      const activePrinters = countActivePrinters(data)
-      setActivePrinters(activePrinters)
-      setPrinters(data)
-      setFilteredPrinters(data)
+      const response = await apiClient.getPrinters(params)
+      if (response) {
+        setPrinters(response.data)
+        setPagination(response.pagination)
+        const activePrinters = countActivePrinters(response.data)
+        setActivePrinters(activePrinters)
+      }
     } catch (error) {
-      console.error("Error fetching filaments:", error)
+      console.error("Error fetching printers:", error)
     } finally {
       setIsLoading(false)
     }
@@ -56,14 +65,20 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
     fetchPrinters()
   }, [refreshTrigger])
 
+  // Debounced search effect
   useEffect(() => {
-    const filtered = printers?.filter(
-      (printer) =>
-        (printer.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (printer.model || "").toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    setFilteredPrinters(filtered || null)
-  }, [searchTerm, printers])
+    const timeoutId = setTimeout(() => {
+      const newParams = {
+        ...paginationParams,
+        searchTerm: searchTerm,
+        page: 1 // Reset to first page when searching
+      }
+      setPaginationParams(newParams)
+      fetchPrinters(newParams)
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm])
 
   const handleDelete = async (printer: Printer) => {
     if (!printer.id) {
@@ -73,11 +88,34 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
 
     try {
       await apiClient.deletePrinter(printer.id)
-      await fetchPrinters()
+      await fetchPrinters(paginationParams)
       setDeletePrinter(null)
     } catch (error) {
       console.error("Error deleting printer:", error)
     }
+  }
+
+  const handlePageChange = (newPage: number) => {
+    const newParams = { ...paginationParams, page: newPage }
+    setPaginationParams(newParams)
+    fetchPrinters(newParams)
+  }
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    const newParams = { ...paginationParams, pageSize: newPageSize, page: 1 }
+    setPaginationParams(newParams)
+    fetchPrinters(newParams)
+  }
+
+  const handleSort = (sortBy: string) => {
+    const newParams = {
+      ...paginationParams,
+      sortBy: sortBy,
+      sortDescending: paginationParams.sortBy === sortBy ? !paginationParams.sortDescending : false,
+      page: 1
+    }
+    setPaginationParams(newParams)
+    fetchPrinters(newParams)
   }
 
   const countActivePrinters = (printers: Printer[] | null) => {
@@ -103,7 +141,7 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
             <CardTitle className="text-sm font-medium">Total de Impresoras</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{printers?.length}</div>
+            <div className="text-2xl font-bold">{pagination?.totalCount || 0}</div>
             <p className="text-xs text-muted-foreground">Cantidad de impresoras</p>
           </CardContent>
         </Card>
@@ -145,7 +183,7 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
             </div>
           </div>
 
-          {filteredPrinters?.length === 0 ? (
+          {printers?.length === 0 ? (
             <div className="text-center py-8">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
@@ -159,16 +197,76 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead>Modelo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Consumo de Energía</TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort("name")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Nombre
+                        {paginationParams.sortBy === "name" && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? "↓" : "↑"}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort("description")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Descripción
+                        {paginationParams.sortBy === "description" && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? "↓" : "↑"}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort("model")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Modelo
+                        {paginationParams.sortBy === "model" && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? "↓" : "↑"}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort("status")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Estado
+                        {paginationParams.sortBy === "status" && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? "↓" : "↑"}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort("kwhperhour")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Consumo de Energía
+                        {paginationParams.sortBy === "kwhperhour" && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? "↓" : "↑"}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPrinters?.map((printer) => {
+                  {printers?.map((printer) => {
                     return (
                       <TableRow key={printer.id}>
                         <TableCell>
@@ -207,6 +305,98 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
                   })}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-2 py-4">
+              <div className="flex items-center space-x-2">
+                <p className="text-sm text-muted-foreground">
+                  Mostrando {((pagination.currentPage - 1) * pagination.pageSize) + 1} a{" "}
+                  {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)} de{" "}
+                  {pagination.totalCount} resultados
+                </p>
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="pageSize" className="text-sm text-muted-foreground">
+                    Por página:
+                  </label>
+                  <select
+                    id="pageSize"
+                    value={paginationParams.pageSize}
+                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                    className="h-8 w-16 rounded border border-input bg-background px-2 text-sm"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(1)}
+                  disabled={!pagination.hasPreviousPage}
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPreviousPage}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    let pageNumber;
+                    if (pagination.totalPages <= 5) {
+                      pageNumber = i + 1;
+                    } else if (pagination.currentPage <= 3) {
+                      pageNumber = i + 1;
+                    } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                      pageNumber = pagination.totalPages - 4 + i;
+                    } else {
+                      pageNumber = pagination.currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={pagination.currentPage === pageNumber ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNumber)}
+                        className="h-8 w-8"
+                      >
+                        {pageNumber}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNextPage}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.totalPages)}
+                  disabled={!pagination.hasNextPage}
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

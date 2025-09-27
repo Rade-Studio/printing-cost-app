@@ -54,6 +54,13 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
     setIsLoading(true)
     setError("")
 
+    // Validar que se haya seleccionado una categoría
+    if (!formData.category) {
+      setError("Por favor, selecciona una categoría para el gasto.")
+      setIsLoading(false)
+      return
+    }
+
     try {
       const expenseData = {
         ...formData,
@@ -111,7 +118,7 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
                 step="0.01"
                 placeholder="0.00"
                 value={formData.amount}
-                onChange={(e) => handleChange("amount", Number.parseFloat(e.target.value) || 0)}
+                onChange={(e) => handleChange("amount", Number.parseFloat(e.target.value))}
                 required
               />
             </div>
@@ -146,7 +153,11 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
           {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={isLoading} className="flex-1">
+            <Button 
+              type="submit" 
+              disabled={isLoading || !formData.category} 
+              className="flex-1"
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

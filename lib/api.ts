@@ -81,7 +81,21 @@ class ApiClient {
   }
 
   // Client endpoints
-  async getClients(): Promise<Client[] | null> {
+  async getClients(filters: PaginationRequest = {}): Promise<PaginatedResponse<Client> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/client/?${params}`;
+    return this.request<PaginatedResponse<Client> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllClients(): Promise<Client[] | null> {
     return this.request("/client/")
   }
 
@@ -292,7 +306,21 @@ class ApiClient {
   }
 
   // Expense endpoints
-  async getExpenses(): Promise<Expense[] | null> {
+  async getExpenses(filters: PaginationRequest = {}): Promise<PaginatedResponse<Expense> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/expense/?${params}`;
+    return this.request<PaginatedResponse<Expense> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllExpenses(): Promise<Expense[] | null> {
     return this.request("/expense/")
   }
 
@@ -342,7 +370,21 @@ class ApiClient {
   }
 
   // Printer endpoints
-  async getPrinters(): Promise<Printer[] | null> {
+  async getPrinters(filters: PaginationRequest = {}): Promise<PaginatedResponse<Printer> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/printer/?${params}`;
+    return this.request<PaginatedResponse<Printer> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllPrinters(): Promise<Printer[] | null> {
     return this.request<Printer[] | null>("/printer/")
   }
 
