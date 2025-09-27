@@ -2,6 +2,7 @@
 
 import type React from "react";
 import type { PrintingHistory } from "@/lib/types";
+import type { PaginationRequest, PaginatedResponse, PaginationMetadata } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,10 @@ import {
   Weight,
   Lightbulb,
   Calculator,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -89,9 +94,15 @@ export function PrintingHistoryList({
   onAdd,
   refreshTrigger,
 }: PrintingHistoryListProps) {
-  const [printingHistories, setPrintingHistories] = useState<PrintingHistory[]>(
-    []
-  );
+  const [printingHistories, setPrintingHistories] = useState<PrintingHistory[]>([]);
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null);
+  const [paginationParams, setPaginationParams] = useState<PaginationRequest>({
+    page: 1,
+    pageSize: 10,
+    searchTerm: "",
+    sortBy: "createdAt",
+    sortDescending: true,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -101,11 +112,14 @@ export function PrintingHistoryList({
   const [selectedColor, setSelectedColor] = useState<string[]>([]);
   const { formatCurrency } = useLocale();
 
-  const loadPrintingHistories = async () => {
+  const loadPrintingHistories = async (params: PaginationRequest = paginationParams) => {
     try {
       setIsLoading(true);
-      const data = await apiClient.getPrintingHistory();
-      setPrintingHistories(data?.toReversed() || []);
+      const response = await apiClient.getPrintingHistory(params);
+      if (response) {
+        setPrintingHistories(response.data || []);
+        setPagination(response.pagination || null);
+      }
     } catch (err) {
       setError("Error al cargar el historial de impresión");
     } finally {
@@ -113,14 +127,58 @@ export function PrintingHistoryList({
     }
   };
 
+  // Debounce para búsqueda
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const newParams = {
+        ...paginationParams,
+        searchTerm: searchTerm,
+        page: 1, // Reset a la primera página al buscar
+      };
+      setPaginationParams(newParams);
+      loadPrintingHistories(newParams);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Aplicar filtros locales cuando cambien
+  useEffect(() => {
+    // Los filtros de tipo, impresora y colores se aplican localmente
+    // ya que la paginación del servidor maneja la búsqueda de texto
+  }, [typeFilter, printerFilter, selectedColor]);
+
   useEffect(() => {
     loadPrintingHistories();
   }, [refreshTrigger]);
 
+  const handlePageChange = (newPage: number) => {
+    const newParams = { ...paginationParams, page: newPage };
+    setPaginationParams(newParams);
+    loadPrintingHistories(newParams);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    const newParams = { ...paginationParams, pageSize: newPageSize, page: 1 };
+    setPaginationParams(newParams);
+    loadPrintingHistories(newParams);
+  };
+
+  const handleSort = (field: string) => {
+    const newParams = {
+      ...paginationParams,
+      sortBy: field,
+      sortDescending: paginationParams.sortBy === field ? !paginationParams.sortDescending : true,
+      page: 1,
+    };
+    setPaginationParams(newParams);
+    loadPrintingHistories(newParams);
+  };
+
   const handleDelete = async (id: string) => {
     try {
       await apiClient.deletePrintingHistory(id);
-      loadPrintingHistories();
+      loadPrintingHistories(paginationParams);
     } catch (err) {
       setError("Error al eliminar el historial de impresión");
     }
@@ -135,11 +193,8 @@ export function PrintingHistoryList({
     );
   };
 
+  // Los filtros ahora se manejan en el servidor, pero mantenemos algunos filtros locales
   const filteredHistories = printingHistories.filter((history) => {
-    const matchesSearch =
-      history.printer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      history.printer?.model.toLowerCase().includes(searchTerm.toLowerCase());
-
     const matchesType = typeFilter === "all" || history.type === typeFilter;
     const matchesPrinter =
       printerFilter === "all" || history.printerId === printerFilter;
@@ -147,14 +202,15 @@ export function PrintingHistoryList({
     const matchesColor =
       selectedColor.length === 0 ||
       selectedColor.some((c) =>
-        history.filamentConsumptions?.some((fc) =>
-          fc.filament?.color
-            .split(",")
-            .some((c) => c.toLowerCase().includes(c.toLowerCase()))
-        )
+        history.filamentConsumptions?.some((fc) => {
+          const color = fc.filament?.color;
+          return typeof color === 'string' 
+            ? color.split(",").some((colorItem) => colorItem.toLowerCase().includes(c.toLowerCase()))
+            : false;
+        })
       );
 
-    return matchesSearch && matchesType && matchesPrinter && matchesColor;
+    return matchesType && matchesPrinter && matchesColor;
   });
 
   const uniquePrinters = Array.from(
@@ -168,7 +224,10 @@ export function PrintingHistoryList({
       printingHistories
         .map((h) =>
           h.filamentConsumptions
-            ?.map((fc) => fc.filament?.color?.split(","))
+            ?.map((fc) => {
+              const color = fc.filament?.color;
+              return typeof color === 'string' ? color.split(",") : [];
+            })
             .flat()
         )
         .flat()
@@ -200,49 +259,26 @@ export function PrintingHistoryList({
           {/* Resumen */}
           {filteredHistories.length > 0 && (
             <div className="mt-4 p-4 bg-muted rounded-lg">
-              <h3 className="font-semibold mb-2">Resumen</h3>
+              <h3 className="font-semibold mb-2">Resumen de la Página</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Total de impresiones:</p>
+                  <p className="text-muted-foreground">Impresiones en esta página:</p>
                   <p className="font-medium">{filteredHistories.length}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Tiempo total:</p>
+                  <p className="text-muted-foreground">Total registros:</p>
+                  <p className="font-medium">{pagination?.totalCount || 0}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Página actual:</p>
+                  <p className="font-medium">{pagination?.currentPage || 1} de {pagination?.totalPages || 1}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Tiempo total (página):</p>
                   <p className="font-medium">
                     {filteredHistories
                       .reduce((sum, h) => sum + h.printTimeHours, 0)
                       .toFixed(1)}{" "}
-                    h
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">
-                    Total de filamento gastado:
-                  </p>
-                  <p className="font-medium">
-                    {filteredHistories
-                      .reduce(
-                        (sum, h) =>
-                          sum +
-                          (h.filamentConsumptions?.reduce(
-                            (sum, fc) => sum + fc.gramsUsed,
-                            0
-                          ) ?? 0),
-                        0
-                      )
-                      .toFixed(2)}{" "}
-                    g
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Tiempo promedio:</p>
-                  <p className="font-medium">
-                    {(
-                      filteredHistories.reduce(
-                        (sum, h) => sum + h.printTimeHours,
-                        0
-                      ) / filteredHistories.length
-                    ).toFixed(1)}{" "}
                     h
                   </p>
                 </div>
@@ -251,50 +287,81 @@ export function PrintingHistoryList({
           )}
 
           {/* Filtros */}
-          <div className="flex flex-wrap gap-4 mb-6 mt-4">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Buscar por filamento, impresora..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+          <div className="space-y-4 mb-6 mt-4">
+            {/* Fila 1: Búsqueda y filtros básicos */}
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Buscar por filamento, impresora..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los tipos</SelectItem>
+                  {printingTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={printerFilter} onValueChange={setPrinterFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Impresora" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las impresoras</SelectItem>
+                  {uniquePrinters.map((printer) => (
+                    <SelectItem key={printer?.id} value={printer?.id!}>
+                      {printer?.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                {printingTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={printerFilter} onValueChange={setPrinterFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Impresora" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las impresoras</SelectItem>
-                {uniquePrinters.map((printer) => (
-                  <SelectItem key={printer?.id} value={printer?.id!}>
-                    {printer?.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <MultiColorPicker
-              value={selectedColor}
-              onChange={setSelectedColor}
-              availableColors={uniqueColors}
-              limitSelection={5}
-            />
+            
+            {/* Fila 2: Filtro por colores */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="h-4 w-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">Filtrar por colores de filamento</span>
+                {selectedColor.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {selectedColor.length} seleccionado{selectedColor.length !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+              <MultiColorPicker
+                value={selectedColor}
+                onChange={setSelectedColor}
+                availableColors={uniqueColors.filter((color): color is string => typeof color === 'string')}
+                limitSelection={10}
+              />
+              {selectedColor.length > 0 && (
+                <div className="mt-2 flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedColor([])}
+                    className="text-xs"
+                  >
+                    Limpiar filtros
+                  </Button>
+                  <span className="text-xs text-gray-500">
+                    Mostrando impresiones que contengan alguno de los colores seleccionados
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Botón agregar */}
@@ -326,12 +393,72 @@ export function PrintingHistoryList({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tipo</TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('type')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Tipo
+                        {paginationParams.sortBy === 'type' && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
                     <TableHead>Filamento</TableHead>
-                    <TableHead>Impresora</TableHead>
-                    <TableHead>Tiempo (h)</TableHead>
-                    <TableHead>Gramos (cm³)</TableHead>
-                    <TableHead>Costos</TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('printerId')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Impresora
+                        {paginationParams.sortBy === 'printerId' && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('printTimeHours')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Tiempo (h)
+                        {paginationParams.sortBy === 'printTimeHours' && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('totalGramsUsed')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Gramos (cm³)
+                        {paginationParams.sortBy === 'totalGramsUsed' && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleSort('totalCost')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Costos
+                        {paginationParams.sortBy === 'totalCost' && (
+                          <span className="text-xs">
+                            {paginationParams.sortDescending ? '↓' : '↑'}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -355,9 +482,9 @@ export function PrintingHistoryList({
                                       history.filamentConsumptions
                                         .map((fc) => fc.filament?.color)
                                         .filter(Boolean)
-                                        .flatMap((colorStr) =>
-                                          colorStr!.split(",")
-                                        )
+                                        .flatMap((colorStr) => {
+                                          return typeof colorStr === 'string' ? colorStr.split(",") : [];
+                                        })
                                     )
                                   ).slice(0, 4).map((c: string, i: number) => (
                                     <div
@@ -454,6 +581,91 @@ export function PrintingHistoryList({
                   })}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {/* Controles de Paginación */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  Mostrando {((pagination.currentPage - 1) * (paginationParams.pageSize || 10)) + 1} a {Math.min(pagination.currentPage * (paginationParams.pageSize || 10), pagination.totalCount)} de {pagination.totalCount} registros
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(1)}
+                  disabled={pagination.currentPage === 1}
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={pagination.currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const startPage = Math.max(1, pagination.currentPage - 2);
+                    const pageNumber = startPage + i;
+                    if (pageNumber > pagination.totalPages) return null;
+                    
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={pageNumber === pagination.currentPage ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(pageNumber)}
+                        className="w-8 h-8 p-0"
+                      >
+                        {pageNumber}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={pagination.currentPage === pagination.totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.totalPages)}
+                  disabled={pagination.currentPage === pagination.totalPages}
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Por página:</span>
+                <Select
+                  value={(paginationParams.pageSize || 10).toString()}
+                  onValueChange={(value) => handlePageSizeChange(Number(value))}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
         </CardContent>

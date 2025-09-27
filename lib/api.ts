@@ -409,8 +409,22 @@ class ApiClient {
   }
 
   // PrintingHistory endpoints
-  async getPrintingHistory() : Promise<PrintingHistory[] | null> {
-    return this.request<PrintingHistory[] | null>("/printing-history/")
+  async getPrintingHistory(filters: PaginationRequest = {}): Promise<PaginatedResponse<PrintingHistory> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/printing-history/?${params}`;
+    return this.request<PaginatedResponse<PrintingHistory> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllPrintingHistory(): Promise<PrintingHistory[] | null> {
+    return this.request<PrintingHistory[] | null>("/printing-history/");
   }
 
   async createPrintingHistory(printingHistory: any) {
