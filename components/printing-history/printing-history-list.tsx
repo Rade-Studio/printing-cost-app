@@ -78,6 +78,7 @@ export function PrintingHistoryList({
   const [typeFilter, setTypeFilter] = useState("all");
   const [printerFilter, setPrinterFilter] = useState("all");
   const [selectedColor, setSelectedColor] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const { formatCurrency } = useLocale();
 
   const loadPrintingHistories = useCallback(async (params: any) => {
@@ -99,10 +100,14 @@ export function PrintingHistoryList({
     try {
       await apiClient.deletePrintingHistory(history.id!);
       // Recargar datos después de eliminar
-      loadPrintingHistories({ page: 1, pageSize: 10, searchTerm: "", sortBy: "createdAt", sortDescending: true });
+      loadPrintingHistories({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "createdAt", sortDescending: true });
     } catch (err) {
       setError("Error al eliminar el historial de impresión");
     }
+  };
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
   };
 
   const getTypeInfo = (type: string) => {
@@ -342,6 +347,8 @@ export function PrintingHistoryList({
         initialPageSize={10}
         pageSizeOptions={[5, 10, 20, 50]}
         searchPlaceholder="Buscar por filamento, impresora..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
         defaultSortBy="createdAt"
         defaultSortDescending={true}
         customFilters={customFilters}

@@ -31,6 +31,7 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: PrinterListProps)
   const [activePrinters, setActivePrinters] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [deletePrinter, setDeletePrinter] = useState<Printer | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
   const { formatCurrency } = useLocale()
 
   const fetchPrinters = useCallback(async (params: any) => {
@@ -59,7 +60,7 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: PrinterListProps)
     try {
       await apiClient.deletePrinter(printer.id)
       // Recargar datos después de eliminar
-      fetchPrinters({ page: 1, pageSize: 10, searchTerm: "", sortBy: "name", sortDescending: false })
+      fetchPrinters({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "name", sortDescending: false })
       setDeletePrinter(null)
     } catch (error) {
       console.error("Error deleting printer:", error)
@@ -68,6 +69,10 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: PrinterListProps)
 
   const countActivePrinters = (printers: Printer[]) => {
     return printers?.filter((p) => p.status === "active").length || 0
+  }
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
   }
 
   // Configuración de columnas para la tabla
@@ -170,6 +175,8 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: PrinterListProps)
         initialPageSize={10}
         pageSizeOptions={[5, 10, 20, 50]}
         searchPlaceholder="Buscar impresoras por nombre o modelo..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
         defaultSortBy="name"
         defaultSortDescending={false}
         summaryCards={summaryCards}

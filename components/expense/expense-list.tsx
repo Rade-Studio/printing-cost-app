@@ -45,6 +45,7 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null)
   const [allExpenses, setAllExpenses] = useState<Expense[]>([])
   const [hasLoadedAllExpenses, setHasLoadedAllExpenses] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
   const { formatCurrency } = useLocale()
 
   const fetchExpenses = useCallback(async (params: any) => {
@@ -93,13 +94,17 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
     try {
       await apiClient.deleteExpense(expense.id!)
       // Recargar datos después de eliminar
-      fetchExpenses({ page: 1, pageSize: 10, searchTerm: "", sortBy: "expensedate", sortDescending: true })
+      fetchExpenses({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "expensedate", sortDescending: true })
       // Actualizar las estadísticas también
       setHasLoadedAllExpenses(false) // Forzar recarga de estadísticas
       setDeleteExpense(null)
     } catch (error) {
       console.error("Error deleting expense:", error)
     }
+  }
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
   }
 
   const formatDate = (dateString: string) => {
@@ -240,6 +245,8 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
         initialPageSize={10}
         pageSizeOptions={[5, 10, 20, 50]}
         searchPlaceholder="Buscar gastos por descripción o categoría..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
         defaultSortBy="expensedate"
         defaultSortDescending={true}
         summaryCards={summaryCards}

@@ -27,6 +27,7 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [deleteClient, setDeleteClient] = useState<Client | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
   const fetchClients = useCallback(async (params: any) => {
     try {
@@ -47,11 +48,15 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
     try {
       await apiClient.deleteClient(client.id!)
       // Recargar datos después de eliminar
-      fetchClients({ page: 1, pageSize: 10, searchTerm: "", sortBy: "name", sortDescending: false })
+      fetchClients({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "name", sortDescending: false })
       setDeleteClient(null)
     } catch (error) {
       console.error("Error deleting client:", error)
     }
+  }
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
   }
 
   // Configuración de columnas para la tabla
@@ -133,6 +138,8 @@ export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
         initialPageSize={10}
         pageSizeOptions={[5, 10, 20, 50]}
         searchPlaceholder="Buscar clientes por nombre, email, teléfono o ciudad..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
         defaultSortBy="name"
         defaultSortDescending={false}
       />

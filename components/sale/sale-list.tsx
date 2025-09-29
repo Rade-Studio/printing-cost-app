@@ -48,6 +48,7 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [deleteSale, setDeleteSale] = useState<Sale | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
   const { formatCurrency } = useLocale()
 
   const fetchData = useCallback(async (params: any) => {
@@ -69,11 +70,15 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
     try {
       await apiClient.deleteSale(sale.id!)
       // Recargar datos después de eliminar
-      fetchData({ page: 1, pageSize: 10, searchTerm: "", sortBy: "createdat", sortDescending: true })
+      fetchData({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "createdat", sortDescending: true })
       setDeleteSale(null)
     } catch (error) {
       console.error("Error deleting sale:", error)
     }
+  }
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
   }
 
   // Configuración de columnas para la tabla
@@ -176,6 +181,8 @@ export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleL
         initialPageSize={10}
         pageSizeOptions={[5, 10, 20, 50]}
         searchPlaceholder="Buscar ventas por cliente, estado o ID..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
         defaultSortBy="createdat"
         defaultSortDescending={true}
       />

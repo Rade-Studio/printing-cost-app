@@ -55,6 +55,7 @@ export function FilamentList({
   const [showFilters, setShowFilters] = useState(false);
   const [lowStockThreshold, setLowStockThreshold] = useState<number>(100);
   const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   
   const { formatCurrency } = useLocale();
 
@@ -97,6 +98,10 @@ export function FilamentList({
     setShowLowStockOnly(enabled);
   };
 
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
+  };
+
   const handleDelete = async (filament: Filament) => {
     try {
       if (!filament.id) {
@@ -105,7 +110,7 @@ export function FilamentList({
       }
       await apiClient.deleteFilament(filament.id!);
       // Recargar datos después de eliminar
-      fetchFilaments({ page: 1, pageSize: 10, searchTerm: "", sortBy: "type", sortDescending: false });
+      fetchFilaments({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "type", sortDescending: false });
       setDeleteFilament(null);
     } catch (error) {
       console.error("Error deleting filament:", error);
@@ -316,6 +321,8 @@ export function FilamentList({
         initialPageSize={10}
         pageSizeOptions={[5, 10, 20, 50]}
         searchPlaceholder="Buscar filamentos por tipo o color..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
         defaultSortBy="type"
         defaultSortDescending={false}
         customFilters={customFilters}

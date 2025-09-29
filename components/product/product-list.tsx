@@ -28,6 +28,7 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
   const fetchProducts = useCallback(async (params: any) => {
     try {
@@ -52,11 +53,15 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
     try {
       await apiClient.deleteProduct(product.id)
       // Recargar datos después de eliminar
-      fetchProducts({ page: 1, pageSize: 5, searchTerm: "", sortBy: "name", sortDescending: false })
+      fetchProducts({ page: 1, pageSize: 5, searchTerm: searchTerm, sortBy: "name", sortDescending: false })
       setDeleteProduct(null)
     } catch (error) {
       console.error("Error deleting product:", error)
     }
+  }
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
   }
 
   // Configuración de columnas para la tabla
@@ -154,6 +159,8 @@ export function ProductList({ onEdit, onAdd, refreshTrigger }: ProductListProps)
         initialPageSize={5}
         pageSizeOptions={[6, 12, 24, 48]}
         searchPlaceholder="Buscar productos por nombre o descripción..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
         defaultSortBy="name"
         defaultSortDescending={false}
       />

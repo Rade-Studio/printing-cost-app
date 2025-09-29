@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { SearchInput } from "./search-input";
 import {
   Card,
   CardContent,
@@ -27,7 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Search,
   Plus,
   ChevronLeft,
   ChevronRight,
@@ -89,6 +88,8 @@ export interface PaginatedTableProps<T> {
   // Configuración de búsqueda
   searchPlaceholder?: string;
   searchDebounceMs?: number;
+  searchValue?: string;
+  onSearchChange?: (searchTerm: string) => void;
   
   // Configuración de ordenamiento
   defaultSortBy?: string;
@@ -123,6 +124,8 @@ export function PaginatedTable<T extends { id?: string }>({
   pageSizeOptions = [5, 10, 20, 50],
   searchPlaceholder = "Buscar...",
   searchDebounceMs = 500,
+  searchValue = "",
+  onSearchChange,
   defaultSortBy = "createdAt",
   defaultSortDescending = false,
   customFilters,
@@ -135,27 +138,17 @@ export function PaginatedTable<T extends { id?: string }>({
   const [paginationParams, setPaginationParams] = useState<PaginationRequest>({
     page: 1,
     pageSize: initialPageSize,
-    searchTerm: "",
+    searchTerm: searchValue,
     sortBy: defaultSortBy,
     sortDescending: defaultSortDescending,
   });
-  
-  // Estado de UI
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  
-  // Ref para debounce
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Función para obtener datos
   const fetchData = useCallback(async (params: PaginationRequest) => {
     try {
-      setIsSearching(true);
       await onFetch(params);
     } catch (error) {
       console.error("Error fetching data:", error);
-    } finally {
-      setIsSearching(false);
     }
   }, [onFetch]);
 
@@ -164,34 +157,17 @@ export function PaginatedTable<T extends { id?: string }>({
     fetchData(paginationParams);
   }, [refreshTrigger, fetchData]);
 
-  // Manejo de búsqueda con debounce
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value);
-    
-    // Limpiar timeout anterior
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
+  // Efecto para sincronizar con el valor de búsqueda externo
+  useEffect(() => {
+    if (searchValue !== paginationParams.searchTerm) {
+      setPaginationParams(prev => ({ ...prev, searchTerm: searchValue, page: 1 }));
     }
-    
-    // Configurar nuevo timeout para debounce
-    debounceTimeoutRef.current = setTimeout(() => {
-      setPaginationParams(prev => ({ ...prev, searchTerm: value, page: 1 }));
-    }, searchDebounceMs);
-  };
+  }, [searchValue, paginationParams.searchTerm]);
 
   // Aplicar filtros cuando cambien (sin dependencia circular)
   useEffect(() => {
     fetchData(paginationParams);
   }, [paginationParams.page, paginationParams.pageSize, paginationParams.searchTerm, paginationParams.sortBy, paginationParams.sortDescending, fetchData]);
-
-  // Limpiar timeout al desmontar el componente
-  useEffect(() => {
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Funciones de manejo de paginación
   const handlePageChange = (page: number) => {
@@ -212,11 +188,9 @@ export function PaginatedTable<T extends { id?: string }>({
   };
 
   const clearFilters = () => {
-    setSearchInput("");
-    
-    // Limpiar timeout de debounce
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
+    // Limpiar búsqueda externa si hay callback
+    if (onSearchChange) {
+      onSearchChange("");
     }
     
     setPaginationParams({
@@ -301,20 +275,17 @@ export function PaginatedTable<T extends { id?: string }>({
             {/* Fila 1: Búsqueda y controles básicos */}
             <div className="flex flex-wrap gap-4">
               <div className="flex-1 min-w-[200px]">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder={searchPlaceholder}
-                    value={searchInput}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-10"
-                  />
-                  {isSearching && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                    </div>
-                  )}
-                </div>
+                <SearchInput
+                  placeholder={searchPlaceholder}
+                  debounceMs={searchDebounceMs}
+                  onSearchChange={(term) => {
+                    // Actualizar el estado interno inmediatamente
+                    setPaginationParams(prev => ({ ...prev, searchTerm: term, page: 1 }));
+                    // Notificar al componente padre
+                    onSearchChange?.(term);
+                  }}
+                  value={paginationParams.searchTerm || ""}
+                />
               </div>
               
               <div className="flex gap-2">
@@ -356,11 +327,11 @@ export function PaginatedTable<T extends { id?: string }>({
             <div className="text-center py-8">
               {emptyStateIcon}
               <p className="text-muted-foreground mt-4">
-                {paginationParams.searchTerm || filtersVisible
+                {searchValue || filtersVisible
                   ? "No se encontraron resultados que coincidan con los filtros aplicados."
                   : emptyStateMessage}
               </p>
-              {(paginationParams.searchTerm || filtersVisible) && (
+              {(searchValue || filtersVisible) && (
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -433,22 +404,13 @@ export function PaginatedTable<T extends { id?: string }>({
               {pagination && pagination.totalPages > 1 && (
                 <div className="flex items-center justify-between mt-6">
                   <div className="text-sm text-muted-foreground">
-                    {isSearching ? (
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                        Buscando...
-                      </div>
-                    ) : (
-                      <>
-                        Mostrando {((pagination.currentPage - 1) * pagination.pageSize) + 1} a{" "}
-                        {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)} de{" "}
-                        {pagination.totalCount} registros
-                        {paginationParams.searchTerm && (
-                          <span className="ml-2 text-primary">
-                            (búsqueda: "{paginationParams.searchTerm}")
-                          </span>
-                        )}
-                      </>
+                    Mostrando {((pagination.currentPage - 1) * pagination.pageSize) + 1} a{" "}
+                    {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount)} de{" "}
+                    {pagination.totalCount} registros
+                    {searchValue && (
+                      <span className="ml-2 text-primary">
+                        (búsqueda: "{searchValue}")
+                      </span>
                     )}
                   </div>
                   
