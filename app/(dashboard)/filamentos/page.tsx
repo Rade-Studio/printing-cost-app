@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { FilamentList } from "@/components/filament/filament-list"
 import { FilamentForm } from "@/components/filament/filament-form"
 import { Filament } from "@/lib/types"
@@ -10,26 +10,26 @@ export default function FilamentosPage() {
   const [editingFilament, setEditingFilament] = useState<Filament | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingFilament(undefined)
     setView("form")
-  }
+  }, [])
 
-  const handleEdit = (filament: Filament) => {
+  const handleEdit = useCallback((filament: Filament) => {
     setEditingFilament(filament)
     setView("form")
-  }
+  }, [])
 
-  const handleSuccess = () => {
+  const handleSuccess = useCallback(() => {
     setView("list")
     setEditingFilament(undefined)
     setRefreshTrigger((prev) => prev + 1)
-  }
+  }, [])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setView("list")
     setEditingFilament(undefined)
-  }
+  }, [])
 
   return (
     <div className="space-y-6">

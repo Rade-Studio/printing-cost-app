@@ -143,31 +143,22 @@ export function PaginatedTable<T extends { id?: string }>({
     sortDescending: defaultSortDescending,
   });
 
-  // Función para obtener datos
-  const fetchData = useCallback(async (params: PaginationRequest) => {
-    try {
-      await onFetch(params);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  }, [onFetch]);
-
   // Efecto para cargar datos iniciales y cuando cambie refreshTrigger
   useEffect(() => {
-    fetchData(paginationParams);
-  }, [refreshTrigger, fetchData]);
+    onFetch(paginationParams);
+  }, [refreshTrigger, onFetch]);
 
   // Efecto para sincronizar con el valor de búsqueda externo
   useEffect(() => {
     if (searchValue !== paginationParams.searchTerm) {
       setPaginationParams(prev => ({ ...prev, searchTerm: searchValue, page: 1 }));
     }
-  }, [searchValue, paginationParams.searchTerm]);
+  }, [searchValue]);
 
   // Aplicar filtros cuando cambien (sin dependencia circular)
   useEffect(() => {
-    fetchData(paginationParams);
-  }, [paginationParams.page, paginationParams.pageSize, paginationParams.searchTerm, paginationParams.sortBy, paginationParams.sortDescending, fetchData]);
+    onFetch(paginationParams);
+  }, [paginationParams.page, paginationParams.pageSize, paginationParams.searchTerm, paginationParams.sortBy, paginationParams.sortDescending, onFetch]);
 
   // Funciones de manejo de paginación
   const handlePageChange = (page: number) => {
@@ -284,7 +275,7 @@ export function PaginatedTable<T extends { id?: string }>({
                     // Notificar al componente padre
                     onSearchChange?.(term);
                   }}
-                  value={paginationParams.searchTerm || ""}
+                  value={searchValue}
                 />
               </div>
               

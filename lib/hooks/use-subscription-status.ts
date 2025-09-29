@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { apiClient } from "@/lib/api"
 import { Subscription } from "@/lib/types"
 
@@ -113,6 +113,6 @@ export function useSubscriptionStatus() {
     hasCheckedToday,
     refreshSubscription,
     forceRefreshSubscription,
-    daysRemaining: calculateDaysRemaining(subscription)
+    daysRemaining: useMemo(() => calculateDaysRemaining(subscription), [subscription])
   }
 }

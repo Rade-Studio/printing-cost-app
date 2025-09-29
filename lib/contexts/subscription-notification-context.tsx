@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react"
 
 interface SubscriptionNotificationContextType {
   isNotificationClosed: boolean
@@ -31,28 +31,28 @@ export function SubscriptionNotificationProvider({ children }: { children: React
     }
   }, [])
 
-  const closeNotification = () => {
+  const closeNotification = useCallback(() => {
     setIsNotificationClosed(true)
     if (typeof window !== 'undefined') {
       localStorage.setItem('subscriptionNotificationClosed', new Date().toISOString())
     }
-  }
+  }, [])
 
-  const showNotification = () => {
+  const showNotification = useCallback(() => {
     setIsNotificationClosed(false)
     if (typeof window !== 'undefined') {
       localStorage.removeItem('subscriptionNotificationClosed')
     }
-  }
+  }, [])
+
+  const contextValue = useMemo(() => ({
+    isNotificationClosed,
+    closeNotification,
+    showNotification
+  }), [isNotificationClosed, closeNotification, showNotification])
 
   return (
-    <SubscriptionNotificationContext.Provider 
-      value={{ 
-        isNotificationClosed, 
-        closeNotification, 
-        showNotification 
-      }}
-    >
+    <SubscriptionNotificationContext.Provider value={contextValue}>
       {children}
     </SubscriptionNotificationContext.Provider>
   )

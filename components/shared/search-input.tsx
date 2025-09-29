@@ -11,6 +11,7 @@ export interface SearchInputProps {
   value?: string; // <- valor inicial o externo
   className?: string;
   disabled?: boolean;
+  clearTrigger?: number; // <- trigger para limpiar sin perder foco
 }
 
 export function SearchInput({
@@ -20,15 +21,26 @@ export function SearchInput({
   value = "",
   className = "",
   disabled = false,
+  clearTrigger,
 }: SearchInputProps) {
   const [localValue, setLocalValue] = useState(value); // <- estado local real
   const [isSearching, setIsSearching] = useState(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // sincronizar cuando cambie value externo (ej. reset filtros)
+  // NO sincronizar con valor externo para evitar pérdida de foco
+  // useEffect(() => {
+  //   if (value === "" && localValue !== "") {
+  //     setLocalValue(value);
+  //   }
+  // }, [value]);
+
+  // Solo limpiar cuando se dispare el clearTrigger
   useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
+    if (clearTrigger && clearTrigger > 0) {
+      setLocalValue("");
+      onSearchChange("");
+    }
+  }, [clearTrigger, onSearchChange]);
 
   const handleChange = (val: string) => {
     setLocalValue(val);
