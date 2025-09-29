@@ -146,3 +146,12 @@ export interface Subscription {
   isActive: boolean
   isTrial: boolean
 }
+
+export interface BoldPaymentData {
+  apiKey: string
+  orderId: string
+  hash: string
+  amount: number
+  description: string
+  currency: string
+}

@@ -1,5 +1,5 @@
 import { AuthService } from "./auth"
-import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, Subscription, SystemConfig, WorkPackage } from "./types";
+import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, Subscription, SystemConfig, WorkPackage, BoldPaymentData } from "./types";
 
 // Interfaces para paginación
 export interface PaginationRequest {
@@ -474,6 +474,20 @@ class ApiClient {
   async renewSubscription(): Promise<Subscription | null> {
     return this.request<Subscription | null>("/subscription/renew", {
       method: "POST",
+    })
+  }
+
+  // Bold.co payment integration
+  async getBoldPaymentData(): Promise<BoldPaymentData | null> {
+    return this.request<BoldPaymentData | null>("/bold-payment-data", {
+      method: "POST",
+    })
+  }
+
+  async verifyBoldPayment(orderId: string): Promise<{ success: boolean; message: string } | null> {
+    return this.request<{ success: boolean; message: string } | null>("/bold-verify-payment", {
+      method: "POST",
+      body: JSON.stringify({ orderId }),
     })
   }
 }

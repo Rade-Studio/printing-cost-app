@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 import { apiClient } from "@/lib/api"
 import { AuthService } from "@/lib/auth"
+import { BoldPaymentButton } from "@/components/subscription/bold-payment-button"
 
 const subscriptionFeatures = [
   {
@@ -98,15 +99,17 @@ export default function RenovarSuscripcionPage() {
     window.open(whatsappUrl, '_blank')
   }
 
-  const handleRenewSubscription = async () => {
+  const handlePaymentSuccess = async (orderId?: string) => {
     try {
-      setIsProcessing(true)
-      setError("")
-      
-      // Aquí iría la lógica para procesar el pago
-      // Por ahora simulamos el proceso
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
+      // Verificar el pago con Bold.co si tenemos el orderId
+      if (orderId) {
+        const verification = await apiClient.verifyBoldPayment(orderId)
+        if (!verification?.success) {
+          setError(verification?.message || "Error al verificar el pago")
+          return
+        }
+      }
+
       // Después del pago exitoso, renovar la suscripción
       const updatedSubscription = await apiClient.renewSubscription()
       
@@ -117,9 +120,11 @@ export default function RenovarSuscripcionPage() {
     } catch (err) {
       setError("Error al procesar la renovación. Por favor, intenta nuevamente.")
       console.error("Error renewing subscription:", err)
-    } finally {
-      setIsProcessing(false)
     }
+  }
+
+  const handlePaymentError = (error: string) => {
+    setError(error)
   }
 
 
@@ -222,26 +227,23 @@ export default function RenovarSuscripcionPage() {
                       Tu suscripción ha expirado. Suscríbete ahora para recuperar el acceso completo a todas las funciones de PrintCost Pro.
                     </p>
 
+                    {/* Información del precio */}
+                    <div className="text-center pt-4">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <Crown className="h-5 w-5 text-primary" />
+                        <span className="font-semibold">Suscripción Mensual</span>
+                      </div>
+                      <div className="text-2xl font-bold text-primary">$9.99 USD</div>
+                      <div className="text-sm text-muted-foreground">por mes</div>
+                    </div>
+
                     {/* Botón principal */}
                     <div className="pt-4">
-                      <Button 
-                        onClick={handleRenewSubscription}
-                        disabled={isProcessing}
-                        className="w-full h-14 text-lg font-semibold"
-                        size="lg"
-                      >
-                        {isProcessing ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                            Procesando...
-                          </>
-                        ) : (
-                          <>
-                            <Crown className="h-6 w-6 mr-2" />
-                            Suscribirse Ahora - $9.99/mes
-                          </>
-                        )}
-                      </Button>
+                      <BoldPaymentButton 
+                        onPaymentSuccess={handlePaymentSuccess}
+                        onPaymentError={handlePaymentError}
+                        className="w-full"
+                      />
                       
                       {error && (
                         <div className="mt-3 p-3 bg-red-100 border border-red-200 rounded-lg">
