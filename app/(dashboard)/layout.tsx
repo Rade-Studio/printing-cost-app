@@ -39,7 +39,7 @@ export default function DashboardLayout({
 
   // Memoizar el contenido del layout para evitar re-renders
   const layoutContent = useMemo(() => (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       <Sidebar />
       <div className="lg:pl-64">
         {/* Navbar Alert (cuando la notificación principal está cerrada) */}
@@ -51,7 +51,7 @@ export default function DashboardLayout({
             <SubscriptionStatus />
           </div>
         </div>
-        <main className="p-6">{children}</main>
+        <main className="p-6 bg-background">{children}</main>
       </div>
     </div>
   ), [children])

@@ -315,9 +315,9 @@ export function PrintingHistoryList({
       </div>
       
       {/* Filtro por colores */}
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-muted/30 rounded-lg p-4 border border-border">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm font-medium text-gray-700">Filtrar por colores de filamento</span>
+          <span className="text-sm font-medium text-foreground">Filtrar por colores de filamento</span>
         </div>
         <MultiColorPicker
           value={selectedColor}

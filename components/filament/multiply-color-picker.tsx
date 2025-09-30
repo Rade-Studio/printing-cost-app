@@ -77,7 +77,7 @@ export function MultiColorPicker({
               />
             ))
           ) : (
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-muted-foreground">
               Ningún color seleccionado
             </span>
           )}
@@ -87,7 +87,7 @@ export function MultiColorPicker({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 hover:underline"
+            className="flex items-center gap-1 text-sm text-destructive hover:text-destructive/80 hover:underline"
           >
             <Trash2 className="w-4 h-4" />
             Limpiar
@@ -100,7 +100,7 @@ export function MultiColorPicker({
         <Popover.Trigger asChild>
           <button
             type="button"
-            className="px-3 py-1 border rounded-md shadow-sm text-sm bg-white"
+            className="px-3 py-1 border border-border rounded-md shadow-sm text-sm bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
           >
             Seleccionar colores
           </button>
@@ -108,7 +108,7 @@ export function MultiColorPicker({
 
         <Popover.Portal>
           <Popover.Content
-            className="bg-white p-3 rounded-xl shadow-xs w-56"
+            className="bg-popover text-popover-foreground border border-border p-3 rounded-xl shadow-xs w-56"
             sideOffset={5}
             collisionPadding={8}
           >
@@ -118,8 +118,8 @@ export function MultiColorPicker({
                 <button
                   key={c}
                   type="button"
-                  className={`w-8 h-8 rounded-full border hover:scale-110 transition ${
-                    selectedColors.includes(c) ? "ring-2 ring-blue-500" : ""
+                  className={`w-8 h-8 rounded-full border border-border hover:scale-110 transition ${
+                    selectedColors.includes(c) ? "ring-2 ring-primary" : ""
                   }`}
                   style={{ backgroundColor: c }}
                   onClick={() => handleTogglePreset(c)}
@@ -134,13 +134,13 @@ export function MultiColorPicker({
                   type="color"
                   value={tempColor}
                   onChange={(e) => setTempColor(e.target.value)}
-                  className="w-12 h-10 border rounded cursor-pointer"
+                  className="w-12 h-10 border border-border rounded cursor-pointer bg-background"
                 />
                 <button
                   type="button"
                   onClick={handleAddCustomColor}
                   disabled={selectedColors.length >= 3}
-                  className="px-3 py-1 bg-blue-500 text-white text-sm rounded disabled:opacity-50"
+                  className="px-3 py-1 bg-primary text-primary-foreground text-sm rounded disabled:opacity-50 hover:bg-primary/90"
                 >
                   Agregar
                 </button>

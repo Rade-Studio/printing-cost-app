@@ -4,75 +4,75 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated to professional teal/cyan color palette for PrintCost Pro */
-  --background: oklch(1 0 0); /* Pure white background */
-  --foreground: oklch(0.25 0 0); /* Dark gray text */
-  --card: oklch(0.99 0.005 200); /* Very light teal card background */
-  --card-foreground: oklch(0.25 0 0); /* Dark text on cards */
-  --popover: oklch(1 0 0); /* White popover */
-  --popover-foreground: oklch(0.25 0 0); /* Dark popover text */
-  --primary: oklch(0.55 0.12 200); /* Professional teal primary color */
-  --primary-foreground: oklch(1 0 0); /* White text on primary */
-  --secondary: oklch(0.95 0.01 200); /* Light teal secondary */
-  --secondary-foreground: oklch(0.3 0 0); /* Dark text on secondary */
-  --muted: oklch(0.96 0.01 200); /* Very light teal muted */
-  --muted-foreground: oklch(0.45 0 0); /* Medium gray muted text */
-  --accent: oklch(0.6 0.1 180); /* Cyan accent */
-  --accent-foreground: oklch(1 0 0); /* White accent text */
-  --destructive: oklch(0.55 0.25 25); /* Red destructive */
-  --destructive-foreground: oklch(1 0 0); /* White destructive text */
-  --border: oklch(0.92 0.01 200); /* Light teal border */
-  --input: oklch(0.98 0.005 200); /* Very light teal input */
-  --ring: oklch(0.55 0.12 200 / 0.3); /* Teal focus ring */
-  --chart-1: oklch(0.55 0.12 200); /* Teal chart color */
-  --chart-2: oklch(0.6 0.1 180); /* Cyan chart color */
-  --chart-3: oklch(0.5 0.15 220); /* Blue chart color */
-  --chart-4: oklch(0.65 0.08 160); /* Green chart color */
-  --chart-5: oklch(0.7 0.06 140); /* Light green chart color */
+  /* Soft professional teal/cyan color palette for PrintCost Pro */
+  --background: oklch(0.98 0.005 200); /* Soft off-white background */
+  --foreground: oklch(0.35 0.01 200); /* Softer dark gray text */
+  --card: oklch(0.97 0.01 200); /* Soft light teal card background */
+  --card-foreground: oklch(0.35 0.01 200); /* Softer dark text on cards */
+  --popover: oklch(0.98 0.005 200); /* Soft off-white popover */
+  --popover-foreground: oklch(0.35 0.01 200); /* Softer dark popover text */
+  --primary: oklch(0.6 0.1 200); /* Softer teal primary color */
+  --primary-foreground: oklch(0.98 0.005 200); /* Soft white text on primary */
+  --secondary: oklch(0.92 0.02 200); /* Softer light teal secondary */
+  --secondary-foreground: oklch(0.4 0.01 200); /* Softer dark text on secondary */
+  --muted: oklch(0.94 0.02 200); /* Softer light teal muted */
+  --muted-foreground: oklch(0.5 0.01 200); /* Softer medium gray muted text */
+  --accent: oklch(0.65 0.08 180); /* Softer cyan accent */
+  --accent-foreground: oklch(0.98 0.005 200); /* Soft white accent text */
+  --destructive: oklch(0.6 0.2 25); /* Softer red destructive */
+  --destructive-foreground: oklch(0.98 0.005 200); /* Soft white destructive text */
+  --border: oklch(0.88 0.02 200); /* Softer light teal border */
+  --input: oklch(0.95 0.01 200); /* Softer light teal input */
+  --ring: oklch(0.6 0.1 200 / 0.25); /* Softer teal focus ring */
+  --chart-1: oklch(0.6 0.1 200); /* Softer teal chart color */
+  --chart-2: oklch(0.65 0.08 180); /* Softer cyan chart color */
+  --chart-3: oklch(0.55 0.12 220); /* Softer blue chart color */
+  --chart-4: oklch(0.7 0.06 160); /* Softer green chart color */
+  --chart-5: oklch(0.75 0.05 140); /* Softer light green chart color */
   --radius: 0.75rem;
-  --sidebar: oklch(0.98 0.01 200); /* Light teal sidebar */
-  --sidebar-foreground: oklch(0.3 0 0); /* Dark sidebar text */
-  --sidebar-primary: oklch(0.55 0.12 200); /* Teal sidebar primary */
-  --sidebar-primary-foreground: oklch(1 0 0); /* White sidebar primary text */
-  --sidebar-accent: oklch(0.6 0.1 180); /* Cyan sidebar accent */
-  --sidebar-accent-foreground: oklch(1 0 0); /* White sidebar accent text */
-  --sidebar-border: oklch(0.92 0.01 200); /* Light teal sidebar border */
-  --sidebar-ring: oklch(0.55 0.12 200 / 0.3); /* Teal sidebar focus ring */
+  --sidebar: oklch(0.95 0.02 200); /* Softer light teal sidebar */
+  --sidebar-foreground: oklch(0.4 0.01 200); /* Softer dark sidebar text */
+  --sidebar-primary: oklch(0.6 0.1 200); /* Softer teal sidebar primary */
+  --sidebar-primary-foreground: oklch(0.98 0.005 200); /* Soft white sidebar primary text */
+  --sidebar-accent: oklch(0.65 0.08 180); /* Softer cyan sidebar accent */
+  --sidebar-accent-foreground: oklch(0.98 0.005 200); /* Soft white sidebar accent text */
+  --sidebar-border: oklch(0.88 0.02 200); /* Softer light teal sidebar border */
+  --sidebar-ring: oklch(0.6 0.1 200 / 0.25); /* Softer teal sidebar focus ring */
 }
 
 .dark {
-  --background: oklch(0.08 0 0); /* Very dark background */
-  --foreground: oklch(0.95 0 0); /* Light text */
-  --card: oklch(0.12 0.01 200); /* Dark teal card */
-  --card-foreground: oklch(0.95 0 0); /* Light card text */
-  --popover: oklch(0.12 0.01 200); /* Dark teal popover */
-  --popover-foreground: oklch(0.95 0 0); /* Light popover text */
-  --primary: oklch(0.6 0.1 180); /* Cyan primary in dark */
-  --primary-foreground: oklch(0.08 0 0); /* Dark text on primary */
-  --secondary: oklch(0.18 0.01 200); /* Dark teal secondary */
-  --secondary-foreground: oklch(0.95 0 0); /* Light secondary text */
-  --muted: oklch(0.18 0.01 200); /* Dark teal muted */
-  --muted-foreground: oklch(0.6 0 0); /* Medium muted text */
-  --accent: oklch(0.22 0.01 200); /* Dark teal accent */
-  --accent-foreground: oklch(0.95 0 0); /* Light accent text */
-  --destructive: oklch(0.5 0.2 25); /* Dark red destructive */
-  --destructive-foreground: oklch(0.9 0.1 25); /* Light red destructive text */
-  --border: oklch(0.22 0.01 200); /* Dark teal border */
-  --input: oklch(0.22 0.01 200); /* Dark teal input */
-  --ring: oklch(0.6 0.1 180 / 0.5); /* Cyan ring */
-  --chart-1: oklch(0.6 0.1 180); /* Cyan chart in dark */
-  --chart-2: oklch(0.55 0.12 200); /* Teal chart in dark */
-  --chart-3: oklch(0.5 0.15 220); /* Blue chart in dark */
-  --chart-4: oklch(0.65 0.08 160); /* Green chart in dark */
-  --chart-5: oklch(0.7 0.06 140); /* Light green chart in dark */
-  --sidebar: oklch(0.12 0.01 200); /* Dark teal sidebar */
-  --sidebar-foreground: oklch(0.95 0 0); /* Light sidebar text */
-  --sidebar-primary: oklch(0.6 0.1 180); /* Cyan sidebar primary */
-  --sidebar-primary-foreground: oklch(0.08 0 0); /* Dark sidebar primary text */
-  --sidebar-accent: oklch(0.22 0.01 200); /* Dark teal sidebar accent */
-  --sidebar-accent-foreground: oklch(0.95 0 0); /* Light sidebar accent text */
-  --sidebar-border: oklch(0.22 0.01 200); /* Dark teal sidebar border */
-  --sidebar-ring: oklch(0.6 0.1 180 / 0.5); /* Cyan sidebar ring */
+  --background: oklch(0.12 0.01 240); /* Soft dark blue-gray background */
+  --foreground: oklch(0.9 0.01 240); /* Soft light text */
+  --card: oklch(0.16 0.02 240); /* Soft dark blue-gray card */
+  --card-foreground: oklch(0.9 0.01 240); /* Soft light card text */
+  --popover: oklch(0.16 0.02 240); /* Soft dark blue-gray popover */
+  --popover-foreground: oklch(0.9 0.01 240); /* Soft light popover text */
+  --primary: oklch(0.7 0.1 200); /* Soft blue primary */
+  --primary-foreground: oklch(0.12 0.01 240); /* Dark text on primary */
+  --secondary: oklch(0.22 0.02 240); /* Soft dark blue-gray secondary */
+  --secondary-foreground: oklch(0.9 0.01 240); /* Soft light secondary text */
+  --muted: oklch(0.22 0.02 240); /* Soft dark blue-gray muted */
+  --muted-foreground: oklch(0.65 0.01 240); /* Soft muted text */
+  --accent: oklch(0.25 0.02 240); /* Soft dark blue-gray accent */
+  --accent-foreground: oklch(0.9 0.01 240); /* Soft light accent text */
+  --destructive: oklch(0.6 0.15 25); /* Soft red destructive */
+  --destructive-foreground: oklch(0.9 0.05 25); /* Soft red destructive text */
+  --border: oklch(0.25 0.02 240); /* Soft dark blue-gray border */
+  --input: oklch(0.25 0.02 240); /* Soft dark blue-gray input */
+  --ring: oklch(0.7 0.1 200 / 0.4); /* Soft blue ring */
+  --chart-1: oklch(0.7 0.1 200); /* Soft blue chart */
+  --chart-2: oklch(0.65 0.12 220); /* Soft purple chart */
+  --chart-3: oklch(0.6 0.15 240); /* Soft indigo chart */
+  --chart-4: oklch(0.75 0.08 280); /* Soft violet chart */
+  --chart-5: oklch(0.8 0.06 300); /* Soft magenta chart */
+  --sidebar: oklch(0.16 0.02 240); /* Soft dark blue-gray sidebar */
+  --sidebar-foreground: oklch(0.9 0.01 240); /* Soft light sidebar text */
+  --sidebar-primary: oklch(0.7 0.1 200); /* Soft blue sidebar primary */
+  --sidebar-primary-foreground: oklch(0.12 0.01 240); /* Dark sidebar primary text */
+  --sidebar-accent: oklch(0.25 0.02 240); /* Soft dark blue-gray sidebar accent */
+  --sidebar-accent-foreground: oklch(0.9 0.01 240); /* Soft light sidebar accent text */
+  --sidebar-border: oklch(0.25 0.02 240); /* Soft dark blue-gray sidebar border */
+  --sidebar-ring: oklch(0.7 0.1 200 / 0.4); /* Soft blue sidebar ring */
 }
 
 @theme inline {
@@ -122,5 +122,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Smooth transitions for theme changes */
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   }
 }
