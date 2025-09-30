@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState, useMemo } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import { AuthService } from "@/lib/auth"
 import { Sidebar } from "@/components/shared/sidebar"
 import { SubscriptionStatus } from "@/components/subscription/subscription-status"
@@ -17,19 +17,47 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const [isLoading, setIsLoading] = useState(true)
   const { isValidating, isSubscriptionValid } = useSubscriptionValidation()
 
+  // Memoizar el estado de autenticación para evitar re-renders
+  const isAuthenticated = useMemo(() => AuthService.isAuthenticated(), [])
+
   useEffect(() => {
-    if (!AuthService.isAuthenticated()) {
+    if (!isAuthenticated) {
       router.push("/login")
     } else {
       setIsLoading(false)
     }
-  }, [router])
+  }, [isAuthenticated, router])
+
+  // Memoizar el estado de loading para evitar re-renders innecesarios
+  const shouldShowLoading = useMemo(() => {
+    return isLoading || isValidating
+  }, [isLoading, isValidating])
+
+  // Memoizar el contenido del layout para evitar re-renders
+  const layoutContent = useMemo(() => (
+    <div className="min-h-screen bg-background">
+      <Sidebar />
+      <div className="lg:pl-64">
+        {/* Navbar Alert (cuando la notificación principal está cerrada) */}
+        <NavbarSubscriptionAlert />
+        
+        {/* Subscription Status Header */}
+        <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b border-border/50">
+          <div className="flex justify-center p-4">
+            <SubscriptionStatus />
+          </div>
+        </div>
+        <main className="p-6">{children}</main>
+      </div>
+    </div>
+  ), [children])
 
   // Mostrar loading mientras se valida la autenticación o la suscripción
-  if (isLoading || isValidating) {
+  if (shouldShowLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -49,21 +77,7 @@ export default function DashboardLayout({
 
   return (
     <SubscriptionNotificationProvider>
-      <div className="min-h-screen bg-background">
-        <Sidebar />
-        <div className="lg:pl-64">
-          {/* Navbar Alert (cuando la notificación principal está cerrada) */}
-          <NavbarSubscriptionAlert />
-          
-          {/* Subscription Status Header */}
-          <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-sm border-b border-border/50">
-            <div className="flex justify-center p-4">
-              <SubscriptionStatus />
-            </div>
-          </div>
-          <main className="p-6">{children}</main>
-        </div>
-      </div>
+      {layoutContent}
     </SubscriptionNotificationProvider>
   )
 }

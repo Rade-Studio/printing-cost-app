@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -40,10 +40,36 @@ export function Sidebar() {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const handleLogout = () => {
-    AuthService.logout()
-    router.push("/login")
-  }
+  const handleLogout = useMemo(() => {
+    return () => {
+      AuthService.logout()
+      router.push("/login")
+    }
+  }, [router])
+
+  // Memoizar los elementos de navegación para evitar re-renders
+  const navigationItems = useMemo(() => {
+    return navigation.map((item) => {
+      const isActive = pathname === item.href
+      return (
+        <Link
+          key={item.name}
+          href={item.href}
+          prefetch={true} // Habilitar prefetch para navegación más rápida
+          onClick={() => setIsMobileMenuOpen(false)}
+          className={cn(
+            "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+            isActive
+              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+              : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+          )}
+        >
+          <item.icon className="h-4 w-4" />
+          {item.name}
+        </Link>
+      )
+    })
+  }, [pathname])
 
   return (
     <>
@@ -77,25 +103,7 @@ export function Sidebar() {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200",
-                    isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                  )}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.name}
-                </Link>
-              )
-            })}
+            {navigationItems}
           </nav>
 
           {/* Logout button */}
