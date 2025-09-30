@@ -32,6 +32,9 @@ export interface FilamentFilters extends PaginationRequest {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
+// Sistema de debounce para evitar peticiones duplicadas muy rápidas
+const pendingRequests = new Map<string, Promise<any>>();
+
 class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
     const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
@@ -41,10 +44,45 @@ class ApiClient {
       window.location.href = "/login"
     }
 
-    // Solo agrega Content-Type si hay body; evita preflights innecesarios en GET/DELETE.
-    const baseHeaders: Record<string, string> = {
-      ...AuthService.getAuthHeaders(), // ej: { Authorization: `Bearer ...` }
-    };
+    // Crear clave única para el request (solo para GET requests)
+    const method = options.method ?? "GET";
+    const requestKey = method === "GET" ? `${method}:${url}` : null;
+    
+    // Verificar si ya hay una petición pendiente para este endpoint
+    if (requestKey && pendingRequests.has(requestKey)) {
+      return pendingRequests.get(requestKey) as Promise<T | null>;
+    }
+
+    // Crear la promesa de la petición
+    const requestPromise = this.executeRequest<T>(url, options);
+    
+    // Guardar la petición pendiente para GET requests
+    if (requestKey) {
+      pendingRequests.set(requestKey, requestPromise);
+    }
+    
+    try {
+      const result = await requestPromise;
+      return result;
+    } finally {
+      // Limpiar la petición pendiente
+      if (requestKey) {
+        pendingRequests.delete(requestKey);
+      }
+    }
+  }
+
+  private async executeRequest<T>(url: string, options: RequestInit): Promise<T | null> {
+    // Optimizar headers para reducir preflight requests
+    const baseHeaders: Record<string, string> = {};
+    
+    // Solo agregar Authorization si hay token
+    const authHeaders = AuthService.getAuthHeaders();
+    if (authHeaders.Authorization) {
+      baseHeaders.Authorization = authHeaders.Authorization;
+    }
+    
+    // Solo agregar Content-Type si hay body y no está ya definido
     if (options.body && !("Content-Type" in (options.headers ?? {}))) {
       baseHeaders["Content-Type"] = "application/json";
     }

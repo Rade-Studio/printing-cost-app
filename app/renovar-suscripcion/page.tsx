@@ -101,6 +101,9 @@ export default function RenovarSuscripcionPage() {
 
   const handlePaymentSuccess = async (orderId?: string) => {
     try {
+      setIsProcessing(true)
+      setError("")
+      
       // Verificar el pago con Bold.co si tenemos el orderId
       if (orderId) {
         const verification = await apiClient.verifyBoldPayment(orderId)
@@ -108,10 +111,15 @@ export default function RenovarSuscripcionPage() {
           setError(verification?.message || "Error al verificar el pago")
           return
         }
+        
+        // Si la verificación es exitosa, redirigir al dashboard
+        window.location.href = "/dashboard"
       }
     } catch (err) {
       setError("Error al procesar la renovación. Por favor, intenta nuevamente.")
       console.error("Error renewing subscription:", err)
+    } finally {
+      setIsProcessing(false)
     }
   }
 
@@ -122,23 +130,22 @@ export default function RenovarSuscripcionPage() {
 
   return (
     <div 
-      className="h-screen flex flex-col overflow-hidden bg-background" 
+      className="min-h-screen bg-background" 
       style={{ 
-        backgroundColor: 'hsl(var(--background))',
-        minHeight: '100vh'
+        backgroundColor: 'hsl(var(--background))'
       }}
     >
       {/* Header compacto */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border/50 flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Crown className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">Suscribirse a PrintCost Pro</h1>
-                <p className="text-sm text-muted-foreground">Tu suscripción ha expirado</p>
+                <h1 className="text-lg sm:text-xl font-bold text-foreground">Suscribirse a PrintCost Pro</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">Tu suscripción ha expirado</p>
               </div>
             </div>
             
@@ -146,7 +153,7 @@ export default function RenovarSuscripcionPage() {
             <Button 
               variant="outline" 
               onClick={handleLogout}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
               size="sm"
             >
               <LogOut className="h-4 w-4" />
@@ -157,33 +164,33 @@ export default function RenovarSuscripcionPage() {
       </div>
 
       {/* Contenido principal */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-6xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+      <div className="py-6 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Panel izquierdo - Información */}
-            <div className="flex flex-col justify-center space-y-6">
+            <div className="space-y-6">
               <div className="text-center lg:text-left">
                 <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
                   <div className="p-3 bg-primary/10 rounded-full">
-                    <Crown className="h-8 w-8 text-primary" />
+                    <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-foreground">Suscripción Mensual</h2>
-                    <p className="text-muted-foreground">Acceso completo a todas las funciones</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground">Suscripción Mensual</h2>
+                    <p className="text-sm text-muted-foreground">Acceso completo a todas las funciones</p>
                   </div>
                 </div>
                 
                 <div className="text-center lg:text-left mb-6">
-                  <div className="text-5xl font-bold text-primary mb-2">$9.99 USD</div>
-                  <p className="text-muted-foreground">por mes</p>
+                  <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-2">$9.99 USD</div>
+                  <p className="text-sm text-muted-foreground">por mes</p>
                 </div>
               </div>
 
               {/* Características en grid compacto */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {subscriptionFeatures.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <div className="p-1 bg-emerald-100 rounded-full">
+                    <div className="p-1 bg-emerald-100 rounded-full flex-shrink-0">
                       <Check className="h-3 w-3 text-emerald-600" />
                     </div>
                     <div>
@@ -208,7 +215,7 @@ export default function RenovarSuscripcionPage() {
             {/* Panel derecho - Acción */}
             <div className="flex flex-col justify-center">
               <Card className="border-2 border-primary/20 shadow-lg">
-                <CardContent className="p-8">
+                <CardContent className="p-4 sm:p-6 lg:p-8">
                   <div className="text-center space-y-6">
                     <div className="flex items-center justify-center gap-2 mb-4">
                       <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -222,11 +229,11 @@ export default function RenovarSuscripcionPage() {
                     {/* Información del precio */}
                     <div className="text-center pt-4">
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <Crown className="h-5 w-5 text-primary" />
-                        <span className="font-semibold">Suscripción Mensual</span>
+                        <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                        <span className="font-semibold text-sm sm:text-base">Suscripción Mensual</span>
                       </div>
-                      <div className="text-2xl font-bold text-primary">$9.99 USD</div>
-                      <div className="text-sm text-muted-foreground">por mes</div>
+                      <div className="text-xl sm:text-2xl font-bold text-primary">$9.99 USD</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">por mes</div>
                     </div>
 
                     {/* Botón principal */}
@@ -254,10 +261,10 @@ export default function RenovarSuscripcionPage() {
                           variant="outline" 
                           size="sm" 
                           onClick={handleWhatsAppContact}
-                          className="flex items-center gap-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                          className="flex items-center gap-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100 w-full sm:w-auto"
                         >
                           <MessageCircle className="h-4 w-4" />
-                          Contáctanos por WhatsApp
+                          <span className="text-xs sm:text-sm">Contáctanos por WhatsApp</span>
                         </Button>
                       </div>
                     </div>

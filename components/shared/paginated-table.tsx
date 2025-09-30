@@ -143,11 +143,6 @@ export function PaginatedTable<T extends { id?: string }>({
     sortDescending: defaultSortDescending,
   });
 
-  // Efecto para cargar datos iniciales y cuando cambie refreshTrigger
-  useEffect(() => {
-    onFetch(paginationParams);
-  }, [refreshTrigger, onFetch]);
-
   // Efecto para sincronizar con el valor de búsqueda externo
   useEffect(() => {
     if (searchValue !== paginationParams.searchTerm) {
@@ -155,10 +150,10 @@ export function PaginatedTable<T extends { id?: string }>({
     }
   }, [searchValue]);
 
-  // Aplicar filtros cuando cambien (sin dependencia circular)
+  // Efecto principal para cargar datos - solo se ejecuta cuando cambian los parámetros o refreshTrigger
   useEffect(() => {
     onFetch(paginationParams);
-  }, [paginationParams.page, paginationParams.pageSize, paginationParams.searchTerm, paginationParams.sortBy, paginationParams.sortDescending, onFetch]);
+  }, [refreshTrigger, paginationParams.page, paginationParams.pageSize, paginationParams.searchTerm, paginationParams.sortBy, paginationParams.sortDescending]);
 
   // Funciones de manejo de paginación
   const handlePageChange = (page: number) => {

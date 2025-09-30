@@ -154,4 +154,10 @@ export interface BoldPaymentData {
   amount: number
   description: string
   currency: string
+  email: string
+  phone: string
+  name: string
+  dialCode?: string
+  documentNumber?: string
+  documentType?: string
 }

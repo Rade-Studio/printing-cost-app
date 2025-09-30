@@ -62,8 +62,11 @@ export function BoldPaymentButton({
       }
     }
 
-    initializeBold()
-  }, [onPaymentError])
+    // Solo inicializar si no tenemos datos de pago
+    if (!paymentData) {
+      initializeBold()
+    }
+  }, []) // ← Eliminar dependencias que causan re-ejecuciones
 
   useEffect(() => {
     // Crear el botón de Bold.co cuando tengamos los datos de pago
@@ -78,6 +81,18 @@ export function BoldPaymentButton({
       script.setAttribute('data-currency', paymentData.currency)
       script.setAttribute('data-redirection-url', `${window.location.origin}/payment-result`)
       script.setAttribute('data-render-mode', 'embedded')
+      script.setAttribute('data-email', paymentData.email)
+      
+      // Configurar datos del cliente
+      const customerData = {
+        email: paymentData.email,
+        fullName: paymentData.name,
+        phone: paymentData.phone,
+        dialCode: paymentData.dialCode ||  "",
+        documentNumber: paymentData.documentNumber || "", 
+        documentType: paymentData.documentType || "" 
+      }
+      script.setAttribute('data-customer-data', JSON.stringify(customerData))
       
       // Configurar callback de éxito
       script.setAttribute('data-success-callback', 'handleBoldPaymentSuccess')
