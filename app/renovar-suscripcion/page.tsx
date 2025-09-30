@@ -109,14 +109,6 @@ export default function RenovarSuscripcionPage() {
           return
         }
       }
-
-      // Después del pago exitoso, renovar la suscripción
-      const updatedSubscription = await apiClient.renewSubscription()
-      
-      if (updatedSubscription) {
-        // Redirigir al dashboard
-        window.location.href = '/dashboard'
-      }
     } catch (err) {
       setError("Error al procesar la renovación. Por favor, intenta nuevamente.")
       console.error("Error renewing subscription:", err)
