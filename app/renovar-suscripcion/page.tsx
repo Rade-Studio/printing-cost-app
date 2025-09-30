@@ -130,7 +130,7 @@ export default function RenovarSuscripcionPage() {
 
   return (
     <div 
-      className="min-h-screen bg-background" 
+      className="min-h-screen bg-background flex flex-col" 
       style={{ 
         backgroundColor: 'hsl(var(--background))'
       }}
@@ -164,8 +164,8 @@ export default function RenovarSuscripcionPage() {
       </div>
 
       {/* Contenido principal */}
-      <div className="py-6 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="flex-1 flex items-center justify-center py-6 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Panel izquierdo - Información */}
             <div className="space-y-6">
