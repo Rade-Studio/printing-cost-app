@@ -194,10 +194,10 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
     }
 
     // Costo unitario total (impresión + mano de obra)
-    const unitCostTotal = totalPrintingCostPerUnit + workPackageCostPerUnit
+    const unitCostTotal = totalPrintingCostPerUnit 
     
     // Subtotal (costo unitario × cantidad)
-    const subtotalValue = unitCostTotal * formData?.quantity
+    const subtotalValue = (unitCostTotal * formData?.quantity) + workPackageCostPerUnit
     
     // Margen de ganancia
     console.log("configs", )
@@ -211,7 +211,7 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
     const finalCost = subtotalValue + marginAmountValue
 
     // Actualizar todos los estados
-    setLaborCost(workPackageCostPerUnit * formData?.quantity)
+    setLaborCost(workPackageCostPerUnit)
     setUnitCost(unitCostTotal)
     setSubtotal(subtotalValue)
     setMarginAmount(marginAmountValue)
@@ -357,6 +357,15 @@ export function SaleDetailForm({ saleId, detail, onSuccess, onCancel, refreshTri
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Costo por unidad:</span>
                   <span className="font-bold text-lg">{formatCurrency(unitCost || 0)}</span>
+                </div>
+              </div>
+
+              {/* Subtotal */}
+              <div className="bg-background p-4 rounded-md border">
+                <h4 className="font-medium text-sm text-muted-foreground mb-2">Mano de obra (Cantidad: {formData?.quantity || 0})</h4>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm">Total de mano de obra:</span>
+                  <span className="font-bold text-lg">{formatCurrency(laborCost || 0)}</span>
                 </div>
               </div>
 
