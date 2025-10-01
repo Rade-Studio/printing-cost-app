@@ -71,6 +71,7 @@ export function BoldPaymentButton({
   useEffect(() => {
     // Crear el botón de Bold.co cuando tengamos los datos de pago
     if (paymentData && buttonRef.current && !buttonRef.current.querySelector('script[data-bold-button]')) {
+      console.log('Creating Bold.co payment button...', paymentData)
       const script = document.createElement('script')
       script.setAttribute('data-bold-button', 'dark-L')
       script.setAttribute('data-api-key', paymentData.apiKey)
@@ -81,7 +82,6 @@ export function BoldPaymentButton({
       script.setAttribute('data-currency', paymentData.currency)
       script.setAttribute('data-redirection-url', `${window.location.origin}/payment-result`)
       script.setAttribute('data-render-mode', 'embedded')
-      script.setAttribute('data-email', paymentData.email)
       
       // Configurar datos del cliente
       const customerData = {
