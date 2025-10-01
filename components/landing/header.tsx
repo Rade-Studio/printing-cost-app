@@ -35,7 +35,9 @@ export function Header() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0B8B92]/10">
                <img src="/favicon.ico" alt="Logo" className="h-6 w-6" />
             </div>
-            <span className="text-xl font-bold text-[#0B8B92]">PrintCost Pro</span>
+            <span className="text-xl font-bold text-[#0B8B92]">
+              <span className="font-extrabold">3D</span> Print Cost
+            </span>
           </div>
 
           {/* Desktop Navigation */}

@@ -94,7 +94,7 @@ export default function RenovarSuscripcionPage() {
   const handleWhatsAppContact = () => {
     // Número de WhatsApp (reemplaza con tu número real)
     const phoneNumber = "1234567890" // Cambia por tu número de WhatsApp
-    const message = "Hola, necesito ayuda con mi suscripción de PrintCost Pro"
+    const message = "Hola, necesito ayuda con mi suscripción de 3D Print Cost"
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')
   }
@@ -144,7 +144,7 @@ export default function RenovarSuscripcionPage() {
                 <Crown className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold text-foreground">Suscribirse a PrintCost Pro</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-foreground">Suscribirse a <span className="text-primary font-extrabold">3D</span> Print Cost</h1>
                 <p className="text-xs sm:text-sm text-muted-foreground">Tu suscripción ha expirado</p>
               </div>
             </div>
@@ -223,7 +223,7 @@ export default function RenovarSuscripcionPage() {
                     </div>
                     
                     <p className="text-muted-foreground text-sm">
-                      Tu suscripción ha expirado. Suscríbete ahora para recuperar el acceso completo a todas las funciones de PrintCost Pro.
+                      Tu suscripción ha expirado. Suscríbete ahora para recuperar el acceso completo a todas las funciones de <span className="text-primary font-extrabold">3D</span> Print Cost.
                     </p>
 
                     {/* Información del precio */}

@@ -59,7 +59,7 @@ export function HeroSection() {
             </h1>
 
             <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-muted-foreground text-pretty max-w-2xl mx-auto lg:mx-0">
-              PrintCost Pro te permite controlar cada aspecto de tu negocio: desde la gestión de clientes y cotizaciones
+              <span className="text-primary font-extrabold">3D</span> Print Cost te permite controlar cada aspecto de tu negocio: desde la gestión de clientes y cotizaciones
               hasta el inventario de filamentos y análisis de rentabilidad.
             </p>
 

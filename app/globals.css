@@ -3,7 +3,7 @@
 
 
 :root {
-  /* Soft professional teal/cyan color palette for PrintCost Pro */
+  /* Soft professional teal/cyan color palette for 3D Print Cost */
   --background: oklch(0.98 0.005 200); /* Soft off-white background */
   --foreground: oklch(0.35 0.01 200); /* Softer dark gray text */
   --card: oklch(0.97 0.01 200); /* Soft light teal card background */

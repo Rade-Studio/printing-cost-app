@@ -5,7 +5,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './styles.css'
 
 export const metadata: Metadata = {
-  title: "Calculadora 3D - Gestión de Impresión 3D",
+  title: "3D Print Cost - Gestión de Impresión 3D",
   description: "Sistema completo para calcular costos de impresión 3D y gestionar clientes, ventas y materiales",
   icons: {
     icon: "/favicon.ico",

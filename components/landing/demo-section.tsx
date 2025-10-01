@@ -32,9 +32,9 @@ export function DemoSection() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-balance mb-4">Ve PrintCost Pro en acción</h2>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-balance mb-4">Ve <span className="text-primary font-extrabold">3D</span> Print Cost en acción</h2>
           <p className="text-base sm:text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-            Descubre cómo PrintCost Pro puede transformar la gestión de tu negocio de impresión 3D
+            Descubre cómo <span className="text-primary font-extrabold">3D</span> Print Cost puede transformar la gestión de tu negocio de impresión 3D
           </p>
         </div>
 
@@ -42,7 +42,7 @@ export function DemoSection() {
           <div className="relative aspect-video rounded-xl overflow-hidden shadow-2xl bg-black/5">
             <iframe
               src="https://www.youtube.com/embed/CVlVHS1Ou4E?si=stj-ZALzita6GiQ_"
-              title="PrintCost Pro Demo"
+              title="3D Print Cost Demo"
               className="absolute inset-0 w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

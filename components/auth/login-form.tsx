@@ -55,7 +55,9 @@ export function LoginForm() {
               <img src="/favicon.ico" alt="Logo" className="h-8 w-8 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-card-foreground mb-2">PrintCost Pro</CardTitle>
+          <CardTitle className="text-2xl font-bold text-card-foreground mb-2">
+            <span className="text-primary font-extrabold">3D</span> Print Cost
+          </CardTitle>
           <CardDescription className="text-muted-foreground text-base">Bienvenido de vuelta</CardDescription>
           <p className="text-sm text-muted-foreground mt-1">Ingresa tus credenciales para acceder a tu cuenta</p>
         </CardHeader>

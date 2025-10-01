@@ -96,7 +96,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">Panel de Control</h1>
-        <p className="text-muted-foreground text-lg">Bienvenido a PrintCost Pro - Gestiona tu negocio de impresión 3D</p>
+        <p className="text-muted-foreground text-lg">Bienvenido a <span className="text-primary font-extrabold">3D</span> Print Cost - Gestiona tu negocio de impresión 3D</p>
       </div>
 
       {/* Tarjetas de Estadísticas */}
