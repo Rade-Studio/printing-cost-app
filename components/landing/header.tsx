@@ -55,9 +55,9 @@ export function Header() {
             <Button variant="outline" size="sm" onClick={() => router.push("/login")}>
               Iniciar Sesión
             </Button>
-            {/* <Button size="sm" onClick={() => router.push("/signup")} className="bg-[#0B8B92] hover:bg-[#0B8B92]/90">
+            <Button size="sm" onClick={() => router.push("/signup")} className="bg-[#0B8B92] hover:bg-[#0B8B92]/90">
               Prueba Gratis
-            </Button> */}
+            </Button>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -107,7 +107,7 @@ export function Header() {
               >
                 Iniciar Sesión
               </Button>
-              {/* <Button 
+              <Button 
                 className="w-full bg-[#0B8B92] hover:bg-[#0B8B92]/90" 
                 onClick={() => {
                   router.push("/signup")
@@ -115,7 +115,7 @@ export function Header() {
                 }}
               >
                 Prueba Gratis
-              </Button> */}
+              </Button>
             </div>
           </div>
         </div>
