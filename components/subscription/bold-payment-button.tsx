@@ -78,7 +78,7 @@ export function BoldPaymentButton({
       script.setAttribute('data-order-id', paymentData.orderId)
       script.setAttribute('data-integrity-signature', paymentData.hash)
       script.setAttribute('data-description', paymentData.description)
-      script.setAttribute('data-amount', paymentData.amount.toString())
+      script.setAttribute('data-amount', paymentData.amount.toFixed(0))
       script.setAttribute('data-currency', paymentData.currency)
       script.setAttribute('data-redirection-url', `${window.location.origin}/payment-result`)
       script.setAttribute('data-render-mode', 'embedded')
