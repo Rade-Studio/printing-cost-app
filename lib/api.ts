@@ -30,7 +30,13 @@ export interface FilamentFilters extends PaginationRequest {
   threshold?: number;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
+
+// Aviso en producción si la API apunta a localhost
+if (typeof window !== "undefined" && process.env.NODE_ENV === "production" && API_BASE_URL.startsWith("http://localhost")) {
+  // eslint-disable-next-line no-console
+  console.warn("[PrintCost] NEXT_PUBLIC_API_URL apunta a localhost en producción:", API_BASE_URL)
+}
 
 // Sistema de debounce para evitar peticiones duplicadas muy rápidas
 const pendingRequests = new Map<string, Promise<any>>();

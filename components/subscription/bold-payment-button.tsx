@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { apiClient } from "@/lib/api"
+import { apiClient, API_BASE_URL } from "@/lib/api"
 import { BoldPaymentData } from "@/lib/types"
 
 interface BoldPaymentButtonProps {
@@ -20,8 +20,20 @@ export function BoldPaymentButton({
   const [isLoading, setIsLoading] = useState(false)
   const [paymentData, setPaymentData] = useState<BoldPaymentData | null>(null)
   const buttonRef = useRef<HTMLDivElement>(null)
+  const [debug, setDebug] = useState(false)
+  const [debugInfo, setDebugInfo] = useState<string>("")
 
   useEffect(() => {
+    // Activar modo debug con ?boldDebug=1
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const isDebug = params.get("boldDebug") === "1"
+      setDebug(isDebug)
+      if (isDebug) {
+        setDebugInfo(prev => prev + `Env: ${process.env.NODE_ENV} | API_BASE_URL: ${API_BASE_URL}\n`)
+      }
+    } catch {}
+
     // Cargar el script de Bold.co si no está ya cargado
     const loadBoldScript = () => {
       if (document.querySelector('script[src*="boldPaymentButton.js"]')) {
@@ -53,10 +65,18 @@ export function BoldPaymentButton({
         
         // Cargar el script de Bold.co
         await loadBoldScript()
+        if (debug) {
+          // eslint-disable-next-line no-console
+          console.log('[Bold][Debug] Datos obtenidos y script cargado', { response })
+          setDebugInfo(prev => prev + `Bold script cargado | orderId: ${response.orderId}\n`)
+        }
         
       } catch (error) {
         console.error("Error al inicializar Bold.co:", error)
         onPaymentError?.(error instanceof Error ? error.message : "Error al inicializar el sistema de pagos")
+        if (debug) {
+          setDebugInfo(prev => prev + `Init error: ${(error as Error)?.message || String(error)}\n`)
+        }
       } finally {
         setIsLoading(false)
       }
@@ -98,6 +118,18 @@ export function BoldPaymentButton({
       script.setAttribute('data-success-callback', 'handleBoldPaymentSuccess')
       
       buttonRef.current.appendChild(script)
+
+      // Timeout si Bold no renderiza nada
+      const timeoutId = window.setTimeout(() => {
+        const existsIframe = !!buttonRef.current?.querySelector('iframe')
+        if (!existsIframe) {
+          const msg = 'El botón de Bold no se renderizó a tiempo (10s). Verifica API y CSP.'
+          if (debug) {
+            setDebugInfo(prev => prev + msg + "\n")
+          }
+          onPaymentError?.(msg)
+        }
+      }, 10000)
       
       // Definir la función de callback global
       ;(window as any).handleBoldPaymentSuccess = (response: any) => {
@@ -116,6 +148,8 @@ export function BoldPaymentButton({
           console.log('Payment not approved or missing order ID')
           onPaymentError?.('El pago no fue aprobado')
         }
+
+        window.clearTimeout(timeoutId)
       }
     }
   }, [paymentData, onPaymentSuccess])
@@ -138,6 +172,9 @@ export function BoldPaymentButton({
         <div className="text-center mb-4">
           {children}
         </div>
+      )}
+      {debug && (
+        <pre className="text-xs mt-2 whitespace-pre-wrap bg-muted/30 p-2 rounded w-full max-w-xl">{debugInfo}</pre>
       )}
     </div>
   )
