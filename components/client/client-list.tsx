@@ -1,11 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import type { Client } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,8 +12,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { apiClient } from "@/lib/api"
-import { Search, Plus, Edit, Trash2, Mail, Phone, MapPin } from "lucide-react"
+import { apiClient, PaginationRequest, PaginatedResponse, PaginationMetadata } from "@/lib/api"
+import { Edit, Trash2, Mail, Phone, MapPin } from "lucide-react"
+import { PaginatedTable, TableColumn, TableAction } from "@/components/shared/paginated-table"
 
 interface ClientListProps {
   onEdit: (client: Client) => void
@@ -26,154 +23,126 @@ interface ClientListProps {
 }
 
 export function ClientList({ onEdit, onAdd, refreshTrigger }: ClientListProps) {
-  const [clients, setClients] = useState<Client[] | null>([])
-  const [filteredClients, setFilteredClients] = useState<Client[] | null>([])
-  const [searchTerm, setSearchTerm] = useState("")
+  const [clients, setClients] = useState<Client[]>([])
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [deleteClient, setDeleteClient] = useState<Client | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async (params: any) => {
     try {
       setIsLoading(true)
-      const data = await apiClient.getClients()
-      setClients(data)
-      setFilteredClients(data)
+      const response = await apiClient.getClients(params)
+      if (response) {
+        setClients(response.data)
+        setPagination(response.pagination)
+      }
     } catch (error) {
       console.error("Error fetching clients:", error)
     } finally {
       setIsLoading(false)
     }
-  }
-
-  useEffect(() => {
-    fetchClients()
-  }, [refreshTrigger])
-
-  useEffect(() => {
-    const filtered = clients?.filter(
-      (client) =>
-        (client.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (client.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (client.phone || "").includes(searchTerm) ||
-        (client.city || "").toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    setFilteredClients(filtered || [])
-  }, [searchTerm, clients])
+  }, [])
 
   const handleDelete = async (client: Client) => {
     try {
       await apiClient.deleteClient(client.id!)
-      await fetchClients()
+      // Recargar datos después de eliminar
+      fetchClients({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "name", sortDescending: false })
       setDeleteClient(null)
     } catch (error) {
       console.error("Error deleting client:", error)
     }
   }
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </CardContent>
-      </Card>
-    )
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
   }
+
+  // Configuración de columnas para la tabla
+  const columns: TableColumn<Client>[] = [
+    {
+      key: "name",
+      label: "Nombre",
+      sortable: true,
+      render: (client) => (
+        <div>
+          <p className="font-medium">{client.name}</p>
+        </div>
+      ),
+    },
+    {
+      key: "contact",
+      label: "Contacto",
+      render: (client) => (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm">
+            <Mail className="h-3 w-3 text-muted-foreground" />
+            <span>{client.email}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Phone className="h-3 w-3 text-muted-foreground" />
+            <span>{client.phone}</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "location",
+      label: "Ubicación",
+      sortable: true,
+      render: (client) => (
+        <div className="flex items-center gap-2 text-sm">
+          <MapPin className="h-3 w-3 text-muted-foreground" />
+          <div>
+            <p>{client.city}</p>
+            <p className="text-muted-foreground text-xs">{client.address}</p>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  // Configuración de acciones para la tabla
+  const actions: TableAction<Client>[] = [
+    {
+      label: "Editar",
+      icon: <Edit className="h-3 w-3" />,
+      onClick: onEdit,
+      variant: "outline",
+      size: "sm",
+    },
+    {
+      label: "Eliminar",
+      icon: <Trash2 className="h-3 w-3" />,
+      onClick: (client) => setDeleteClient(client),
+      variant: "outline",
+      size: "sm",
+    },
+  ];
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <CardTitle>Clientes</CardTitle>
-              <CardDescription>Gestiona tu base de datos de clientes</CardDescription>
-            </div>
-            <Button onClick={onAdd} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nuevo Cliente
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Buscar clientes por nombre, email, teléfono o ciudad..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          {filteredClients?.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                {searchTerm
-                  ? "No se encontraron clientes que coincidan con tu búsqueda."
-                  : "No hay clientes registrados."}
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Contacto</TableHead>
-                    <TableHead>Ubicación</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredClients?.map((client) => (
-                    <TableRow key={client.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{client.name}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Mail className="h-3 w-3 text-muted-foreground" />
-                            <span>{client.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Phone className="h-3 w-3 text-muted-foreground" />
-                            <span>{client.phone}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-sm">
-                          <MapPin className="h-3 w-3 text-muted-foreground" />
-                          <div>
-                            <p>{client.city}</p>
-                            <p className="text-muted-foreground text-xs">{client.address}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={() => onEdit(client)}>
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => setDeleteClient(client)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <PaginatedTable
+        data={clients}
+        pagination={pagination}
+        isLoading={isLoading}
+        title="Clientes"
+        description="Gestiona tu base de datos de clientes"
+        columns={columns}
+        actions={actions}
+        emptyStateMessage="No hay clientes registrados."
+        onFetch={fetchClients}
+        onAdd={onAdd}
+        refreshTrigger={refreshTrigger}
+        initialPageSize={10}
+        pageSizeOptions={[5, 10, 20, 50]}
+        searchPlaceholder="Buscar clientes por nombre, email, teléfono o ciudad..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
+        defaultSortBy="name"
+        defaultSortDescending={false}
+      />
 
       <AlertDialog open={!!deleteClient} onOpenChange={() => setDeleteClient(null)}>
         <AlertDialogContent>

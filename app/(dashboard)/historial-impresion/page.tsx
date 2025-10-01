@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { PrintingHistoryList } from "@/components/printing-history/printing-history-list"
 import { PrintingHistoryForm } from "@/components/printing-history/printing-history-form"
 import { PrintingHistory } from "@/lib/types"
@@ -10,26 +10,26 @@ export default function HistorialImpresionPage() {
   const [editingPrintingHistory, setEditingPrintingHistory] = useState<PrintingHistory | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingPrintingHistory(undefined)
     setView("form")
-  }
+  }, [])
 
-  const handleEdit = (printingHistory: PrintingHistory) => {
+  const handleEdit = useCallback((printingHistory: PrintingHistory) => {
     setEditingPrintingHistory(printingHistory)
     setView("form")
-  }
+  }, [])
 
-  const handleSuccess = () => {
+  const handleSuccess = useCallback(() => {
     setView("list")
     setEditingPrintingHistory(undefined)
     setRefreshTrigger((prev) => prev + 1)
-  }
+  }, [])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setView("list")
     setEditingPrintingHistory(undefined)
-  }
+  }, [])
 
   return (
     <div className="space-y-6">

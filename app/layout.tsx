@@ -7,6 +7,7 @@ import { Suspense } from "react"
 import "./globals.css"
 import { LocaleProvider } from "./localContext"
 import { SystemConfigProvider } from "./systenConfigContext"
+import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
   title: "Calculadora 3D - Gestión de Impresión 3D",
@@ -23,13 +24,21 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <LocaleProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          forcedTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
           <SystemConfigProvider>
-            <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+            <LocaleProvider>
+              <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+            </LocaleProvider>
           </SystemConfigProvider>
-        </LocaleProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

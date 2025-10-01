@@ -1,11 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,54 +12,44 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { apiClient } from "@/lib/api"
-import { Search, Plus, Edit, Trash2, Package, AlertTriangle } from "lucide-react"
+import { apiClient, PaginationRequest, PaginatedResponse, PaginationMetadata } from "@/lib/api"
+import { Edit, Trash2, Package } from "lucide-react"
 
 import { useLocale } from "@/app/localContext"
 import { Printer } from "@/lib/types"
+import { PaginatedTable, TableColumn, TableAction, TableSummaryCard } from "@/components/shared/paginated-table"
 
-interface FilamentListProps {
-  onEdit: (filament: Printer) => void
+interface PrinterListProps {
+  onEdit: (printer: Printer) => void
   onAdd: () => void
   refreshTrigger: number
 }
 
-export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps) {
-  const [printers, setPrinters] = useState<Printer[] | null>([])
-  const [filteredPrinters, setFilteredPrinters] = useState<Printer[] | null>([])
+export function PrinterList({ onEdit, onAdd, refreshTrigger }: PrinterListProps) {
+  const [printers, setPrinters] = useState<Printer[]>([])
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [activePrinters, setActivePrinters] = useState<number>(0)
-  const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [deletePrinter, setDeletePrinter] = useState<Printer | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
   const { formatCurrency } = useLocale()
 
-  const fetchPrinters = async () => {
+  const fetchPrinters = useCallback(async (params: any) => {
     try {
       setIsLoading(true)
-      const data = await apiClient.getPrinters()
-      const activePrinters = countActivePrinters(data)
-      setActivePrinters(activePrinters)
-      setPrinters(data)
-      setFilteredPrinters(data)
+      const response = await apiClient.getPrinters(params)
+      if (response) {
+        setPrinters(response.data)
+        setPagination(response.pagination)
+        const activePrinters = countActivePrinters(response.data)
+        setActivePrinters(activePrinters)
+      }
     } catch (error) {
-      console.error("Error fetching filaments:", error)
+      console.error("Error fetching printers:", error)
     } finally {
       setIsLoading(false)
     }
-  }
-
-  useEffect(() => {
-    fetchPrinters()
-  }, [refreshTrigger])
-
-  useEffect(() => {
-    const filtered = printers?.filter(
-      (printer) =>
-        (printer.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (printer.model || "").toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    setFilteredPrinters(filtered || null)
-  }, [searchTerm, printers])
+  }, [])
 
   const handleDelete = async (printer: Printer) => {
     if (!printer.id) {
@@ -73,144 +59,128 @@ export function PrinterList({ onEdit, onAdd, refreshTrigger }: FilamentListProps
 
     try {
       await apiClient.deletePrinter(printer.id)
-      await fetchPrinters()
+      // Recargar datos después de eliminar
+      fetchPrinters({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "name", sortDescending: false })
       setDeletePrinter(null)
     } catch (error) {
       console.error("Error deleting printer:", error)
     }
   }
 
-  const countActivePrinters = (printers: Printer[] | null) => {
+  const countActivePrinters = (printers: Printer[]) => {
     return printers?.filter((p) => p.status === "active").length || 0
   }
 
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </CardContent>
-      </Card>
-    )
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
   }
+
+  // Configuración de columnas para la tabla
+  const columns: TableColumn<Printer>[] = [
+    {
+      key: "name",
+      label: "Nombre",
+      sortable: true,
+      render: (printer) => (
+        <div>
+          <p className="font-medium">{printer.name}</p>
+        </div>
+      ),
+    },
+    {
+      key: "description",
+      label: "Descripción",
+      sortable: true,
+      render: (printer) => (
+        <p className="text-sm text-muted-foreground">{printer.description || "-"}</p>
+      ),
+    },
+    {
+      key: "model",
+      label: "Modelo",
+      sortable: true,
+      render: (printer) => (
+        <Badge className="bg-green-100 text-green-800">
+          <p className="font-medium">{printer.model}</p>
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      label: "Estado",
+      sortable: true,
+      render: (printer) => (
+        <p className="font-medium">{printer.status}</p>
+      ),
+    },
+    {
+      key: "kwhPerHour",
+      label: "Consumo de Energía",
+      sortable: true,
+      render: (printer) => (
+        <p className="font-medium">{printer.kwhPerHour.toFixed(2) + " kWh"}</p>
+      ),
+    },
+  ];
+
+  // Configuración de acciones para la tabla
+  const actions: TableAction<Printer>[] = [
+    {
+      label: "Editar",
+      icon: <Edit className="h-3 w-3" />,
+      onClick: onEdit,
+      variant: "outline",
+      size: "sm",
+    },
+    {
+      label: "Eliminar",
+      icon: <Trash2 className="h-3 w-3" />,
+      onClick: (printer) => setDeletePrinter(printer),
+      variant: "outline",
+      size: "sm",
+    },
+  ];
+
+  // Tarjetas de resumen
+  const summaryCards: TableSummaryCard[] = [
+    {
+      title: "Total de Impresoras",
+      value: pagination?.totalCount || 0,
+      subtitle: "Cantidad de impresoras",
+    },
+    {
+      title: "Impresoras Activas",
+      value: activePrinters,
+      subtitle: "En funcionamiento",
+      className: "text-yellow-600",
+    },
+  ];
+
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total de Impresoras</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{printers?.length}</div>
-            <p className="text-xs text-muted-foreground">Cantidad de impresoras</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Impresoras Activas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {activePrinters}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <CardTitle>Impresoras</CardTitle>
-              <CardDescription>Gestiona tu inventario de impresoras 3D</CardDescription>
-            </div>
-            <Button onClick={onAdd} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nueva Impresora
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Buscar impresoras por nombre o modelo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          {filteredPrinters?.length === 0 ? (
-            <div className="text-center py-8">
-              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                {searchTerm
-                  ? "No se encontraron impresoras que coincidan con tu búsqueda."
-                  : "No hay impresoras registradas."}
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead>Modelo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Consumo de Energía</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPrinters?.map((printer) => {
-                    return (
-                      <TableRow key={printer.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">
-                              {printer.name}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                            <p className="text-sm text-muted-foreground">{printer.description || "-"}</p>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-800">
-                            <p className="font-medium">{printer.model}</p>
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <p className="font-medium">{printer.status}</p>
-                        </TableCell>
-                        <TableCell>
-                          <p className="font-medium">{printer.kwhPerHour.toFixed(2) + " kWh"}</p>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="outline" size="sm" onClick={() => onEdit(printer)}>
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => setDeletePrinter(printer)}>
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <PaginatedTable
+        data={printers}
+        pagination={pagination}
+        isLoading={isLoading}
+        title="Impresoras"
+        description="Gestiona tu inventario de impresoras 3D"
+        columns={columns}
+        actions={actions}
+        emptyStateMessage="No hay impresoras registradas."
+        emptyStateIcon={<Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
+        onFetch={fetchPrinters}
+        onAdd={onAdd}
+        refreshTrigger={refreshTrigger}
+        initialPageSize={10}
+        pageSizeOptions={[5, 10, 20, 50]}
+        searchPlaceholder="Buscar impresoras por nombre o modelo..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
+        defaultSortBy="name"
+        defaultSortDescending={false}
+        summaryCards={summaryCards}
+      />
 
       <AlertDialog open={!!deletePrinter} onOpenChange={() => setDeletePrinter(null)}>
         <AlertDialogContent>

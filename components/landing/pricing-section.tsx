@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Check } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const features = [
   "Gestión ilimitada de clientes",
@@ -19,79 +20,95 @@ const features = [
 ]
 
 export function PricingSection() {
+  const router = useRouter()
+
+  const handleStartTrial = () => {
+    router.push("/signup")
+  }
+
   return (
     <section id="pricing" className="py-20 lg:py-32">
-      <div className="container">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-balance">
-            Precios simples y transparentes
+            Comienza tu prueba gratuita hoy
           </h2>
           <p className="mt-4 text-lg text-muted-foreground text-pretty">
-            Sin costos ocultos. Cancela cuando quieras. Comienza con 14 días gratis.
+            Obtén 30% de descuento en tu primer mes. Sin costos ocultos, cancela cuando quieras.
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2 max-w-4xl mx-auto">
-          {/* Plan Mensual */}
-          <Card className="border-border/50 hover:border-primary/20 transition-colors">
-            <CardHeader className="text-center pb-8">
-              <CardTitle className="text-2xl">Plan Mensual</CardTitle>
-              <CardDescription className="text-base">
-                Perfecto para comenzar y probar todas las funcionalidades
-              </CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold">$9.99</span>
-                <span className="text-muted-foreground">/mes</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                {features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
+        <div className="flex justify-center max-w-6xl mx-auto">
+          {/* Plan Mensual - Diseño Horizontal */}
+          <Card className="border-2 border-primary/20 relative overflow-hidden hover:border-primary/40 transition-all duration-300 shadow-xl bg-gradient-to-r from-white to-primary/5 w-full">
+            <Badge className="absolute top-6 right-6 bg-gradient-to-r from-primary to-primary/80 text-white font-semibold px-4 py-2 text-sm">
+              30% OFF Primer Mes
+            </Badge>
+            
+            <div className="flex flex-col lg:flex-row">
+              {/* Sección Izquierda - Precio y Info */}
+              <div className="lg:w-1/3 p-8 lg:p-12 bg-gradient-to-br from-primary/5 to-primary/10">
+                <div className="text-center lg:text-left">
+                  <CardTitle className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Plan Mensual</CardTitle>
+                  <CardDescription className="text-lg text-gray-600 mb-6">
+                    Acceso completo a todas las funcionalidades
+                  </CardDescription>
+                  
+                  {/* Precio con descuento */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center lg:justify-start gap-2">
+                      <span className="text-lg text-gray-500 line-through">$9.99</span>
+                      <span className="text-sm bg-red-100 text-red-600 px-3 py-1 rounded-full font-medium">
+                        -30%
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-center lg:justify-start gap-1">
+                      <span className="text-6xl font-bold text-primary">$6.99</span>
+                      <span className="text-2xl text-gray-600">/mes</span>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Primer mes con descuento, luego $9.99/mes
+                    </p>
                   </div>
-                ))}
-              </div>
-              <Button className="w-full" size="lg">
-                Comenzar Prueba Gratis
-              </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                14 días gratis, luego $9.99/mes. Cancela cuando quieras.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Plan Anual */}
-          <Card className="border-primary/50 relative overflow-hidden">
-            <Badge className="absolute top-4 right-4 bg-primary">Ahorra 30%</Badge>
-            <CardHeader className="text-center pb-8">
-              <CardTitle className="text-2xl">Plan Anual</CardTitle>
-              <CardDescription className="text-base">La mejor opción para negocios establecidos</CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold">$84.99</span>
-                <span className="text-muted-foreground">/año</span>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Equivale a <span className="font-semibold text-primary">$7.08/mes</span>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                {features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <Check className="h-4 w-4 text-primary flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
+                  
+                  {/* Botón */}
+                  <div className="mt-8">
+                    <Button 
+                      className="w-full lg:w-auto px-8 h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300" 
+                      size="lg" 
+                      onClick={handleStartTrial}
+                    >
+                      Comenzar Prueba Gratis
+                    </Button>
+                    <div className="mt-4 space-y-1">
+                      <p className="text-sm text-gray-600 font-medium">
+                        14 días gratis • Sin compromiso
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Cancela cuando quieras
+                      </p>
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
-              <Button className="w-full" size="lg">
-                Comenzar Prueba Gratis
-              </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                14 días gratis, luego $84.99/año. Cancela cuando quieras.
-              </p>
-            </CardContent>
+              
+              {/* Sección Derecha - Features */}
+              <div className="lg:w-2/3 p-8 lg:p-12">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6 text-center lg:text-left">
+                  Todo lo que incluye tu plan:
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {features.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Check className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </Card>
         </div>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { ClientList } from "@/components/client/client-list"
 import { ClientForm } from "@/components/client/client-form"
 import { Client } from "@/lib/types"
@@ -10,26 +10,26 @@ export default function ClientesPage() {
   const [editingClient, setEditingClient] = useState<Client | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingClient(undefined)
     setView("form")
-  }
+  }, [])
 
-  const handleEdit = (client: Client) => {
+  const handleEdit = useCallback((client: Client) => {
     setEditingClient(client)
     setView("form")
-  }
+  }, [])
 
-  const handleSuccess = () => {
+  const handleSuccess = useCallback(() => {
     setView("list")
     setEditingClient(undefined)
     setRefreshTrigger((prev) => prev + 1)
-  }
+  }, [])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setView("list")
     setEditingClient(undefined)
-  }
+  }, [])
 
   return (
     <div className="space-y-6">

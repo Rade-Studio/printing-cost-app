@@ -86,7 +86,7 @@ export class AuthService {
     }
 
     const result = await response.json()
-    this.setToken(result.token.result)
+    this.setToken(result.token)
     return result
   }
 

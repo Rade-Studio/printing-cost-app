@@ -9,9 +9,11 @@ import { SystemConfig } from "@/lib/types"
 export default function ConfiguracionPage() {
   const [view, setView] = useState<"list" | "form">("list")
   const [editingConfig, setEditingConfig] = useState<SystemConfig | undefined>(undefined)
+  const [existingConfigs, setExistingConfigs] = useState<SystemConfig[]>([])
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const handleAdd = () => {
+  const handleAdd = (configs: SystemConfig[]) => {
+    setExistingConfigs(configs)
     setEditingConfig(undefined)
     setView("form")
   }
@@ -45,7 +47,12 @@ export default function ConfiguracionPage() {
         {view === "list" ? (
           <SystemConfigList onEdit={handleEdit} onAdd={handleAdd} refreshTrigger={refreshTrigger} />
         ) : (
-          <SystemConfigForm config={editingConfig} onSuccess={handleSuccess} onCancel={handleCancel} />
+          <SystemConfigForm 
+            config={editingConfig} 
+            existingConfigs={existingConfigs}
+            onSuccess={handleSuccess} 
+            onCancel={handleCancel} 
+          />
         )}
       </div>
     </div>

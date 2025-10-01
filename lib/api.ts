@@ -1,7 +1,39 @@
 import { AuthService } from "./auth"
-import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, SystemConfig, WorkPackage } from "./types";
+import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, Subscription, SystemConfig, WorkPackage, BoldPaymentData } from "./types";
+
+// Interfaces para paginación
+export interface PaginationRequest {
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  sortBy?: string;
+  sortDescending?: boolean;
+}
+
+export interface PaginationMetadata {
+  currentPage: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMetadata;
+}
+
+export interface FilamentFilters extends PaginationRequest {
+  type?: string;
+  color?: string;
+  threshold?: number;
+}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
+
+// Sistema de debounce para evitar peticiones duplicadas muy rápidas
+const pendingRequests = new Map<string, Promise<any>>();
 
 class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
@@ -12,10 +44,45 @@ class ApiClient {
       window.location.href = "/login"
     }
 
-    // Solo agrega Content-Type si hay body; evita preflights innecesarios en GET/DELETE.
-    const baseHeaders: Record<string, string> = {
-      ...AuthService.getAuthHeaders(), // ej: { Authorization: `Bearer ...` }
-    };
+    // Crear clave única para el request (solo para GET requests)
+    const method = options.method ?? "GET";
+    const requestKey = method === "GET" ? `${method}:${url}` : null;
+    
+    // Verificar si ya hay una petición pendiente para este endpoint
+    if (requestKey && pendingRequests.has(requestKey)) {
+      return pendingRequests.get(requestKey) as Promise<T | null>;
+    }
+
+    // Crear la promesa de la petición
+    const requestPromise = this.executeRequest<T>(url, options);
+    
+    // Guardar la petición pendiente para GET requests
+    if (requestKey) {
+      pendingRequests.set(requestKey, requestPromise);
+    }
+    
+    try {
+      const result = await requestPromise;
+      return result;
+    } finally {
+      // Limpiar la petición pendiente
+      if (requestKey) {
+        pendingRequests.delete(requestKey);
+      }
+    }
+  }
+
+  private async executeRequest<T>(url: string, options: RequestInit): Promise<T | null> {
+    // Optimizar headers para reducir preflight requests
+    const baseHeaders: Record<string, string> = {};
+    
+    // Solo agregar Authorization si hay token
+    const authHeaders = AuthService.getAuthHeaders();
+    if (authHeaders.Authorization) {
+      baseHeaders.Authorization = authHeaders.Authorization;
+    }
+    
+    // Solo agregar Content-Type si hay body y no está ya definido
     if (options.body && !("Content-Type" in (options.headers ?? {}))) {
       baseHeaders["Content-Type"] = "application/json";
     }
@@ -52,7 +119,21 @@ class ApiClient {
   }
 
   // Client endpoints
-  async getClients(): Promise<Client[] | null> {
+  async getClients(filters: PaginationRequest = {}): Promise<PaginatedResponse<Client> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/client/?${params}`;
+    return this.request<PaginatedResponse<Client> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllClients(): Promise<Client[] | null> {
     return this.request("/client/")
   }
 
@@ -77,7 +158,21 @@ class ApiClient {
   }
 
   // Sale endpoints
-  async getSales(): Promise<Sale[] | null> {
+  async getSales(filters: PaginationRequest = {}): Promise<PaginatedResponse<Sale> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/sale/?${params}`;
+    return this.request<PaginatedResponse<Sale> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllSales(): Promise<Sale[] | null> {
     return this.request("/sale/")
   }
 
@@ -127,7 +222,40 @@ class ApiClient {
   }
 
   // Filament endpoints
-  async getFilaments(): Promise<Filament[] | null> {
+  async getFilaments(filters: FilamentFilters = {}): Promise<PaginatedResponse<Filament> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+    if (filters.threshold) params.append('threshold', filters.threshold.toString());
+
+    let url: string;
+    if (filters.type) {
+      url = `/filament/type/${filters.type}?${params}`;
+    } else if (filters.color) {
+      // Para colores múltiples, usar el endpoint general con searchTerm
+      if (filters.searchTerm) {
+        // Si ya hay un searchTerm, combinar con colores
+        params.set('searchTerm', `${filters.searchTerm} ${filters.color}`);
+      } else {
+        // Si no hay searchTerm, usar solo los colores
+        params.set('searchTerm', filters.color);
+      }
+      url = `/filament/?${params}`;
+    } else if (filters.threshold !== undefined) {
+      url = `/filament/low-stock?${params}`;
+    } else {
+      url = `/filament/?${params}`;
+    }
+
+    return this.request<PaginatedResponse<Filament> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllFilaments(): Promise<Filament[] | null> {
     return this.request("/filament/")
   }
 
@@ -177,7 +305,21 @@ class ApiClient {
   }
 
   // Products endpoints
-  async getProducts(): Promise<Product[] | null> {
+  async getProducts(filters: PaginationRequest = {}): Promise<PaginatedResponse<Product> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/product/?${params}`;
+    return this.request<PaginatedResponse<Product> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllProducts(): Promise<Product[] | null> {
     return this.request("/product/")
   }
 
@@ -202,7 +344,21 @@ class ApiClient {
   }
 
   // Expense endpoints
-  async getExpenses(): Promise<Expense[] | null> {
+  async getExpenses(filters: PaginationRequest = {}): Promise<PaginatedResponse<Expense> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/expense/?${params}`;
+    return this.request<PaginatedResponse<Expense> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllExpenses(): Promise<Expense[] | null> {
     return this.request("/expense/")
   }
 
@@ -252,7 +408,21 @@ class ApiClient {
   }
 
   // Printer endpoints
-  async getPrinters(): Promise<Printer[] | null> {
+  async getPrinters(filters: PaginationRequest = {}): Promise<PaginatedResponse<Printer> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/printer/?${params}`;
+    return this.request<PaginatedResponse<Printer> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllPrinters(): Promise<Printer[] | null> {
     return this.request<Printer[] | null>("/printer/")
   }
 
@@ -277,8 +447,22 @@ class ApiClient {
   }
 
   // PrintingHistory endpoints
-  async getPrintingHistory() : Promise<PrintingHistory[] | null> {
-    return this.request<PrintingHistory[] | null>("/printing-history/")
+  async getPrintingHistory(filters: PaginationRequest = {}): Promise<PaginatedResponse<PrintingHistory> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+
+    const url = `/printing-history/?${params}`;
+    return this.request<PaginatedResponse<PrintingHistory> | null>(url);
+  }
+
+  // Método legacy para compatibilidad (sin paginación)
+  async getAllPrintingHistory(): Promise<PrintingHistory[] | null> {
+    return this.request<PrintingHistory[] | null>("/printing-history/");
   }
 
   async createPrintingHistory(printingHistory: any) {
@@ -311,6 +495,38 @@ class ApiClient {
   // Dashboard endpoints
   async getDashboard(): Promise<Dashboard | null> {
     return this.request<Dashboard | null>("/dashboard/")
+  }
+
+  // Subscription endpoints
+  async getSubscription(): Promise<Subscription | null> {
+    return this.request<Subscription | null>("/subscription")
+  }
+
+  async updateSubscription(subscription: any): Promise<Subscription | null> {
+    return this.request<Subscription | null>("/subscription", {
+      method: "PUT",
+      body: JSON.stringify(subscription),
+    })
+  }
+
+  async renewSubscription(): Promise<Subscription | null> {
+    return this.request<Subscription | null>("/subscription/renew", {
+      method: "POST",
+    })
+  }
+
+  // Bold.co payment integration
+  async getBoldPaymentData(): Promise<BoldPaymentData | null> {
+    return this.request<BoldPaymentData | null>("/bold-payment-data", {
+      method: "POST",
+    })
+  }
+
+  async verifyBoldPayment(orderId: string): Promise<{ success: boolean; message: string } | null> {
+    return this.request<{ success: boolean; message: string } | null>("/bold-verify-payment", {
+      method: "POST",
+      body: JSON.stringify({ orderId }),
+    })
   }
 }
 

@@ -18,23 +18,12 @@ interface SystemConfig {
 
 interface SystemConfigFormProps {
   config?: SystemConfig
+  existingConfigs?: SystemConfig[]
   onSuccess: () => void
   onCancel: () => void
 }
 
 const configDescriptions: Record<string, { label: string; description: string; type: string; unit?: string }> = {
-  WorkPackagePerHour: {
-    label: "Tarifa de Trabajo por Hora",
-    description: "Tarifa base por hora de trabajo manual",
-    type: "number",
-    unit: "$/hora",
-  },
-  MachineRatePerHour: {
-    label: "Tarifa de Máquina por Hora",
-    description: "Costo de operación de la impresora 3D por hora",
-    type: "number",
-    unit: "$/hora",
-  },
   ElectricityCostPerKwh: {
     label: "Costo de Electricidad",
     description: "Precio del kWh de electricidad",
@@ -53,24 +42,9 @@ const configDescriptions: Record<string, { label: string; description: string; t
     type: "number",
     unit: "$",
   },
-  CompanyName: {
-    label: "Nombre de la Empresa",
-    description: "Nombre que aparecerá en reportes y documentos",
-    type: "text",
-  },
-  CompanyEmail: {
-    label: "Email de la Empresa",
-    description: "Email de contacto principal",
-    type: "email",
-  },
-  CompanyPhone: {
-    label: "Teléfono de la Empresa",
-    description: "Número de teléfono de contacto",
-    type: "text",
-  },
 }
 
-export function SystemConfigForm({ config, onSuccess, onCancel }: SystemConfigFormProps) {
+export function SystemConfigForm({ config, existingConfigs = [], onSuccess, onCancel }: SystemConfigFormProps) {
   const [formData, setFormData] = useState<SystemConfig>({
     key: config?.key || "",
     value: config?.value || "",
@@ -103,6 +77,14 @@ export function SystemConfigForm({ config, onSuccess, onCancel }: SystemConfigFo
 
   const configInfo = configDescriptions[formData.key]
 
+  // Filtrar configuraciones disponibles (excluir las que ya existen)
+  const availableConfigs = Object.entries(configDescriptions).filter(([key]) => {
+    // Si estamos editando, permitir la configuración actual
+    if (config?.key === key) return true
+    // Si no estamos editando, excluir las configuraciones existentes
+    return !existingConfigs.some(existing => existing.key === key)
+  })
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -127,7 +109,7 @@ export function SystemConfigForm({ config, onSuccess, onCancel }: SystemConfigFo
               disabled={!!config}
             >
               <option value="">Selecciona una configuración</option>
-              {Object.entries(configDescriptions).map(([key, info]) => (
+              {availableConfigs.map(([key, info]) => (
                 <option key={key} value={key}>
                   {info.label}
                 </option>

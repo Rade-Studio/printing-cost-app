@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { ExpenseList } from "@/components/expense/expense-list"
 import { ExpenseForm } from "@/components/expense/expense-form"
 import { Expense } from "@/lib/types"
@@ -10,26 +10,26 @@ export default function GastosPage() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingExpense(null)
     setView("form")
-  }
+  }, [])
 
-  const handleEdit = (expense: Expense) => {
+  const handleEdit = useCallback((expense: Expense) => {
     setEditingExpense(expense)
     setView("form")
-  }
+  }, [])
 
-  const handleSuccess = () => {
+  const handleSuccess = useCallback(() => {
     setView("list")
     setEditingExpense(null)
     setRefreshTrigger((prev) => prev + 1)
-  }
+  }, [])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setView("list")
     setEditingExpense(null)
-  }
+  }, [])
 
   return (
     <div className="space-y-6">

@@ -1,11 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,10 +12,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { apiClient } from "@/lib/api"
-import { Search, Plus, Edit, Trash2, Eye, DollarSign, ChevronDown, ChevronRight, Package } from "lucide-react"
+import { apiClient, PaginationRequest, PaginatedResponse, PaginationMetadata } from "@/lib/api"
+import { Edit, Trash2, Eye } from "lucide-react"
 import type { Client, Sale, SaleDetail } from "@/lib/types"
 import { useLocale } from "@/app/localContext"
+import { PaginatedTable, TableColumn, TableAction } from "@/components/shared/paginated-table"
 
 interface SaleListProps {
   onEdit: (sale: Sale) => void
@@ -47,163 +44,148 @@ const statusLabels = {
 }
 
 export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleListProps) {
-  const [sales, setSales] = useState<Sale[] | null>([])
-  const [filteredSales, setFilteredSales] = useState<Sale[] | null>([])
-  const [searchTerm, setSearchTerm] = useState("")
+  const [sales, setSales] = useState<Sale[]>([])
+  const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [deleteSale, setDeleteSale] = useState<Sale | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
   const { formatCurrency } = useLocale()
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async (params: any) => {
     try {
       setIsLoading(true)
-      const [salesData] = await Promise.all([apiClient.getSales()])
-
-      setSales(salesData?.toReversed() || [])
-      setFilteredSales(salesData?.toReversed() || [])
+      const response = await apiClient.getSales(params)
+      if (response) {
+        setSales(response.data)
+        setPagination(response.pagination)
+      }
     } catch (error) {
       console.error("Error fetching data:", error)
     } finally {
       setIsLoading(false)
     }
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [refreshTrigger])
-
-  useEffect(() => {
-    const filtered = sales?.filter(
-      (sale) =>
-        (sale.client?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (sale.status || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (sale.id || "").toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    setFilteredSales(filtered || [])
-  }, [searchTerm, sales])
+  }, [])
 
   const handleDelete = async (sale: Sale) => {
     try {
       await apiClient.deleteSale(sale.id!)
-      await fetchData()
+      // Recargar datos después de eliminar
+      fetchData({ page: 1, pageSize: 10, searchTerm: searchTerm, sortBy: "createdat", sortDescending: true })
       setDeleteSale(null)
     } catch (error) {
       console.error("Error deleting sale:", error)
     }
   }
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </CardContent>
-      </Card>
-    )
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term)
   }
+
+  // Configuración de columnas para la tabla
+  const columns: TableColumn<Sale>[] = [
+    {
+      key: "id",
+      label: "ID",
+      render: (sale) => (
+        <code className="text-xs bg-muted px-2 py-1 rounded">
+          {sale.id ? sale.id.slice(0, 8) : "N/A"}
+        </code>
+      ),
+    },
+    {
+      key: "client",
+      label: "Cliente",
+      render: (sale) => (
+        <div>
+          <p className="font-medium">{sale.client?.name}</p>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      label: "Estado",
+      render: (sale) => (
+        <Badge className={statusColors[sale.status as keyof typeof statusColors] || "bg-gray-100"}>
+          {statusLabels[sale.status as keyof typeof statusLabels] || sale.status}
+        </Badge>
+      ),
+    },
+    {
+      key: "estimatedTotal",
+      label: "Total Estimado",
+      render: (sale) => (
+        <div className="flex items-center gap-1">
+          <span>{formatCurrency(sale.estimatedTotal || 0)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "finalTotal",
+      label: "Total Final",
+      render: (sale) => (
+        <div className="flex items-center gap-1">
+          <span className="font-medium">{formatCurrency(sale.finalTotal || 0)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "createdAt",
+      label: "Fecha de Creación",
+      render: (sale) => (
+        <div className="flex items-center gap-1">
+          <span>{sale.createdAt.slice(0, 10)}</span>
+        </div>
+      ),
+    },
+  ];
+
+  // Configuración de acciones para la tabla
+  const actions: TableAction<Sale>[] = [
+    {
+      label: "Ver Detalles",
+      icon: <Eye className="h-3 w-3" />,
+      onClick: (sale) => onViewDetails(sale.id!),
+      variant: "outline",
+      size: "sm",
+    },
+    {
+      label: "Editar",
+      icon: <Edit className="h-3 w-3" />,
+      onClick: onEdit,
+      variant: "outline",
+      size: "sm",
+    },
+    {
+      label: "Eliminar",
+      icon: <Trash2 className="h-3 w-3" />,
+      onClick: (sale) => setDeleteSale(sale),
+      variant: "outline",
+      size: "sm",
+    },
+  ];
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <CardTitle>Ventas</CardTitle>
-              <CardDescription>Gestiona todas las ventas y cotizaciones</CardDescription>
-            </div>
-            <Button onClick={onAdd} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nueva Venta
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-2 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Buscar ventas por cliente, estado o ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          {filteredSales?.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                {searchTerm ? "No se encontraron ventas que coincidan con tu búsqueda." : "No hay ventas registradas."}
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Total Estimado</TableHead>
-                    <TableHead>Total Final</TableHead>
-                    <TableHead>Fecha de Creación</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSales?.map((sale) => (
-                    <TableRow key={sale.id}>
-                      <TableCell>
-                        <code className="text-xs bg-muted px-2 py-1 rounded">
-                          {sale.id ? sale.id.slice(0, 8) : "N/A"}
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{sale.client?.name}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={statusColors[sale.status as keyof typeof statusColors] || "bg-gray-100"}>
-                          {statusLabels[sale.status as keyof typeof statusLabels] || sale.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <span>{formatCurrency(sale.estimatedTotal || 0)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium">{formatCurrency(sale.finalTotal || 0)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <span>{sale.createdAt.slice(0, 10)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={() => onViewDetails(sale.id!)}>
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => onEdit(sale)}>
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => setDeleteSale(sale)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <PaginatedTable
+        data={sales}
+        pagination={pagination}
+        isLoading={isLoading}
+        title="Ventas"
+        description="Gestiona todas las ventas y cotizaciones"
+        columns={columns}
+        actions={actions}
+        emptyStateMessage="No hay ventas registradas."
+        onFetch={fetchData}
+        onAdd={onAdd}
+        refreshTrigger={refreshTrigger}
+        initialPageSize={10}
+        pageSizeOptions={[5, 10, 20, 50]}
+        searchPlaceholder="Buscar ventas por cliente, estado o ID..."
+        searchValue={searchTerm}
+        onSearchChange={handleSearchChange}
+        defaultSortBy="createdat"
+        defaultSortDescending={true}
+      />
 
       <AlertDialog open={!!deleteSale} onOpenChange={() => setDeleteSale(null)}>
         <AlertDialogContent>

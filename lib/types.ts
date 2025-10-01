@@ -20,7 +20,7 @@ export interface Sale {
 export interface Filament {
   id?: string
   type: string
-  color: string[]
+  color: string[] | string
   costPerGram: number
   stockGrams: number
   density: number
@@ -138,4 +138,26 @@ export interface CalculatePrintingHistoryResponse {
   totalEnergyCost: number
   totalFilamentCost: number
   totalCost: number
+}
+
+export interface Subscription {
+  startDate: string
+  endDate: string
+  isActive: boolean
+  isTrial: boolean
+}
+
+export interface BoldPaymentData {
+  apiKey: string
+  orderId: string
+  hash: string
+  amount: number
+  description: string
+  currency: string
+  email: string
+  phone: string
+  name: string
+  dialCode?: string
+  documentNumber?: string
+  documentType?: string
 }

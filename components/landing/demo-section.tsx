@@ -28,7 +28,7 @@ export function DemoSection() {
     <section
       id="demo"
       ref={demoRef}
-      className="py-16 sm:py-20 lg:py-24 bg-secondary/30 opacity-0 translate-y-8 transition-all duration-1000 ease-out"
+      className="py-16 sm:py-20 lg:py-24 bg-secondary/30 fade-in-up"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
         <div className="text-center mb-8 sm:mb-12">

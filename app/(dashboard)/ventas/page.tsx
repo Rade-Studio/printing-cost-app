@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { SaleList } from "@/components/sale/sale-list"
 import { SaleForm } from "@/components/sale/sale-form"
 import { SaleDetails } from "@/components/sale/sale-details"
@@ -16,44 +16,44 @@ export default function VentasPage() {
   const [selectedSaleId, setSelectedSaleId] = useState<string>("")
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const handleAddSale = () => {
+  const handleAddSale = useCallback(() => {
     setEditingSale(null)
     setView("form")
-  }
+  }, [])
 
-  const handleEditSale = (sale: Sale) => {
+  const handleEditSale = useCallback((sale: Sale) => {
     setEditingSale(sale)
     setView("form")
-  }
+  }, [])
 
-  const handleViewDetails = (saleId: string) => {
+  const handleViewDetails = useCallback((saleId: string) => {
     setSelectedSaleId(saleId)
     setView("details")
-  }
+  }, [])
 
-  const handleAddDetail = () => {
+  const handleAddDetail = useCallback(() => {
     setEditingDetail(null)
     setView("detail-form")
-  }
+  }, [])
 
-  const handleEditDetail = (detail: SaleDetail) => {
+  const handleEditDetail = useCallback((detail: SaleDetail) => {
     setEditingDetail(detail)
     setView("detail-form")
-  }
+  }, [])
 
-  const handleSaleSuccess = () => {
+  const handleSaleSuccess = useCallback(() => {
     setView("list")
     setEditingSale(null)
     setRefreshTrigger((prev) => prev + 1)
-  }
+  }, [])
 
-  const handleDetailSuccess = () => {
+  const handleDetailSuccess = useCallback(() => {
     setView("details")
     setEditingDetail(null)
     setRefreshTrigger((prev) => prev + 1)
-  }
+  }, [])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     if (view === "detail-form") {
       setView("details")
     } else {
@@ -61,12 +61,12 @@ export default function VentasPage() {
     }
     setEditingSale(null)
     setEditingDetail(null)
-  }
+  }, [view])
 
-  const handleBackToList = () => {
+  const handleBackToList = useCallback(() => {
     setView("list")
     setSelectedSaleId("")
-  }
+  }, [])
 
   return (
     <div className="space-y-6">

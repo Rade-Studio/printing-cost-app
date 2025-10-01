@@ -8,6 +8,7 @@ import type {
   Product,
   FilamentConsumption,
 } from "@/lib/types";
+import type { PaginationRequest, PaginatedResponse, PaginationMetadata } from "@/lib/api";
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api";
-import { Loader2, History, Trash } from "lucide-react";
+import { Loader2, History, Trash, Search, ChevronDown } from "lucide-react";
 import { ProductSelect } from "../shared/select-product";
 import { useLocale } from "@/app/localContext";
 
@@ -70,31 +71,209 @@ export function PrintingHistoryForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [filaments, setFilaments] = useState<Filament[]>([]);
+  const [filamentPagination, setFilamentPagination] = useState<PaginationMetadata | null>(null);
+  const [filamentParams, setFilamentParams] = useState<PaginationRequest>({
+    page: 1,
+    pageSize: 50,
+    searchTerm: "",
+  });
   const [printers, setPrinters] = useState<Printer[]>([]);
+  const [printerPagination, setPrinterPagination] = useState<PaginationMetadata | null>(null);
+  const [printerParams, setPrinterParams] = useState<PaginationRequest>({
+    page: 1,
+    pageSize: 50,
+    searchTerm: "",
+  });
+  const [printerSearchTerm, setPrinterSearchTerm] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [productSearchTerm, setProductSearchTerm] = useState("");
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [isLoadingFilaments, setIsLoadingFilaments] = useState(false);
+  const [isLoadingPrinters, setIsLoadingPrinters] = useState(false);
   const { formatCurrency } = useLocale();
 
-  // Cargar datos necesarios para los selects
+  // Cargar filamentos con paginación
+  const loadFilaments = async (params: PaginationRequest = filamentParams) => {
+    try {
+      setIsLoadingFilaments(true);
+      const response = await apiClient.getFilaments(params);
+      if (response) {
+        if (params.page === 1) {
+          setFilaments(response.data || []);
+        } else {
+          setFilaments(prev => [...prev, ...(response.data || [])]);
+        }
+        setFilamentPagination(response.pagination || null);
+      }
+    } catch (err) {
+      console.error("Error loading filaments:", err);
+    } finally {
+      setIsLoadingFilaments(false);
+    }
+  };
 
+  // Cargar impresoras con paginación
+  const loadPrinters = async (params: PaginationRequest = printerParams) => {
+    try {
+      setIsLoadingPrinters(true);
+      const response = await apiClient.getPrinters(params);
+      if (response) {
+        if (params.page === 1) {
+          setPrinters(response.data || []);
+        } else {
+          setPrinters(prev => [...prev, ...(response.data || [])]);
+        }
+        setPrinterPagination(response.pagination || null);
+      }
+    } catch (err) {
+      console.error("Error loading printers:", err);
+    } finally {
+      setIsLoadingPrinters(false);
+    }
+  };
+
+  // Cargar una impresora específica por ID
+  const loadSpecificPrinter = async (printerId: string) => {
+    try {
+      setIsLoadingPrinters(true);
+      const response = await apiClient.getPrinters({
+        page: 1,
+        pageSize: 100,
+        searchTerm: printerId, // Buscar por ID
+      });
+      if (response) {
+        const specificPrinter = response.data?.find(p => p.id === printerId);
+        if (specificPrinter) {
+          // Si encontramos la impresora específica, agregarla a la lista si no está
+          setPrinters(prev => {
+            const exists = prev.some(p => p.id === printerId);
+            return exists ? prev : [...prev, specificPrinter];
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error loading specific printer:", err);
+    } finally {
+      setIsLoadingPrinters(false);
+    }
+  };
+
+  // Cargar productos con búsqueda
+  const loadProducts = async (searchTerm: string = "") => {
+    try {
+      setIsLoadingProducts(true);
+      const response = await apiClient.getProducts({
+        page: 1,
+        pageSize: 100,
+        searchTerm: searchTerm,
+      });
+      if (response) {
+        setProducts(response.data || []);
+      }
+    } catch (err) {
+      console.error("Error loading products:", err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  // Cargar un producto específico por ID
+  const loadSpecificProduct = async (productId: string) => {
+    try {
+      setIsLoadingProducts(true);
+      const response = await apiClient.getProducts({
+        page: 1,
+        pageSize: 100,
+        searchTerm: productId, // Buscar por ID
+      });
+      if (response) {
+        const specificProduct = response.data?.find(p => p.id === productId);
+        if (specificProduct) {
+          // Si encontramos el producto específico, agregarlo a la lista si no está
+          setProducts(prev => {
+            const exists = prev.some(p => p.id === productId);
+            return exists ? prev : [...prev, specificProduct];
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error loading specific product:", err);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
+  // Cargar datos iniciales
   useEffect(() => {
-    const loadData = async () => {
+    const loadInitialData = async () => {
       try {
-        const [filamentsData, printersData, productsData] = await Promise.all([
-          apiClient.getFilaments(),
-          apiClient.getPrinters(),
-          apiClient.getProducts(),
-        ]);
-
-        setFilaments(filamentsData || []);
-        setPrinters(printersData || []);
-        setProducts(productsData || []);
+        // Cargar impresoras, filamentos y productos
+        loadPrinters();
+        loadFilaments();
+        loadProducts();
+        
+        // Si hay un producto seleccionado, asegurarse de que esté disponible
+        if (formData.productId) {
+          loadSpecificProduct(formData.productId);
+        }
+        
+        // Si hay una impresora seleccionada, asegurarse de que esté disponible
+        if (formData.printerId) {
+          loadSpecificPrinter(formData.printerId);
+        }
       } catch (err) {
-        console.error("Error loading data:", err);
+        console.error("Error loading initial data:", err);
       }
     };
 
-    loadData();
+    loadInitialData();
   }, [refreshTrigger]);
+
+  // Debounce para búsqueda de impresoras
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const newParams = {
+        ...printerParams,
+        searchTerm: printerSearchTerm,
+        page: 1, // Reset a la primera página al buscar
+      };
+      setPrinterParams(newParams);
+      loadPrinters(newParams);
+    }, 300); // Búsqueda más rápida para impresoras
+
+    return () => clearTimeout(timeoutId);
+  }, [printerSearchTerm]);
+
+  // Debounce para búsqueda de productos
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      loadProducts(productSearchTerm);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [productSearchTerm]);
+
+  // Asegurar que el producto seleccionado esté disponible cuando se carguen los productos
+  useEffect(() => {
+    if (formData.productId && products.length > 0) {
+      const selectedProduct = products.find(p => p.id === formData.productId);
+      if (!selectedProduct && !isLoadingProducts) {
+        // Si el producto seleccionado no está en la lista actual, buscarlo específicamente
+        loadSpecificProduct(formData.productId);
+      }
+    }
+  }, [products, formData.productId, isLoadingProducts]);
+
+  // Asegurar que la impresora seleccionada esté disponible cuando se carguen las impresoras
+  useEffect(() => {
+    if (formData.printerId && printers.length > 0) {
+      const selectedPrinter = printers.find(p => p.id === formData.printerId);
+      if (!selectedPrinter && !isLoadingPrinters) {
+        // Si la impresora seleccionada no está en la lista actual, buscarla específicamente
+        loadSpecificPrinter(formData.printerId);
+      }
+    }
+  }, [printers, formData.printerId, isLoadingPrinters]);
 
   const onCalculate = async () => {
     var data = {
@@ -177,6 +356,24 @@ export function PrintingHistoryForm({
 
   const hasFilamentUsage = (formData.filamentConsumptions?.length ?? 0) > 0;
 
+  // Cargar más filamentos cuando se necesite
+  const loadMoreFilaments = () => {
+    if (filamentPagination && filamentParams.page < filamentPagination.totalPages && !isLoadingFilaments) {
+      const newParams = { ...filamentParams, page: filamentParams.page + 1 };
+      setFilamentParams(newParams);
+      loadFilaments(newParams);
+    }
+  };
+
+  // Cargar más impresoras cuando se necesite
+  const loadMorePrinters = () => {
+    if (printerPagination && printerParams.page < printerPagination.totalPages && !isLoadingPrinters) {
+      const newParams = { ...printerParams, page: printerParams.page + 1 };
+      setPrinterParams(newParams);
+      loadPrinters(newParams);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -241,11 +438,46 @@ export function PrintingHistoryForm({
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <ProductSelect
-                products={products}
-                formData={formData}
-                handleChange={handleChange}
-              />
+              <Label htmlFor="productSearch">Producto</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  id="productSearch"
+                  placeholder="Buscar producto..."
+                  value={productSearchTerm}
+                  onChange={(e) => setProductSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+                {isLoadingProducts && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <Select
+                value={formData.productId || ""}
+                onValueChange={(value) => handleChange("productId", value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecciona un producto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.length === 0 ? (
+                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                      {productSearchTerm ? "No se encontraron productos" : "Cargando productos..."}
+                    </div>
+                  ) : (
+                    products.map((product) => (
+                      <SelectItem key={product.id} value={product.id!}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{product.name}</span>
+                          <span className="text-xs text-muted-foreground">{product.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -324,6 +556,32 @@ export function PrintingHistoryForm({
                             </div>
                           </SelectItem>
                         ))}
+                        
+                        {/* Botón para cargar más filamentos */}
+                        {filamentPagination && filamentParams.page < filamentPagination.totalPages && (
+                          <div className="p-2 border-t">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={loadMoreFilaments}
+                              disabled={isLoadingFilaments}
+                              className="w-full"
+                            >
+                              {isLoadingFilaments ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Cargando...
+                                </>
+                              ) : (
+                                <>
+                                  <ChevronDown className="h-4 w-4 mr-2" />
+                                  Cargar más filamentos ({filamentPagination.totalCount - filaments.length} restantes)
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
                       </SelectContent>
                     </Select>
 
@@ -390,8 +648,22 @@ export function PrintingHistoryForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="printerId">Impresora</Label>
-
+              <Label htmlFor="printerSearch">Impresora</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  id="printerSearch"
+                  placeholder="Buscar impresora..."
+                  value={printerSearchTerm}
+                  onChange={(e) => setPrinterSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+                {isLoadingPrinters && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </div>
               <Select
                 value={formData.printerId}
                 onValueChange={(value) => handleChange("printerId", value)}
@@ -401,11 +673,46 @@ export function PrintingHistoryForm({
                 </SelectTrigger>
 
                 <SelectContent>
-                  {printers.map((printer) => (
-                    <SelectItem key={printer.id} value={printer.id!}>
-                      {getPrinterDescription(printer.id!)}
-                    </SelectItem>
-                  ))}
+                  {printers.length === 0 ? (
+                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                      {printerSearchTerm ? "No se encontraron impresoras" : "Cargando impresoras..."}
+                    </div>
+                  ) : (
+                    printers.map((printer) => (
+                      <SelectItem key={printer.id} value={printer.id!}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{printer.name}</span>
+                          <span className="text-xs text-muted-foreground">{printer.model}</span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                  
+                  {/* Botón para cargar más impresoras */}
+                  {printerPagination && printerParams.page < printerPagination.totalPages && (
+                    <div className="p-2 border-t">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={loadMorePrinters}
+                        disabled={isLoadingPrinters}
+                        className="w-full"
+                      >
+                        {isLoadingPrinters ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Cargando...
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="h-4 w-4 mr-2" />
+                            Cargar más impresoras ({printerPagination.totalCount - printers.length} restantes)
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>

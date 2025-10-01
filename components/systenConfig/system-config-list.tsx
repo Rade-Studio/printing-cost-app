@@ -24,7 +24,7 @@ import { CurrencyConfig } from "./currency-config"
 
 interface SystemConfigListProps {
   onEdit: (config: SystemConfig) => void
-  onAdd: () => void
+  onAdd: (existingConfigs: SystemConfig[]) => void
   refreshTrigger: number
 }
 
@@ -192,7 +192,7 @@ export function SystemConfigList({ onEdit, onAdd, refreshTrigger }: SystemConfig
               <CardTitle>Configuraciones del Sistema</CardTitle>
               <CardDescription>Parámetros globales para cálculos y personalización</CardDescription>
             </div>
-            <Button onClick={onAdd} className="flex items-center gap-2">
+            <Button onClick={() => onAdd(configs || [])} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Nueva Configuración
             </Button>

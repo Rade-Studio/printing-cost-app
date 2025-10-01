@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { PrinterList } from "@/components/printer/printer-list"
 import { PrinterForm } from "@/components/printer/printer-form"
 import { Printer } from "@/lib/types"
@@ -10,26 +10,26 @@ export default function ImpresorasPage() {
   const [editingPrinter, setEditingPrinter] = useState<Printer | undefined>(undefined)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingPrinter(undefined)
     setView("form")
-  }
+  }, [])
 
-  const handleEdit = (printer: Printer) => {
+  const handleEdit = useCallback((printer: Printer) => {
     setEditingPrinter(printer)
     setView("form")
-  }
+  }, [])
 
-  const handleSuccess = () => {
+  const handleSuccess = useCallback(() => {
     setView("list")
     setEditingPrinter(undefined)
     setRefreshTrigger((prev) => prev + 1)
-  }
+  }, [])
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setView("list")
     setEditingPrinter(undefined)
-  }
+  }, [])
 
   return (
     <div className="space-y-6">
