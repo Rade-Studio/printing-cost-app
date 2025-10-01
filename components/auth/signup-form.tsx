@@ -122,7 +122,7 @@ export function SignupForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-primary/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
@@ -131,17 +131,17 @@ export function SignupForm() {
               <img src="/favicon.ico" alt="Logo" className="h-10 w-10 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Únete a PrintCost Pro</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold text-foreground mb-2">Únete a PrintCost Pro</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Comienza tu prueba gratuita de 14 días y transforma tu negocio de impresión 3D
           </p>
         </div>
 
         {/* Formulario principal - Layout horizontal */}
-        <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
+        <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm">
             <CardHeader className="text-center pb-6 pt-8">
-              <CardTitle className="text-2xl font-bold text-gray-900">Crear Cuenta</CardTitle>
-              <CardDescription className="text-gray-600">
+              <CardTitle className="text-2xl font-bold text-card-foreground">Crear Cuenta</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Completa la información para comenzar tu prueba gratuita
               </CardDescription>
             </CardHeader>
@@ -150,7 +150,7 @@ export function SignupForm() {
                 {/* Primera fila - Información básica */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
                       Nombre completo *
                     </Label>
                     <Input
@@ -159,12 +159,12 @@ export function SignupForm() {
                       placeholder="Tu nombre completo"
                       value={data.fullName}
                       onChange={(e) => setData({ ...data, fullName: e.target.value })}
-                      className="h-12 border-gray-300 focus:border-primary focus:ring-primary rounded-lg"
+                      className="h-12"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="email" className="text-sm font-medium text-foreground">
                       Correo electrónico *
                     </Label>
                     <Input
@@ -173,12 +173,12 @@ export function SignupForm() {
                       placeholder="tu@email.com"
                       value={data.email}
                       onChange={(e) => setData({ ...data, email: e.target.value })}
-                      className="h-12 border-gray-300 focus:border-primary focus:ring-primary rounded-lg"
+                      className="h-12"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="phoneNumber" className="text-sm font-medium text-foreground">
                       Número de teléfono *
                     </Label>
                     <Input
@@ -187,7 +187,7 @@ export function SignupForm() {
                       placeholder="+1 (555) 123-4567"
                       value={data.phoneNumber}
                       onChange={(e) => setData({ ...data, phoneNumber: e.target.value })}
-                      className="h-12 border-gray-300 focus:border-primary focus:ring-primary rounded-lg"
+                      className="h-12"
                       required
                     />
                   </div>
@@ -196,7 +196,7 @@ export function SignupForm() {
                 {/* Segunda fila - Empresa */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="companyName" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="companyName" className="text-sm font-medium text-foreground">
                       Nombre de la empresa *
                     </Label>
                     <Input
@@ -205,7 +205,7 @@ export function SignupForm() {
                       placeholder="Nombre de tu empresa"
                       value={data.companyName}
                       onChange={(e) => setData({ ...data, companyName: e.target.value })}
-                      className="h-12 border-gray-300 focus:border-primary focus:ring-primary rounded-lg"
+                      className="h-12"
                       required
                     />
                   </div>
@@ -217,7 +217,7 @@ export function SignupForm() {
                 {/* Tercera fila - Contraseñas */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="password" className="text-sm font-medium text-foreground">
                       Contraseña *
                     </Label>
                     <div className="relative">
@@ -227,13 +227,13 @@ export function SignupForm() {
                         placeholder="Crea una contraseña segura"
                         value={data.password}
                         onChange={(e) => setData({ ...data, password: e.target.value })}
-                        className="h-12 border-gray-300 focus:border-primary focus:ring-primary rounded-lg pr-12"
+                        className="h-12 pr-12"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
@@ -241,7 +241,7 @@ export function SignupForm() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="passwordConfirmation" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="passwordConfirmation" className="text-sm font-medium text-foreground">
                       Confirmar contraseña *
                     </Label>
                     <div className="relative">
@@ -251,13 +251,13 @@ export function SignupForm() {
                         placeholder="Confirma tu contraseña"
                         value={passwordConfirmation}
                         onChange={(e) => setPasswordConfirmation(e.target.value)}
-                        className="h-12 border-gray-300 focus:border-primary focus:ring-primary rounded-lg pr-12"
+                        className="h-12 pr-12"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
                         {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
@@ -267,9 +267,9 @@ export function SignupForm() {
 
                 {/* Indicador de fortaleza de contraseña - Solo cuando hay contraseña */}
                 {data.password && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-muted/50 p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm font-medium text-gray-700">Fortaleza de la contraseña:</span>
+                      <span className="text-sm font-medium text-foreground">Fortaleza de la contraseña:</span>
                       <span className={`text-sm font-semibold ${getStrengthColor(passwordStrength.strength)}`}>
                         {getStrengthText(passwordStrength.strength)}
                       </span>
@@ -322,9 +322,9 @@ export function SignupForm() {
                       type="checkbox"
                       checked={terms}
                       onChange={(e) => setTerms(e.target.checked)}
-                      className="mt-1 h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                      className="mt-1 h-4 w-4 text-primary border-border rounded focus:ring-primary"
                     />
-                    <label htmlFor="terms" className="text-sm text-gray-600">
+                    <label htmlFor="terms" className="text-sm text-muted-foreground">
                       Acepto los{" "}
                       <a href="#" className="text-primary hover:underline">términos y condiciones</a>{" "}
                       y la{" "}
@@ -335,7 +335,7 @@ export function SignupForm() {
 
                 {/* Error message */}
                 {error && (
-                  <div className="text-sm text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">
+                  <div className="text-sm text-destructive bg-destructive/10 p-4 rounded-lg border border-destructive/20">
                     {error}
                   </div>
                 )}
@@ -360,7 +360,7 @@ export function SignupForm() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-12 text-gray-600 hover:text-gray-800"
+                    className="w-full h-12"
                     onClick={() => router.push("/landing")}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -370,7 +370,7 @@ export function SignupForm() {
 
                 {/* Información adicional */}
                 <div className="text-center">
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     ¿Ya tienes una cuenta?{" "}
                     <button
                       type="button"

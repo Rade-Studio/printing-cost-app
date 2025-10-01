@@ -440,7 +440,7 @@ export function PrintingHistoryForm({
             <div className="space-y-2">
               <Label htmlFor="productSearch">Producto</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   id="productSearch"
                   placeholder="Buscar producto..."
@@ -450,7 +450,7 @@ export function PrintingHistoryForm({
                 />
                 {isLoadingProducts && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -463,7 +463,7 @@ export function PrintingHistoryForm({
                 </SelectTrigger>
                 <SelectContent>
                   {products.length === 0 ? (
-                    <div className="flex items-center justify-center py-6 text-sm text-gray-500">
+                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                       {productSearchTerm ? "No se encontraron productos" : "Cargando productos..."}
                     </div>
                   ) : (
@@ -471,7 +471,7 @@ export function PrintingHistoryForm({
                       <SelectItem key={product.id} value={product.id!}>
                         <div className="flex flex-col">
                           <span className="font-medium">{product.name}</span>
-                          <span className="text-xs text-gray-500">{product.description}</span>
+                          <span className="text-xs text-muted-foreground">{product.description}</span>
                         </div>
                       </SelectItem>
                     ))
@@ -650,7 +650,7 @@ export function PrintingHistoryForm({
             <div className="space-y-2">
               <Label htmlFor="printerSearch">Impresora</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   id="printerSearch"
                   placeholder="Buscar impresora..."
@@ -660,7 +660,7 @@ export function PrintingHistoryForm({
                 />
                 {isLoadingPrinters && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 )}
               </div>
@@ -674,7 +674,7 @@ export function PrintingHistoryForm({
 
                 <SelectContent>
                   {printers.length === 0 ? (
-                    <div className="flex items-center justify-center py-6 text-sm text-gray-500">
+                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                       {printerSearchTerm ? "No se encontraron impresoras" : "Cargando impresoras..."}
                     </div>
                   ) : (
@@ -682,7 +682,7 @@ export function PrintingHistoryForm({
                       <SelectItem key={printer.id} value={printer.id!}>
                         <div className="flex flex-col">
                           <span className="font-medium">{printer.name}</span>
-                          <span className="text-xs text-gray-500">{printer.model}</span>
+                          <span className="text-xs text-muted-foreground">{printer.model}</span>
                         </div>
                       </SelectItem>
                     ))
