@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
 
 :root {
   /* Soft professional teal/cyan color palette for PrintCost Pro */
@@ -40,40 +39,6 @@
   --sidebar-ring: oklch(0.6 0.1 200 / 0.25); /* Softer teal sidebar focus ring */
 }
 
-.dark {
-  --background: oklch(0.12 0.01 240); /* Soft dark blue-gray background */
-  --foreground: oklch(0.9 0.01 240); /* Soft light text */
-  --card: oklch(0.16 0.02 240); /* Soft dark blue-gray card */
-  --card-foreground: oklch(0.9 0.01 240); /* Soft light card text */
-  --popover: oklch(0.16 0.02 240); /* Soft dark blue-gray popover */
-  --popover-foreground: oklch(0.9 0.01 240); /* Soft light popover text */
-  --primary: oklch(0.7 0.1 200); /* Soft blue primary */
-  --primary-foreground: oklch(0.12 0.01 240); /* Dark text on primary */
-  --secondary: oklch(0.22 0.02 240); /* Soft dark blue-gray secondary */
-  --secondary-foreground: oklch(0.9 0.01 240); /* Soft light secondary text */
-  --muted: oklch(0.22 0.02 240); /* Soft dark blue-gray muted */
-  --muted-foreground: oklch(0.65 0.01 240); /* Soft muted text */
-  --accent: oklch(0.25 0.02 240); /* Soft dark blue-gray accent */
-  --accent-foreground: oklch(0.9 0.01 240); /* Soft light accent text */
-  --destructive: oklch(0.6 0.15 25); /* Soft red destructive */
-  --destructive-foreground: oklch(0.9 0.05 25); /* Soft red destructive text */
-  --border: oklch(0.25 0.02 240); /* Soft dark blue-gray border */
-  --input: oklch(0.25 0.02 240); /* Soft dark blue-gray input */
-  --ring: oklch(0.7 0.1 200 / 0.4); /* Soft blue ring */
-  --chart-1: oklch(0.7 0.1 200); /* Soft blue chart */
-  --chart-2: oklch(0.65 0.12 220); /* Soft purple chart */
-  --chart-3: oklch(0.6 0.15 240); /* Soft indigo chart */
-  --chart-4: oklch(0.75 0.08 280); /* Soft violet chart */
-  --chart-5: oklch(0.8 0.06 300); /* Soft magenta chart */
-  --sidebar: oklch(0.16 0.02 240); /* Soft dark blue-gray sidebar */
-  --sidebar-foreground: oklch(0.9 0.01 240); /* Soft light sidebar text */
-  --sidebar-primary: oklch(0.7 0.1 200); /* Soft blue sidebar primary */
-  --sidebar-primary-foreground: oklch(0.12 0.01 240); /* Dark sidebar primary text */
-  --sidebar-accent: oklch(0.25 0.02 240); /* Soft dark blue-gray sidebar accent */
-  --sidebar-accent-foreground: oklch(0.9 0.01 240); /* Soft light sidebar accent text */
-  --sidebar-border: oklch(0.25 0.02 240); /* Soft dark blue-gray sidebar border */
-  --sidebar-ring: oklch(0.7 0.1 200 / 0.4); /* Soft blue sidebar ring */
-}
 
 @theme inline {
   --font-sans: var(--font-geist-sans);

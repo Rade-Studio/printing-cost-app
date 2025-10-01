@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { AuthService } from "@/lib/auth"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
 import {
   Users,
   ShoppingCart,
@@ -107,12 +106,8 @@ export function Sidebar() {
             {navigationItems}
           </nav>
 
-          {/* Theme toggle and Logout button */}
-          <div className="p-4 border-t border-sidebar-border space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-sidebar-foreground/70">Tema</span>
-              <ThemeToggle />
-            </div>
+          {/* Logout button */}
+          <div className="p-4 border-t border-sidebar-border">
             <Button
               variant="ghost"
               className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-xl py-3"
