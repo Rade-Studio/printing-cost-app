@@ -30,7 +30,7 @@ export interface FilamentFilters extends PaginationRequest {
   threshold?: number;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://4c6lkwrg-5081.use2.devtunnels.ms"
 
 // Sistema de debounce para evitar peticiones duplicadas muy rápidas
 const pendingRequests = new Map<string, Promise<any>>();

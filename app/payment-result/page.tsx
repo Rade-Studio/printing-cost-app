@@ -31,7 +31,7 @@ export default function PaymentResultPage() {
           
            if (verification?.success) {
              setPaymentStatus('success')
-             setMessage('¡Bienvenido a PrintCost Pro! Tu suscripción ha sido activada exitosamente.')
+             setMessage('¡Bienvenido a <span className="text-primary font-extrabold">3D</span> Print Cost! Tu suscripción ha sido activada exitosamente.')
            } else {
              setPaymentStatus('error')
              setMessage(verification?.message || 'Error al verificar el pago. Por favor, contacta soporte.')
@@ -93,7 +93,7 @@ export default function PaymentResultPage() {
                   <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 text-green-300" />
                 </div>
                 <h1 className="text-xl sm:text-2xl font-bold mb-2">
-                  ¡Bienvenido a PrintCost Pro!
+                  ¡Bienvenido a <span className="text-primary font-extrabold">3D</span> Print Cost!
                 </h1>
                 <p className="text-xs sm:text-sm text-blue-100 mb-1">
                   Tu suscripción ha sido activada exitosamente
@@ -195,7 +195,7 @@ export default function PaymentResultPage() {
                   onClick={handleGoToDashboard}
                   className="bg-gradient-to-r from-primary to-purple-600 text-white px-8 sm:px-12 lg:px-16 py-3 sm:py-4 rounded-xl text-lg sm:text-xl font-semibold hover:from-primary/90 hover:to-purple-600/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl w-full sm:w-auto"
                 >
-                  Comenzar a Usar PrintCost Pro
+                  Comenzar a Usar <span className="text-primary font-extrabold">3D</span> Print Cost
                 </button>
                 <p className="text-gray-500 mt-3 sm:mt-4 text-sm sm:text-lg">
                   ¡Tu viaje hacia la optimización comienza ahora!
@@ -316,7 +316,7 @@ export default function PaymentResultPage() {
               {/* Recordatorio de beneficios */}
               <div className="p-4 sm:p-6 lg:p-8 text-center bg-white border-t border-gray-200">
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">
-                  Recuerda: PrintCost Pro te espera
+                  Recuerda: <span className="text-primary font-extrabold">3D</span> Print Cost te espera
                 </h4>
                 <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
                   Una vez que completes tu pago, tendrás acceso a todas nuestras herramientas profesionales

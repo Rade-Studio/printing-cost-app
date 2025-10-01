@@ -131,7 +131,9 @@ export function SignupForm() {
               <img src="/favicon.ico" alt="Logo" className="h-10 w-10 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Únete a PrintCost Pro</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            Únete a <span className="text-primary font-extrabold">3D</span> Print Cost
+          </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Comienza tu prueba gratuita de 14 días y transforma tu negocio de impresión 3D
           </p>

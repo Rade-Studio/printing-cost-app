@@ -96,7 +96,9 @@ export function Sidebar() {
               <img src="/favicon.ico" alt="Logo" className="h-6 w-6 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">PrintCost Pro</h1>
+              <h1 className="text-lg font-bold text-sidebar-foreground">
+                <span className="text-primary font-extrabold">3D</span> Print Cost
+              </h1>
               <p className="text-sm text-sidebar-foreground/70">Gestión de Impresión 3D</p>
             </div>
           </div>

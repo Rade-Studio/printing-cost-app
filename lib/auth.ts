@@ -43,7 +43,7 @@ export interface SignupCreate {
   country: string
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://4c6lkwrg-5081.use2.devtunnels.ms"
 
 export class AuthService {
   private static TOKEN_KEY = "3d_calculator_token"
@@ -64,11 +64,13 @@ export class AuthService {
 
     const data = await response.json()
 
-    if (!data.token?.isCompletedSuccessfully || data.token?.isFaulted) {
-      throw new Error("Error en la autenticación del servidor")
-    }
+    this.setToken(data.token)
 
-    this.setToken(data.token.result)
+    // if (!data.token?.isCompletedSuccessfully || data.token?.isFaulted) {
+    //   throw new Error("Error en la autenticación del servidor")
+    // }
+
+    // this.setToken(data.token.result)
     return data
   }
 

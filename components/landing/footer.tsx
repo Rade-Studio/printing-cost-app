@@ -10,7 +10,9 @@ export function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0B8B92]">
                 <Printer className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-[#0B8B92]">PrintCost Pro</span>
+              <span className="text-xl font-bold text-[#0B8B92]">
+                <span className="font-extrabold">3D</span> Print Cost
+              </span>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed">
               La solución completa para gestionar tu negocio de impresión 3D de manera profesional y eficiente.
@@ -97,7 +99,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t text-center text-sm text-gray-600">
-          <p>&copy; 2025 PrintCost Pro. Todos los derechos reservados.</p>
+          <p>&copy; 2025 <span className="font-extrabold">3D</span> Print Cost. Todos los derechos reservados.</p>
           <p>
             Hecho con <span className="text-red-600">❤</span> por{" RADE Studio S.A.S"}
             </p>
