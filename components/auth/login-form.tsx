@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AuthService } from "@/lib/auth"
-import { Loader2, Layers3 } from "lucide-react"
+import { Loader2, Layers3, Eye, EyeOff } from "lucide-react"
 import { useSubscriptionValidationAfterLogin } from "@/lib/hooks/use-subscription-validation-after-login"
 
 export function LoginForm() {
@@ -17,6 +17,7 @@ export function LoginForm() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const { validateSubscriptionAfterLogin, isValidating } = useSubscriptionValidationAfterLogin()
 
@@ -80,15 +81,33 @@ export function LoginForm() {
                   Contraseña
                 </Label>
               </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="h-12 bg-input border-border rounded-lg text-base text-foreground placeholder:text-muted-foreground"
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-12 bg-input border-border rounded-lg text-base text-foreground placeholder:text-muted-foreground pr-12"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-12 w-12 p-0 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span className="sr-only">
+                    {showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  </span>
+                </Button>
+              </div>
             </div>
             {error && (
               <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">

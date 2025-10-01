@@ -64,7 +64,11 @@ export class AuthService {
 
     const data = await response.json()
 
-    this.setToken(data.token)
+    if (!data.token?.isCompletedSuccessfully || data.token?.isFaulted) {
+      throw new Error("Error en la autenticación del servidor")
+    }
+
+    this.setToken(data.token.result)
     return data
   }
 
