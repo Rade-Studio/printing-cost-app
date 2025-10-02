@@ -37,6 +37,8 @@ export function SystemConfigProvider({ children }: { children: ReactNode }) {
   const fetchConfigs = async () => {
     try {
       if (!AuthService.isAuthenticated()) {
+        setConfigs(defaultValues)
+        setIsLoading(false)
         return
       }
 
@@ -52,6 +54,8 @@ export function SystemConfigProvider({ children }: { children: ReactNode }) {
       setConfigs(merged)
     } catch (error) {
       console.error("Error cargando configuraciones:", error)
+      // En caso de error, usar valores por defecto
+      setConfigs(defaultValues)
     } finally {
       setIsLoading(false)
     }
