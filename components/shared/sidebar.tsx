@@ -19,13 +19,15 @@ import {
   Layers3,
   HammerIcon,
   Printer,
-  History
+  History,
+  Calculator
 } from "lucide-react"
 
 const navigation = [
   { name: "Tablero", href: "/dashboard", icon: BarChart3 },
   { name: "Clientes", href: "/clientes", icon: Users },
   { name: "Ventas", href: "/ventas", icon: ShoppingCart },
+  { name: "Calculadora de Costos", href: "/calculadora-costos", icon: Calculator },
   { name: "Historial de Impresión", href: "/historial-impresion", icon: History },
   { name: "Filamentos", href: "/filamentos", icon: Layers3 },
   { name: "Productos", href: "/productos", icon: Package },

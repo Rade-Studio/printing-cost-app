@@ -88,7 +88,7 @@ export interface FilamentConsumption {
   id?: string
   printingHistoryId?: string
   filamentId: string
-  gramsUsed: number
+  gramsUsed?: number
   filamentCost?: number
   filament?: Filament
 }

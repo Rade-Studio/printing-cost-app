@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { apiClient } from "@/lib/api"
-import { Loader2, AlertCircle, CheckCircle, XCircle } from "lucide-react"
+import { Loader2, AlertCircle, CheckCircle, XCircle, User, Mail, Phone, MapPin, Building } from "lucide-react"
 
 interface ClientFormProps {
   client?: Client
@@ -228,179 +228,243 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
     return !validationErrors[field]
   }
 
+  const isFormValid = (): boolean => {
+    const nameValidation = validateName(formData.name)
+    const emailValidation = validateEmail(formData.email)
+    const phoneValidation = validatePhone(formData.phone)
+    const addressValidation = validateAddress(formData.address)
+    const cityValidation = validateCity(formData.city)
+    
+    return nameValidation.isValid && 
+           emailValidation.isValid && 
+           phoneValidation.isValid && 
+           addressValidation.isValid && 
+           cityValidation.isValid
+  }
+
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>{client ? "Editar Cliente" : "Nuevo Cliente"}</CardTitle>
-        <CardDescription>
-          {client ? "Modifica la información del cliente" : "Agrega un nuevo cliente a tu base de datos"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="flex items-center gap-2">
-                Nombre completo *
-                {touchedFields.has('name') && (
-                  isFieldValid('name') ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <XCircle className="h-4 w-4 text-red-500" />
-                  )
-                )}
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Juan Pérez"
-                value={formData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                className={touchedFields.has('name') && !isFieldValid('name') ? 'border-red-500 focus:border-red-500' : ''}
-                required
-              />
-              {getFieldError('name') && (
-                <div className="flex items-center gap-1 text-sm text-red-600">
-                  <AlertCircle className="h-3 w-3" />
-                  {getFieldError('name')}
+    <div className="w-full max-w-6xl mx-auto p-4">
+      <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm">
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Layout Horizontal Compacto */}
+            <div className="space-y-6">
+              {/* Primera Fila: Nombre y Email */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="name" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <User className="h-4 w-4" />
+                    Nombre Completo *
+                    {touchedFields.has('name') && (
+                      isFieldValid('name') ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )
+                    )}
+                  </Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Juan Pérez"
+                    value={formData.name}
+                    onChange={(e) => handleChange("name", e.target.value)}
+                    className={`h-11 ${touchedFields.has('name') && !isFieldValid('name') ? 'border-red-500 focus:border-red-500' : ''}`}
+                    required
+                  />
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">
+                      {formData.name.length}/100 caracteres
+                    </p>
+                    {getFieldError('name') && (
+                      <div className="flex items-center gap-1 text-xs text-red-600">
+                        <AlertCircle className="h-3 w-3" />
+                        {getFieldError('name')}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2">
-                Correo electrónico *
-                {touchedFields.has('email') && (
-                  isFieldValid('email') ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <XCircle className="h-4 w-4 text-red-500" />
-                  )
-                )}
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="juan@email.com"
-                value={formData.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                className={touchedFields.has('email') && !isFieldValid('email') ? 'border-red-500 focus:border-red-500' : ''}
-                required
-              />
-              {getFieldError('email') && (
-                <div className="flex items-center gap-1 text-sm text-red-600">
-                  <AlertCircle className="h-3 w-3" />
-                  {getFieldError('email')}
-                </div>
-              )}
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="flex items-center gap-2">
-                Teléfono *
-                {touchedFields.has('phone') && (
-                  isFieldValid('phone') ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <XCircle className="h-4 w-4 text-red-500" />
-                  )
-                )}
-              </Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 234 567 8900"
-                value={formData.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                className={touchedFields.has('phone') && !isFieldValid('phone') ? 'border-red-500 focus:border-red-500' : ''}
-                required
-              />
-              {getFieldError('phone') && (
-                <div className="flex items-center gap-1 text-sm text-red-600">
-                  <AlertCircle className="h-3 w-3" />
-                  {getFieldError('phone')}
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Mail className="h-4 w-4" />
+                    Correo Electrónico *
+                    {touchedFields.has('email') && (
+                      isFieldValid('email') ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )
+                    )}
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="juan@email.com"
+                    value={formData.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
+                    className={`h-11 ${touchedFields.has('email') && !isFieldValid('email') ? 'border-red-500 focus:border-red-500' : ''}`}
+                    required
+                  />
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">
+                      Para comunicaciones y facturación
+                    </p>
+                    {getFieldError('email') && (
+                      <div className="flex items-center gap-1 text-xs text-red-600">
+                        <AlertCircle className="h-3 w-3" />
+                        {getFieldError('email')}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="city" className="flex items-center gap-2">
-                Ciudad *
-                {touchedFields.has('city') && (
-                  isFieldValid('city') ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <XCircle className="h-4 w-4 text-red-500" />
-                  )
-                )}
-              </Label>
-              <Input
-                id="city"
-                type="text"
-                placeholder="Ciudad"
-                value={formData.city}
-                onChange={(e) => handleChange("city", e.target.value)}
-                className={touchedFields.has('city') && !isFieldValid('city') ? 'border-red-500 focus:border-red-500' : ''}
-                required
-              />
-              {getFieldError('city') && (
-                <div className="flex items-center gap-1 text-sm text-red-600">
-                  <AlertCircle className="h-3 w-3" />
-                  {getFieldError('city')}
-                </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address" className="flex items-center gap-2">
-              Dirección *
-              {touchedFields.has('address') && (
-                isFieldValid('address') ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+              {/* Segunda Fila: Teléfono y Ciudad */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="phone" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Phone className="h-4 w-4" />
+                    Teléfono *
+                    {touchedFields.has('phone') && (
+                      isFieldValid('phone') ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )
+                    )}
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1 234 567 8900"
+                    value={formData.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    className={`h-11 ${touchedFields.has('phone') && !isFieldValid('phone') ? 'border-red-500 focus:border-red-500' : ''}`}
+                    required
+                  />
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">
+                      Números, espacios, guiones y paréntesis
+                    </p>
+                    {getFieldError('phone') && (
+                      <div className="flex items-center gap-1 text-xs text-red-600">
+                        <AlertCircle className="h-3 w-3" />
+                        {getFieldError('phone')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="city" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Building className="h-4 w-4" />
+                    Ciudad *
+                    {touchedFields.has('city') && (
+                      isFieldValid('city') ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )
+                    )}
+                  </Label>
+                  <Input
+                    id="city"
+                    type="text"
+                    placeholder="Ciudad"
+                    value={formData.city}
+                    onChange={(e) => handleChange("city", e.target.value)}
+                    className={`h-11 ${touchedFields.has('city') && !isFieldValid('city') ? 'border-red-500 focus:border-red-500' : ''}`}
+                    required
+                  />
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">
+                      {formData.city.length}/50 caracteres
+                    </p>
+                    {getFieldError('city') && (
+                      <div className="flex items-center gap-1 text-xs text-red-600">
+                        <AlertCircle className="h-3 w-3" />
+                        {getFieldError('city')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tercera Fila: Dirección */}
+              <div className="space-y-3">
+                <Label htmlFor="address" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <MapPin className="h-4 w-4" />
+                  Dirección Completa *
+                  {touchedFields.has('address') && (
+                    isFieldValid('address') ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    )
+                  )}
+                </Label>
+                <Input
+                  id="address"
+                  type="text"
+                  placeholder="Calle Principal 123, Colonia Centro"
+                  value={formData.address}
+                  onChange={(e) => handleChange("address", e.target.value)}
+                  className={`h-11 ${touchedFields.has('address') && !isFieldValid('address') ? 'border-red-500 focus:border-red-500' : ''}`}
+                  required
+                />
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">
+                    {formData.address.length}/200 caracteres
+                  </p>
+                  {getFieldError('address') && (
+                    <div className="flex items-center gap-1 text-xs text-red-600">
+                      <AlertCircle className="h-3 w-3" />
+                      {getFieldError('address')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Botones de Acción */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button 
+                type="submit" 
+                disabled={isLoading || !isFormValid()} 
+                className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : client ? (
+                  "Actualizar Cliente"
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )
-              )}
-            </Label>
-            <Input
-              id="address"
-              type="text"
-              placeholder="Calle Principal 123, Colonia Centro"
-              value={formData.address}
-              onChange={(e) => handleChange("address", e.target.value)}
-              className={touchedFields.has('address') && !isFieldValid('address') ? 'border-red-500 focus:border-red-500' : ''}
-              required
-            />
-            {getFieldError('address') && (
-              <div className="flex items-center gap-1 text-sm text-red-600">
-                <AlertCircle className="h-3 w-3" />
-                {getFieldError('address')}
+                  "Crear Cliente"
+                )}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel} 
+                disabled={isLoading}
+                className="h-12 px-6"
+              >
+                Cancelar
+              </Button>
+            </div>
+
+            {/* Mensaje de error general */}
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 p-4 rounded-lg border border-destructive/20">
+                {error}
               </div>
             )}
-          </div>
-
-          {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
-
-          <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Guardando...
-                </>
-              ) : client ? (
-                "Actualizar Cliente"
-              ) : (
-                "Crear Cliente"
-              )}
-            </Button>
-            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-              Cancelar
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
