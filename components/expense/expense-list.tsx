@@ -2,6 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +55,8 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
   const [allExpenses, setAllExpenses] = useState<Expense[]>([])
   const [hasLoadedAllExpenses, setHasLoadedAllExpenses] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("")
+  const [filtersVisible, setFiltersVisible] = useState(false)
   const { formatCurrency } = useLocale()
 
   const fetchExpenses = useCallback(async (params: any) => {
@@ -68,10 +79,18 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
     if (hasLoadedAllExpenses) return // Evitar llamadas duplicadas
     
     try {
-      const data = await apiClient.getAllExpenses()
-      if (Array.isArray(data)) {
-        setAllExpenses(data)
+      // Usar getExpenses con un pageSize grande para obtener todos los gastos
+      const response = await apiClient.getExpenses({ 
+        page: 1, 
+        pageSize: 1000, // Número grande para obtener todos
+        sortBy: "expenseDate",
+        sortDescending: true
+      })
+      
+      if (response && Array.isArray(response.data)) {
+        setAllExpenses(response.data)
         setHasLoadedAllExpenses(true)
+        console.log("Loaded expenses for stats:", response.data.length)
       } else {
         setAllExpenses([])
         setHasLoadedAllExpenses(true)
@@ -90,6 +109,11 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
     }
   }, [refreshTrigger, fetchAllExpenses, hasLoadedAllExpenses])
 
+  // Cargar gastos inmediatamente al montar el componente
+  useEffect(() => {
+    fetchAllExpenses()
+  }, [])
+
   const handleDelete = async (expense: Expense) => {
     try {
       await apiClient.deleteExpense(expense.id!)
@@ -105,6 +129,41 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term)
+  }
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category === "all" ? "" : category)
+  }
+
+  const clearFilters = () => {
+    setSelectedCategory("")
+    setSearchTerm("")
+  }
+
+  // Obtener categorías únicas de todos los gastos
+  const getUniqueCategories = () => {
+    const categories = new Set(allExpenses.map(expense => expense.category).filter(Boolean))
+    const uniqueCategories = Array.from(categories).sort()
+    console.log("All expenses:", allExpenses.length, "Unique categories:", uniqueCategories)
+    return uniqueCategories
+  }
+
+  // Filtrar gastos por categoría
+  const getFilteredExpenses = () => {
+    if (!selectedCategory) return allExpenses
+    return allExpenses.filter(expense => expense.category === selectedCategory)
+  }
+
+  // Filtrar gastos de la tabla por categoría
+  const getFilteredTableExpenses = () => {
+    if (!selectedCategory) return expenses
+    const filtered = expenses.filter(expense => expense.category === selectedCategory)
+    console.log("Table filtering:", { 
+      originalCount: expenses.length, 
+      filteredCount: filtered.length, 
+      selectedCategory 
+    })
+    return filtered
   }
 
   const formatDate = (dateString: string) => {
@@ -137,16 +196,71 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
     })
   }
 
-  const totalExpenses = safeCalculateTotal(allExpenses)
+  const totalExpenses = safeCalculateTotal(getFilteredExpenses())
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
-  const monthlyExpenses = safeCalculateTotal(safeFilterByMonth(allExpenses, currentMonth, currentYear))
+  const monthlyExpenses = safeCalculateTotal(safeFilterByMonth(getFilteredExpenses(), currentMonth, currentYear))
 
   const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1
   const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear
-  const lastMonthExpenses = safeCalculateTotal(safeFilterByMonth(allExpenses, lastMonth, lastMonthYear))
+  const lastMonthExpenses = safeCalculateTotal(safeFilterByMonth(getFilteredExpenses(), lastMonth, lastMonthYear))
 
   const monthlyChange = lastMonthExpenses > 0 ? ((monthlyExpenses - lastMonthExpenses) / lastMonthExpenses) * 100 : 0
+
+  // Debug logs
+  console.log("Expense calculations:", {
+    totalExpenses,
+    monthlyExpenses,
+    lastMonthExpenses,
+    monthlyChange,
+    selectedCategory,
+    filteredCount: getFilteredExpenses().length
+  })
+
+  // Componente de filtro de categoría
+  const categoryFilter = (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="category-filter">Filtrar por Categoría</Label>
+        <div className="flex gap-2">
+          <Select value={selectedCategory || "all"} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Todas las categorías" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las categorías</SelectItem>
+              {hasLoadedAllExpenses ? (
+                getUniqueCategories().map((category) => (
+                  <SelectItem key={category} value={category}>
+                    <div className="flex items-center gap-2">
+                      <Badge className={categoryColors[category] || categoryColors.Otros}>
+                        {category}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="loading" disabled>Cargando categorías...</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+          {selectedCategory && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setSelectedCategory("")}
+              className="px-3"
+            >
+              Limpiar
+            </Button>
+          )}
+        </div>
+        {!hasLoadedAllExpenses && (
+          <p className="text-sm text-muted-foreground">Cargando datos de gastos...</p>
+        )}
+      </div>
+    </div>
+  )
 
   // Configuración de columnas para la tabla
   const columns: TableColumn<Expense>[] = [
@@ -209,18 +323,18 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
   // Tarjetas de resumen
   const summaryCards: TableSummaryCard[] = [
     {
-      title: "Total de Gastos",
-      value: formatCurrency(totalExpenses),
-      subtitle: "Histórico",
+      title: selectedCategory ? `Total ${selectedCategory}` : "Total de Gastos",
+      value: hasLoadedAllExpenses ? formatCurrency(totalExpenses) : "Cargando...",
+      subtitle: selectedCategory ? `Solo ${selectedCategory}` : "Histórico",
     },
     {
-      title: "Gastos del Mes",
-      value: formatCurrency(monthlyExpenses),
-      subtitle: "Mes actual",
+      title: selectedCategory ? `${selectedCategory} del Mes` : "Gastos del Mes",
+      value: hasLoadedAllExpenses ? formatCurrency(monthlyExpenses) : "Cargando...",
+      subtitle: selectedCategory ? `Solo ${selectedCategory}` : "Mes actual",
     },
     {
       title: "Cambio Mensual",
-      value: `${Math.abs(monthlyChange).toFixed(1)}%`,
+      value: hasLoadedAllExpenses ? `${Math.abs(monthlyChange).toFixed(1)}%` : "Cargando...",
       subtitle: "vs mes anterior",
       className: monthlyChange >= 0 ? "text-red-600" : "text-green-600",
       icon: monthlyChange >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />,
@@ -230,14 +344,14 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
   return (
     <>
       <PaginatedTable
-        data={expenses}
+        data={getFilteredTableExpenses()}
         pagination={pagination}
         isLoading={isLoading}
         title="Gastos"
         description="Registro de gastos y costos operativos del negocio"
         columns={columns}
         actions={actions}
-        emptyStateMessage="No hay gastos registrados."
+        emptyStateMessage={selectedCategory ? `No hay gastos en la categoría "${selectedCategory}".` : "No hay gastos registrados."}
         emptyStateIcon={<Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-4" />}
         onFetch={fetchExpenses}
         onAdd={onAdd}
@@ -250,6 +364,10 @@ export function ExpenseList({ onEdit, onAdd, refreshTrigger }: ExpenseListProps)
         defaultSortBy="expensedate"
         defaultSortDescending={true}
         summaryCards={summaryCards}
+        customFilters={categoryFilter}
+        showFilters={true}
+        onToggleFilters={() => setFiltersVisible(!filtersVisible)}
+        filtersVisible={filtersVisible}
       />
 
       <AlertDialog open={!!deleteExpense} onOpenChange={() => setDeleteExpense(null)}>

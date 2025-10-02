@@ -132,7 +132,7 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
                 step="0.01"
                 placeholder="0.00"
                 value={formData.value}
-                onChange={(e) => handleChange("value", Number.parseFloat(e.target.value) || 0)}
+                onChange={(e) => handleChange("value", Number.parseFloat(e.target.value))}
                 required
               />
             </div>
@@ -147,14 +147,14 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
             <div className="text-sm">
               {formData.calculationType === "Fixed" ? (
                 <p>
-                  Para cualquier trabajo: <span className="font-medium">{formatCurrency(formData.value || 0)}</span>
+                  Para cualquier trabajo: <span className="font-medium">{formatCurrency(formData.value)}</span>
                 </p>
               ) : (
                 <div>
                   <p>Para un trabajo de 2.5 horas:</p>
                   <p>
                     2.5 × {formatCurrency((formData.value || 0))} ={" "}
-                    <span className="font-medium">{formatCurrency((2.5 * (formData.value || 0)))}</span>
+                    <span className="font-medium">{formatCurrency((2.5 * (formData.value)))}</span>
                   </p>
                 </div>
               )}

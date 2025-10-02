@@ -1,6 +1,6 @@
 // context/LocaleContext.tsx
 "use client"
-import { createContext, useContext, useState, ReactNode, useEffect } from "react"
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react"
 import { useSystemConfig } from "./systenConfigContext"
 
 type LocaleContextType = {
@@ -18,15 +18,17 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const [currency, setCurrency] = useState("COP")
   const { configs } = useSystemConfig()
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat(locale, { style: "currency", currency }).format(value)
+  const formatCurrency = useCallback((value: number) =>
+    new Intl.NumberFormat(locale, { style: "currency", currency }).format(value), 
+    [locale, currency]
+  )
 
   // Sincronizar moneda con el contexto de configuración del sistema
   useEffect(() => {
     if (configs.DefaultCurrency && configs.DefaultCurrency !== currency) {
       setCurrency(configs.DefaultCurrency)
     }
-  }, [configs.DefaultCurrency, currency])
+  }, [configs.DefaultCurrency])
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale, currency, setCurrency, formatCurrency }}>

@@ -73,6 +73,8 @@ export function FilamentList({
         threshold: showLowStockOnly ? lowStockThreshold : undefined,
       };
       
+      console.log("Fetching filaments with filters:", filters);
+      
       const response = await apiClient.getFilaments(filters);
       
       if (response) {
@@ -81,6 +83,8 @@ export function FilamentList({
           color: typeof f.color === "string" ? f.color.split(",") : (f.color || []),
         }));
 
+        console.log("Received filaments:", parsed.length, "with low stock filter:", showLowStockOnly);
+        
         setFilaments(parsed);
         setPagination(response.pagination);
         
@@ -96,6 +100,14 @@ export function FilamentList({
 
   const handleLowStockFilter = (enabled: boolean) => {
     setShowLowStockOnly(enabled);
+    // Disparar una nueva búsqueda inmediatamente cuando se cambie el filtro
+    fetchFilaments({ 
+      page: 1, 
+      pageSize: 10, 
+      searchTerm: searchTerm, 
+      sortBy: "type", 
+      sortDescending: false 
+    });
   };
 
   const handleSearchChange = (term: string) => {
@@ -268,19 +280,42 @@ export function FilamentList({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Filtro de stock bajo */}
       <div>
-        <label className="text-sm font-medium mb-2 block">Stock Bajo</label>
+        <label className="text-sm font-medium mb-2 block">
+          Stock Bajo
+          {showLowStockOnly && (
+            <span className="ml-2 text-xs text-muted-foreground">
+              (≤ {lowStockThreshold}g)
+            </span>
+          )}
+        </label>
         <div className="flex gap-2">
           <input
             type="number"
             placeholder="Umbral (gramos)"
             value={lowStockThreshold}
-            onChange={(e) => setLowStockThreshold(Number(e.target.value))}
+            onChange={(e) => {
+              const newThreshold = Number(e.target.value);
+              setLowStockThreshold(newThreshold);
+              // Si el filtro está activo, actualizar inmediatamente
+              if (showLowStockOnly) {
+                setTimeout(() => {
+                  fetchFilaments({ 
+                    page: 1, 
+                    pageSize: 10, 
+                    searchTerm: searchTerm, 
+                    sortBy: "type", 
+                    sortDescending: false 
+                  });
+                }, 500); // Debounce de 500ms
+              }
+            }}
             disabled={!showLowStockOnly}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           <Button
             variant={showLowStockOnly ? "default" : "outline"}
             onClick={() => handleLowStockFilter(!showLowStockOnly)}
+            className="min-w-[100px]"
           >
             {showLowStockOnly ? "Activo" : "Inactivo"}
           </Button>

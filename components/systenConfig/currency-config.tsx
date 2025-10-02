@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Globe, Check } from "lucide-react"
 import { apiClient } from "@/lib/api"
 import { useLocale } from "@/app/localContext"
+import { useSystemConfig } from "@/app/systenConfigContext"
 import { SystemConfig } from "@/lib/types"
 
 const availableCurrencies = [
@@ -24,6 +25,7 @@ export function CurrencyConfig() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const { currency, setCurrency } = useLocale()
+    const { refreshConfigs } = useSystemConfig()
 
     useEffect(() => {
         fetchCurrentCurrency()
@@ -84,6 +86,9 @@ export function CurrencyConfig() {
             // Actualizar estados locales
             setCurrentCurrency(selectedCurrency)
             setCurrency(selectedCurrency)
+            
+            // Refrescar el contexto de configuración del sistema
+            await refreshConfigs()
 
         } catch (error) {
             console.error("Error updating currency:", error)
