@@ -8,8 +8,14 @@ export const metadata: Metadata = {
   title: "3D Print Cost - Gestión de Impresión 3D",
   description: "Sistema completo para calcular costos de impresión 3D y gestionar clientes, ventas y materiales",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon16x16.ico", sizes: "16x16", type: "image/x-icon" },
+      { url: "/favicon32x32.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/favicon128x128.ico", sizes: "128x128", type: "image/x-icon" },
+      { url: "/favicon.ico", sizes: "any", type: "image/x-icon" }
+    ],
     shortcut: "/favicon.ico",
+    apple: "/favicon128x128.ico",
   }
 }
 

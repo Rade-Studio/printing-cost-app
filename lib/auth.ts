@@ -43,7 +43,7 @@ export interface SignupCreate {
   country: string
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://4c6lkwrg-5081.use2.devtunnels.ms"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
 export class AuthService {
   private static TOKEN_KEY = "3d_calculator_token"

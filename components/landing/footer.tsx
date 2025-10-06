@@ -7,8 +7,8 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-4">
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0B8B92]">
-                <Printer className="h-5 w-5 text-white" />
+              <div className="flex h-12 w-12 items-center justify-center">
+                <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
               </div>
               <span className="text-xl font-bold text-[#0B8B92]">
                 <span className="font-extrabold">3D</span> Print Cost
@@ -102,7 +102,7 @@ export function Footer() {
           <p>&copy; 2025 <span className="font-extrabold">3D</span> Print Cost. Todos los derechos reservados.</p>
           <p>
             Hecho con <span className="text-red-600">❤</span> por{" RADE Studio S.A.S"}
-            </p>
+          </p>
         </div>
       </div>
     </footer>

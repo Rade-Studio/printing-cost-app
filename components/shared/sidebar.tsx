@@ -91,11 +91,9 @@ export function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center gap-3 p-6 border-b border-sidebar-border">
-            <div className="p-2 bg-sidebar-primary/10 rounded-lg">
-
-              {/* Icono de imagen */}
-              <img src="/favicon.ico" alt="Logo" className="h-6 w-6 text-sidebar-primary-foreground" />
+          <div className="flex items-center gap-2 p-4 border-b border-sidebar-border">
+            <div className="flex h-12 w-12 items-center justify-center">
+              <img src="/logo.svg" alt="Logo" className="h-10 w-10" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-sidebar-foreground">
