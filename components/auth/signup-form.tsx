@@ -126,9 +126,9 @@ export function SignupForm() {
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-lg">
-              <img src="/favicon.ico" alt="Logo" className="h-10 w-10 text-white" />
+          <div className="flex justify-center mb-4">
+            <div className="flex h-16 w-16 items-center justify-center">
+              <img src="/logo.svg" alt="Logo" className="h-14 w-14" />
             </div>
           </div>
           <h1 className="text-4xl font-bold text-foreground mb-2">

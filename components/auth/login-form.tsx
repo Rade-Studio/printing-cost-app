@@ -50,9 +50,9 @@ export function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-card">
         <CardHeader className="text-center pb-8 pt-8">
-          <div className="flex justify-center mb-6">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <img src="/favicon.ico" alt="Logo" className="h-8 w-8 text-primary-foreground" />
+          <div className="flex justify-center mb-4">
+            <div className="flex h-14 w-14 items-center justify-center">
+              <img src="/logo.svg" alt="Logo" className="h-12 w-12" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-card-foreground mb-2">
