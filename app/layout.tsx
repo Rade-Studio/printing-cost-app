@@ -10,8 +10,41 @@ import { SystemConfigProvider } from "./systenConfigContext"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-  title: "3D Print Cost - Gestión de Impresión 3D",
-  description: "Sistema completo para calcular costos de impresión 3D y gestionar clientes, ventas y materiales",
+  title: "3D Print Cost - Calculadora de Impresión 3D | Gestión de Costos y Clientes",
+  description: "Calculadora profesional de costos de impresión 3D. Gestiona precios, clientes, materiales y ventas. Software completo para negocios de impresión 3D. Calcula costos de filamento, tiempo y gastos operativos.",
+  keywords: [
+    "calculadora impresion 3d",
+    "calcular costos impresion 3d", 
+    "precios impresion 3d",
+    "gestion impresion 3d",
+    "software impresion 3d",
+    "costos filamento 3d",
+    "negocio impresion 3d",
+    "calculadora 3d",
+    "impresion 3d precios",
+    "gestion clientes 3d",
+    "ventas impresion 3d",
+    "materiales 3d",
+    "filamento calculadora",
+    "tiempo impresion 3d",
+    "costos operativos 3d"
+  ],
+  authors: [{ name: "RADE Studio S.A.S" }],
+  creator: "RADE Studio S.A.S",
+  publisher: "3D Print Cost",
+  robots: "index, follow",
+  openGraph: {
+    title: "3D Print Cost - Calculadora de Impresión 3D",
+    description: "Calculadora profesional de costos de impresión 3D. Gestiona precios, clientes y materiales para tu negocio de impresión 3D.",
+    type: "website",
+    locale: "es_ES",
+    siteName: "3D Print Cost",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "3D Print Cost - Calculadora de Impresión 3D",
+    description: "Calculadora profesional de costos de impresión 3D. Gestiona precios, clientes y materiales.",
+  },
   icons: {
     icon: [
       { url: "/favicon16x16.ico", sizes: "16x16", type: "image/x-icon" },
@@ -29,8 +62,37 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "3D Print Cost",
+    "description": "Calculadora profesional de costos de impresión 3D. Gestiona precios, clientes, materiales y ventas para negocios de impresión 3D.",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": "Prueba gratuita de 14 días"
+    },
+    "creator": {
+      "@type": "Organization",
+      "name": "RADE Studio S.A.S",
+      "url": "https://github.com/Rade-Studio"
+    },
+    "keywords": "calculadora impresion 3d, calcular costos impresion 3d, precios impresion 3d, gestion impresion 3d, software impresion 3d",
+    "inLanguage": "es",
+    "url": "https://3dprintcost.com"
+  }
+
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      </head>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <ThemeProvider
           attribute="class"
