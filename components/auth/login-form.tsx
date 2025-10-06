@@ -140,7 +140,7 @@ export function LoginForm() {
               variant="outline"
               size="sm"
               className="w-full h-12 text-sm font-medium rounded-lg shadow-sm"
-              onClick={() => router.push("/landing")}
+              onClick={() => router.push("/")}
             >
               <Layers3 className="mr-2 h-4 w-4" />
               Volver al inicio
