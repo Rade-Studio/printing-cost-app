@@ -71,7 +71,7 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
+          <div className="relative">
             <h3 className="font-semibold mb-4">Empresa</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>
@@ -95,13 +95,32 @@ export function Footer() {
                 </a>
               </li>
             </ul>
+            
+            {/* Rade Studio Logo - Positioned at the same height as "Empresa" title */}
+            <div className="absolute -top-8 -right-12 flex items-center justify-center">
+              <div className="flex h-64 w-72 items-center justify-center">
+                <img 
+                  src="/logo_rade.png" 
+                  alt="Rade Studio Logo" 
+                  className="h-64 w-72 object-contain" 
+                />
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t text-center text-sm text-gray-600">
           <p>&copy; 2025 <span className="font-extrabold">3D</span> Print Cost. Todos los derechos reservados.</p>
           <p>
-            Hecho con <span className="text-red-600">❤</span> por{" RADE Studio S.A.S"}
+            Hecho con <span className="text-red-600">❤</span> por{" "}
+            <a 
+              href="https://github.com/Rade-Studio" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-[#0B8B92] hover:text-[#0B8B92]/80 font-semibold transition-colors underline"
+            >
+              RADE Studio S.A.S
+            </a>
           </p>
         </div>
       </div>
