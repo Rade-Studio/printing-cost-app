@@ -363,7 +363,7 @@ export function SignupForm() {
                     type="button"
                     variant="outline"
                     className="w-full h-12"
-                    onClick={() => router.push("/landing")}
+                    onClick={() => router.push("/")}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Volver al inicio
