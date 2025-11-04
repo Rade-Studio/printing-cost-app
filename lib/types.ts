@@ -98,6 +98,7 @@ export interface PrintingHistory {
   printerId: string
   productId?: string
   printTimeHours: number
+  printTimeMinutes?: number
   totalGramsUsed?: number
   totalCost?: number
   totalEnergyCost?: number

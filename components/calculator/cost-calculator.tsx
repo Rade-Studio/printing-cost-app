@@ -272,6 +272,10 @@ export function CostCalculator() {
   const [isLoadingWorkPackages, setIsLoadingWorkPackages] = useState(false);
   const [calculationResult, setCalculationResult] = useState<any>(null);
   const [customMargin, setCustomMargin] = useState(30);
+
+  // Estados separados para horas y minutos
+  const [printTimeHours, setPrintTimeHours] = useState<number>(0);
+  const [printTimeMinutes, setPrintTimeMinutes] = useState<number>(0);
   
   const { formatCurrency } = useLocale();
   const { configs, refreshConfigs } = useSystemConfig();
@@ -367,7 +371,8 @@ export function CostCalculator() {
   // Cálculo reactivo de costos
   const calculatedResult = useMemo(() => {
     // Siempre retornar un resultado, incluso si faltan datos
-    const printTimeHours = formData.printTimeHours || 0;
+    // Convertir horas y minutos a horas decimales
+    const totalPrintTimeHours = printTimeHours + (printTimeMinutes / 60);
     const quantity = formData.quantity || 1;
     
     // Obtener impresora seleccionada
@@ -392,7 +397,7 @@ export function CostCalculator() {
     // Calcular costo de energía
     const energyCostPerKwh = Number(configs['ElectricityCostPerKwh'] || 0);
     const printerKwh = selectedPrinter?.kwhPerHour || 0;
-    const totalEnergyCost = printerKwh * energyCostPerKwh * printTimeHours;
+    const totalEnergyCost = printerKwh * energyCostPerKwh * totalPrintTimeHours;
 
     // Calcular costo de mano de obra
     const selectedWorkPackage = workPackages.find(wp => wp.id === formData.workPackageId && formData.workPackageId !== "none");
@@ -446,8 +451,9 @@ export function CostCalculator() {
       quantity,
     };
   }, [
+    printTimeHours,
+    printTimeMinutes,
     formData.printerId,
-    formData.printTimeHours,
     formData.filamentConsumptions,
     formData.workPackageId,
     formData.workPackageHours,
@@ -521,6 +527,8 @@ export function CostCalculator() {
       packagingCost: 0,
       additionalCosts: 0,
     });
+    setPrintTimeHours(0);
+    setPrintTimeMinutes(0);
     setCalculationResult(null);
     setCustomMargin(30);
   };
@@ -682,24 +690,40 @@ export function CostCalculator() {
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </CustomTooltip>
                 </Label>
-                <Input
-                  id="printTimeHours"
-                  type="number"
-                  step="1"
-                  placeholder="2.5"
-                  value={formData.printTimeHours || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "") {
-                      handleChange("printTimeHours", 0);
-                    } else {
-                      const numValue = Number.parseFloat(value);
-                      handleChange("printTimeHours", isNaN(numValue) ? 0 : numValue);
-                    }
-                  }}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">horas</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Input
+                      id="printTimeHours"
+                      type="number"
+                      min="0"
+                      placeholder="2"
+                      value={printTimeHours}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        setPrintTimeHours(value);
+                      }}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">Horas</p>
+                  </div>
+                  <div>
+                    <Input
+                      id="printTimeMinutes"
+                      type="number"
+                      min="0"
+                      max="59"
+                      placeholder="30"
+                      value={printTimeMinutes}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        const clampedValue = Math.min(Math.max(value, 0), 59);
+                        setPrintTimeMinutes(clampedValue);
+                      }}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">Minutos</p>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
