@@ -9,23 +9,12 @@ export interface Client {
 
 export interface Sale {
   id?: string
-  clientId?: string | null  // Opcional
+  clientId: string
   status: string
   estimatedTotal?: number | null
   finalTotal?: number | null
-  observations?: string  // Nuevo campo
   createdAt: string
   client?: Client
-  products?: SaleProduct[]  // Array de productos en la venta
-}
-
-export interface SaleProduct {
-  id?: string
-  productId: string
-  quantity: number
-  suggestedPrice?: number  // Precio sugerido por unidad
-  finalPrice?: number      // Precio final por unidad
-  product?: Product        // Información del producto
 }
 
 export interface Filament {
@@ -53,9 +42,6 @@ export interface Product {
   modelUrl?: string
   externalLink?: string,
   printingHistory?: PrintingHistory
-  workPackageId?: string | null
-  workPackagePerHour?: number | null
-  workPackage?: WorkPackage
 }
 
 export interface SaleDetail {
@@ -64,12 +50,13 @@ export interface SaleDetail {
   productId?: string
   quantity: number
   comments: string
-  suggestedPrice?: number
-  finalPrice?: number
+  workPackageId: string
+  workPackagePerHour: number
   laborCost: number
   subTotal: number
   // Propiedades anidadas de la API
   sale?: Sale
+  workPackage?: WorkPackage
   product?: Product,
 }
 
@@ -111,7 +98,6 @@ export interface PrintingHistory {
   printerId: string
   productId?: string
   printTimeHours: number
-  printTimeMinutes?: number
   totalGramsUsed?: number
   totalCost?: number
   totalEnergyCost?: number

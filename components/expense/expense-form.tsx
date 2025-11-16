@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
 import { Loader2, Receipt, AlertCircle, CheckCircle, XCircle } from "lucide-react"
-import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface Expense {
   id?: string
@@ -198,7 +197,7 @@ export function ExpenseForm({ expense, onSuccess, onCancel }: ExpenseFormProps) 
       }
       onSuccess()
     } catch (err) {
-      setError(getUserFriendlyMessage(err))
+      setError("Error al guardar el gasto. Por favor, intenta de nuevo.")
     } finally {
       setIsLoading(false)
     }

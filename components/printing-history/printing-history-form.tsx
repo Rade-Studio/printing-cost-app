@@ -68,26 +68,6 @@ export function PrintingHistoryForm({
     filamentConsumptions: printingHistory?.filamentConsumptions || [],
   });
 
-  // Estados separados para horas y minutos
-  const [printTimeHours, setPrintTimeHours] = useState<number>(() => {
-    // Si existe printTimeMinutes en el modelo, usarlo directamente
-    if (printingHistory?.printTimeMinutes !== undefined) {
-      return printingHistory.printTimeHours || 0;
-    }
-    // Si no, convertir desde printTimeHours decimal
-    const totalHours = printingHistory?.printTimeHours || 0;
-    return Math.floor(totalHours);
-  });
-  const [printTimeMinutes, setPrintTimeMinutes] = useState<number>(() => {
-    // Si existe printTimeMinutes en el modelo, usarlo directamente
-    if (printingHistory?.printTimeMinutes !== undefined) {
-      return printingHistory.printTimeMinutes;
-    }
-    // Si no, convertir desde printTimeHours decimal
-    const totalHours = printingHistory?.printTimeHours || 0;
-    return Math.round((totalHours - Math.floor(totalHours)) * 60);
-  });
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [filaments, setFilaments] = useState<Filament[]>([]);
@@ -296,12 +276,9 @@ export function PrintingHistoryForm({
   }, [printers, formData.printerId, isLoadingPrinters]);
 
   const onCalculate = async () => {
-    // Convertir horas y minutos a horas decimales para el cálculo
-    const totalHoursDecimal = printTimeHours + (printTimeMinutes / 60);
-    
     var data = {
       printerId: formData.printerId,
-      printTimeHours: totalHoursDecimal, // API sigue esperando horas decimales para cálculos
+      printTimeHours: formData.printTimeHours,
       filamentConsumptions: formData.filamentConsumptions,
     };
 
@@ -309,7 +286,6 @@ export function PrintingHistoryForm({
 
     setFormData((prev) => ({
       ...prev,
-      printTimeHours: totalHoursDecimal, // Mantener valor decimal para cálculos internos
       totalGramsUsed: result?.totalGramsUsed,
       totalEnergyCost: result?.totalEnergyCost,
       totalFilamentCost: result?.totalFilamentCost,
@@ -382,7 +358,7 @@ export function PrintingHistoryForm({
 
   // Cargar más filamentos cuando se necesite
   const loadMoreFilaments = () => {
-    if (filamentPagination && filamentParams.page && filamentParams.page < filamentPagination.totalPages && !isLoadingFilaments) {
+    if (filamentPagination && filamentParams.page < filamentPagination.totalPages && !isLoadingFilaments) {
       const newParams = { ...filamentParams, page: filamentParams.page + 1 };
       setFilamentParams(newParams);
       loadFilaments(newParams);
@@ -391,7 +367,7 @@ export function PrintingHistoryForm({
 
   // Cargar más impresoras cuando se necesite
   const loadMorePrinters = () => {
-    if (printerPagination && printerParams.page && printerParams.page < printerPagination.totalPages && !isLoadingPrinters) {
+    if (printerPagination && printerParams.page < printerPagination.totalPages && !isLoadingPrinters) {
       const newParams = { ...printerParams, page: printerParams.page + 1 };
       setPrinterParams(newParams);
       loadPrinters(newParams);
@@ -406,20 +382,13 @@ export function PrintingHistoryForm({
     setError("");
 
     try {
-      // Preparar los datos para enviar con campos separados
-      const dataToSend = {
-        ...formData,
-        printTimeHours: printTimeHours, // Enviar horas como entero
-        printTimeMinutes: printTimeMinutes, // Enviar minutos como entero
-      };
-
       if (printingHistory?.id) {
         await apiClient.updatePrintingHistory(printingHistory.id, {
-          ...dataToSend,
+          ...formData,
           id: printingHistory.id,
         });
       } else {
-        await apiClient.createPrintingHistory(dataToSend);
+        await apiClient.createPrintingHistory(formData);
       }
 
       onSuccess();
@@ -574,7 +543,8 @@ export function PrintingHistoryForm({
 
                               {/* Colores (máximo 3) */}
                               <div className="flex gap-1 ml-2">
-                                {(typeof filament.color === 'string' ? filament.color.split(",") : filament.color)
+                                {filament.color
+                                  .split(",")
                                   .map((c: string, i: number) => (
                                     <div
                                       key={i}
@@ -588,7 +558,7 @@ export function PrintingHistoryForm({
                         ))}
                         
                         {/* Botón para cargar más filamentos */}
-                        {filamentPagination && filamentParams.page && filamentParams.page < filamentPagination.totalPages && (
+                        {filamentPagination && filamentParams.page < filamentPagination.totalPages && (
                           <div className="p-2 border-t">
                             <Button
                               type="button"
@@ -658,48 +628,23 @@ export function PrintingHistoryForm({
           <section className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="printTimeHours">
-                Tiempo de Impresión
+                Tiempo de Impresión (horas)
               </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Input
-                    id="printTimeHours"
-                    type="number"
-                    min="0"
-                    placeholder="2"
-                    value={printTimeHours}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      setPrintTimeHours(value);
-                      // Actualizar formData con el valor decimal
-                      const totalHoursDecimal = value + (printTimeMinutes / 60);
-                      setFormData((prev) => ({ ...prev, printTimeHours: totalHoursDecimal }));
-                    }}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">Horas</p>
-                </div>
-                <div>
-                  <Input
-                    id="printTimeMinutes"
-                    type="number"
-                    min="0"
-                    max="59"
-                    placeholder="30"
-                    value={printTimeMinutes}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      const clampedValue = Math.min(Math.max(value, 0), 59);
-                      setPrintTimeMinutes(clampedValue);
-                      // Actualizar formData con el valor decimal
-                      const totalHoursDecimal = printTimeHours + (clampedValue / 60);
-                      setFormData((prev) => ({ ...prev, printTimeHours: totalHoursDecimal }));
-                    }}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground">Minutos</p>
-                </div>
-              </div>
+
+              <Input
+                id="printTimeHours"
+                type="number"
+                step="0.1"
+                placeholder="2.5"
+                value={formData.printTimeHours}
+                onChange={(e) =>
+                  handleChange(
+                    "printTimeHours",
+                    Number.parseFloat(e.target.value) || 0
+                  )
+                }
+                required
+              />
             </div>
 
             <div className="space-y-2">
@@ -744,7 +689,7 @@ export function PrintingHistoryForm({
                   )}
                   
                   {/* Botón para cargar más impresoras */}
-                  {printerPagination && printerParams.page && printerParams.page < printerPagination.totalPages && (
+                  {printerPagination && printerParams.page < printerPagination.totalPages && (
                     <div className="p-2 border-t">
                       <Button
                         type="button"

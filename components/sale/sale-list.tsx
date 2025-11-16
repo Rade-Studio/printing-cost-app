@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { apiClient, PaginationRequest, PaginatedResponse, PaginationMetadata } from "@/lib/api"
-import { Edit, Trash2 } from "lucide-react"
+import { Edit, Trash2, Eye } from "lucide-react"
 import type { Client, Sale, SaleDetail } from "@/lib/types"
 import { useLocale } from "@/app/localContext"
 import { PaginatedTable, TableColumn, TableAction } from "@/components/shared/paginated-table"
@@ -21,6 +21,7 @@ import { PaginatedTable, TableColumn, TableAction } from "@/components/shared/pa
 interface SaleListProps {
   onEdit: (sale: Sale) => void
   onAdd: () => void
+  onViewDetails: (saleId: string) => void
   refreshTrigger: number
 }
 
@@ -42,7 +43,7 @@ const statusLabels = {
   prueba_venta: "Prueba de Venta",
 }
 
-export function SaleList({ onEdit, onAdd, refreshTrigger }: SaleListProps) {
+export function SaleList({ onEdit, onAdd, onViewDetails, refreshTrigger }: SaleListProps) {
   const [sales, setSales] = useState<Sale[]>([])
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -96,10 +97,7 @@ export function SaleList({ onEdit, onAdd, refreshTrigger }: SaleListProps) {
       label: "Cliente",
       render: (sale) => (
         <div>
-          <p className="font-medium">{sale.client?.name || "Sin cliente"}</p>
-          {sale.client?.email && (
-            <p className="text-xs text-muted-foreground">{sale.client.email}</p>
-          )}
+          <p className="font-medium">{sale.client?.name}</p>
         </div>
       ),
     },
@@ -133,29 +131,23 @@ export function SaleList({ onEdit, onAdd, refreshTrigger }: SaleListProps) {
     {
       key: "createdAt",
       label: "Fecha de Creación",
-      render: (sale) => {
-        const date = new Date(sale.createdAt);
-        const formattedDate = date.toLocaleDateString('es-ES', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        });
-        const formattedTime = date.toLocaleTimeString('es-ES', {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-        return (
-          <div className="flex flex-col gap-1">
-            <span>{formattedDate}</span>
-            <span className="text-xs text-muted-foreground">{formattedTime}</span>
-          </div>
-        );
-      },
+      render: (sale) => (
+        <div className="flex items-center gap-1">
+          <span>{sale.createdAt.slice(0, 10)}</span>
+        </div>
+      ),
     },
   ];
 
   // Configuración de acciones para la tabla
   const actions: TableAction<Sale>[] = [
+    {
+      label: "Ver Detalles",
+      icon: <Eye className="h-3 w-3" />,
+      onClick: (sale) => onViewDetails(sale.id!),
+      variant: "outline",
+      size: "sm",
+    },
     {
       label: "Editar",
       icon: <Edit className="h-3 w-3" />,

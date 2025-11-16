@@ -1,8 +1,5 @@
 import { AuthService } from "./auth"
 import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, Subscription, SystemConfig, WorkPackage, BoldPaymentData } from "./types";
-import { parseErrorResponse, type ErrorResponse } from "./errors/api-error";
-import { ApiError } from "./errors/types";
-import { getErrorMessage } from "./errors/error-messages";
 
 // Interfaces para paginación
 export interface PaginationRequest {
@@ -102,35 +99,8 @@ class ApiClient {
     });
 
     if (!res.ok) {
-      // Intentar parsear la respuesta como ErrorResponse
-      let errorResponse: ErrorResponse | null = null;
-      try {
-        const text = await res.text();
-        if (text) {
-          errorResponse = JSON.parse(text) as ErrorResponse;
-        }
-      } catch {
-        // Si no se puede parsear, continuar con el manejo genérico
-      }
-
-      // Si tenemos una ErrorResponse estructurada, usarla
-      if (errorResponse && errorResponse.code) {
-        // Siempre usar el mensaje del frontend basado en el código
-        throw new ApiError(
-          getErrorMessage(errorResponse.code),
-          errorResponse.code,
-          res.status,
-          errorResponse.details,
-          errorResponse.timestamp
-        );
-      }
-
-      // Si no, crear un error genérico
       const errText = await res.text().catch(() => "");
-      throw parseErrorResponse(
-        new Error(`HTTP ${res.status} ${res.statusText} @ ${url}\n${errText}`),
-        res.status
-      );
+      throw new Error(`HTTP ${res.status} ${res.statusText} @ ${url}\n${errText}`);
     }
 
     // 204 No Content

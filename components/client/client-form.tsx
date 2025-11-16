@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { apiClient } from "@/lib/api"
 import { Loader2, AlertCircle, CheckCircle, XCircle, User, Mail, Phone, MapPin, Building } from "lucide-react"
-import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface ClientFormProps {
   client?: Client
@@ -200,7 +199,7 @@ export function ClientForm({ client, onSuccess, onCancel }: ClientFormProps) {
       }
       onSuccess()
     } catch (err) {
-      setError(getUserFriendlyMessage(err))
+      setError("Error al guardar el cliente. Por favor, intenta de nuevo.")
     } finally {
       setIsLoading(false)
     }
