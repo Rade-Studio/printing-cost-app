@@ -13,6 +13,7 @@ import { apiClient } from "@/lib/api"
 import { Loader2, Briefcase, Calculator } from "lucide-react"
 import { useLocale } from "@/app/localContext"
 import { WorkPackage } from "@/lib/types"
+import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface WorkPackageFormProps {
   workPackage?: WorkPackage
@@ -44,7 +45,7 @@ export function WorkPackageForm({ workPackage, onSuccess, onCancel }: WorkPackag
       }
       onSuccess()
     } catch (err) {
-      setError("Error al guardar el paquete de trabajo. Por favor, intenta de nuevo.")
+      setError(getUserFriendlyMessage(err))
     } finally {
       setIsLoading(false)
     }
