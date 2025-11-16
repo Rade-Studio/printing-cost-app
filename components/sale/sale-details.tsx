@@ -180,7 +180,7 @@ export function SaleDetails({
                             {formatCurrency(detail.laborCost)}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {detail.product?.workPackage?.name || "No definido"}
+                            {detail.workPackage?.name || "No definido"}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">

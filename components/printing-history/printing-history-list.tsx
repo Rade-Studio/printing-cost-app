@@ -221,31 +221,11 @@ export function PrintingHistoryList({
     },
     {
       key: "printTimeHours",
-      label: "Tiempo",
+      label: "Tiempo (h)",
       sortable: true,
-      render: (history) => {
-        // Si existe printTimeMinutes, usarlo directamente
-        let hours = 0;
-        let minutes = 0;
-        
-        if (history.printTimeMinutes !== undefined) {
-          // Usar los valores separados si existen
-          hours = Math.floor(history.printTimeHours);
-          minutes = history.printTimeMinutes;
-        } else {
-          // Convertir desde el decimal
-          hours = Math.floor(history.printTimeHours);
-          minutes = Math.round((history.printTimeHours % 1) * 60);
-        }
-        
-        return (
-          <span className="font-mono">
-            {hours > 0 ? `${hours}h` : ''}
-            {minutes > 0 ? ` ${minutes}m` : ''}
-            {hours === 0 && minutes === 0 ? '0h' : ''}
-          </span>
-        );
-      },
+      render: (history) => (
+        <span className="font-mono">{history.printTimeHours}</span>
+      ),
     },
     {
       key: "totalGramsUsed",
