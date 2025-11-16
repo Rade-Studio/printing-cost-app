@@ -699,7 +699,7 @@ export function CostCalculator() {
                       placeholder="2"
                       value={printTimeHours}
                       onChange={(e) => {
-                        const value = parseInt(e.target.value) || 0;
+                        const value = parseInt(e.target.value);
                         setPrintTimeHours(value);
                       }}
                       required
@@ -715,7 +715,7 @@ export function CostCalculator() {
                       placeholder="30"
                       value={printTimeMinutes}
                       onChange={(e) => {
-                        const value = parseInt(e.target.value) || 0;
+                        const value = parseInt(e.target.value);
                         const clampedValue = Math.min(Math.max(value, 0), 59);
                         setPrintTimeMinutes(clampedValue);
                       }}

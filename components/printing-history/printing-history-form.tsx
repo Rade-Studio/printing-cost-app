@@ -669,7 +669,7 @@ export function PrintingHistoryForm({
                     placeholder="2"
                     value={printTimeHours}
                     onChange={(e) => {
-                      const value = parseInt(e.target.value) || 0;
+                      const value = parseInt(e.target.value);
                       setPrintTimeHours(value);
                       // Actualizar formData con el valor decimal
                       const totalHoursDecimal = value + (printTimeMinutes / 60);
@@ -688,7 +688,7 @@ export function PrintingHistoryForm({
                     placeholder="30"
                     value={printTimeMinutes}
                     onChange={(e) => {
-                      const value = parseInt(e.target.value) || 0;
+                      const value = parseInt(e.target.value);
                       const clampedValue = Math.min(Math.max(value, 0), 59);
                       setPrintTimeMinutes(clampedValue);
                       // Actualizar formData con el valor decimal

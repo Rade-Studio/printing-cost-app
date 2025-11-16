@@ -2,15 +2,16 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
-import { Loader2, Briefcase, ImageIcon, FileText, AlertCircle, CheckCircle, XCircle, ExternalLink } from "lucide-react"
-import { Product } from "@/lib/types"
+import { Loader2, Briefcase, ImageIcon, FileText, AlertCircle, CheckCircle, XCircle, ExternalLink, Clock } from "lucide-react"
+import { Product, WorkPackage } from "@/lib/types"
 
 interface ProductFormProps {
   product?: Product
@@ -36,11 +37,33 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
     description: product?.description || "",
     modelUrl: product?.modelUrl || "",
     imageUrl: product?.imageUrl || "",
+    workPackageId: product?.workPackageId || null,
+    workPackagePerHour: product?.workPackagePerHour || null,
   })
+  const [workPackages, setWorkPackages] = useState<WorkPackage[]>([])
+  const [isLoadingWorkPackages, setIsLoadingWorkPackages] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({})
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
+
+  // Cargar WorkPackages
+  useEffect(() => {
+    const loadWorkPackages = async () => {
+      setIsLoadingWorkPackages(true)
+      try {
+        const packages = await apiClient.getWorkPackages()
+        if (packages) {
+          setWorkPackages(packages)
+        }
+      } catch (error) {
+        console.error("Error loading work packages:", error)
+      } finally {
+        setIsLoadingWorkPackages(false)
+      }
+    }
+    loadWorkPackages()
+  }, [])
 
   // Funciones de validación
   const validateName = (name: string): FieldValidation => {
@@ -183,18 +206,20 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
     }
   }
 
-  const handleChange = (field: keyof Product, value: string) => {
+  const handleChange = (field: keyof Product, value: string | number | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     
     // Marcar el campo como tocado
-    setTouchedFields((prev) => new Set(prev).add(field))
+    setTouchedFields((prev) => new Set(prev).add(field as string))
     
-    // Validar el campo en tiempo real
-    const validation = validateField(field, value)
-    setValidationErrors((prev) => ({
-      ...prev,
-      [field]: validation.isValid ? undefined : validation.message
-    }))
+    // Validar el campo en tiempo real (solo para campos string)
+    if (typeof value === 'string') {
+      const validation = validateField(field, value)
+      setValidationErrors((prev) => ({
+        ...prev,
+        [field]: validation.isValid ? undefined : validation.message
+      }))
+    }
   }
 
   const getFieldError = (field: keyof ValidationErrors): string | undefined => {
@@ -375,6 +400,73 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
                           {getFieldError('modelUrl')}
                         </div>
                       )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* WorkPackage */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-primary" />
+                    Paquete de Trabajo
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label htmlFor="workPackageId" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                        <Clock className="h-4 w-4" />
+                        Paquete de Trabajo (Opcional)
+                      </Label>
+                      {isLoadingWorkPackages ? (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Cargando paquetes...
+                        </div>
+                      ) : (
+                        <Select
+                          value={formData.workPackageId || "none"}
+                          onValueChange={(value) => handleChange("workPackageId", value === "none" ? null : value)}
+                        >
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder="Selecciona un paquete de trabajo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Sin paquete de trabajo</SelectItem>
+                            {workPackages.map((wp) => (
+                              <SelectItem key={wp.id} value={wp.id || ""}>
+                                {wp.name} - {wp.calculationType === "Fixed" ? "Costo Fijo" : "Por Horas"}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <div className="bg-muted/50 p-2 rounded-lg">
+                        <p className="text-xs text-muted-foreground">
+                          Selecciona un paquete de trabajo para calcular costos de mano de obra
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label htmlFor="workPackagePerHour" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                        <Clock className="h-4 w-4" />
+                        Horas por Paquete (Opcional)
+                      </Label>
+                      <Input
+                        id="workPackagePerHour"
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        placeholder="0"
+                        value={formData.workPackagePerHour || ""}
+                        onChange={(e) => handleChange("workPackagePerHour", e.target.value ? parseInt(e.target.value) : null)}
+                        className="h-11"
+                      />
+                      <div className="bg-muted/50 p-2 rounded-lg">
+                        <p className="text-xs text-muted-foreground">
+                          Número de horas de trabajo para este producto
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

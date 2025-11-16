@@ -1,15 +1,18 @@
 "use client"
 
 import type React from "react"
-import type { Client, Sale } from "@/lib/types"
+import type { Client, Sale, SaleProduct, SaleDetail } from "@/lib/types"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
-import { Loader2, Search, User, DollarSign, UserCheck, Calendar, CreditCard, Building2 } from "lucide-react"
+import { SaleProductsList } from "@/components/sale/sale-products-list"
+import { useLocale } from "@/app/localContext"
+import { Loader2, Search, User, DollarSign, UserCheck, CreditCard, Building2, FileText } from "lucide-react"
 
 interface SaleFormProps {
   sale?: Sale | null
@@ -21,15 +24,49 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
   const [clients, setClients] = useState<Client[]>([])
   const [clientSearchTerm, setClientSearchTerm] = useState("")
   const [isSearchingClients, setIsSearchingClients] = useState(false)
+  const [products, setProducts] = useState<SaleProduct[]>([])
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
   const [formData, setFormData] = useState<Partial<Sale>>({
-    clientId: sale?.clientId || "",
+    clientId: sale?.clientId || null,
     status: sale?.status || "cotizacion",
     estimatedTotal: sale?.estimatedTotal || 0,
     finalTotal: sale?.finalTotal || 0,
+    observations: sale?.observations || "",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingClients, setIsLoadingClients] = useState(true)
   const [error, setError] = useState("")
+  const { formatCurrency } = useLocale()
+
+  // Cargar detalles de la venta si estamos editando
+  useEffect(() => {
+    const loadSaleDetails = async () => {
+      if (sale?.id) {
+        setIsLoadingDetails(true)
+        try {
+          const details = await apiClient.getSaleDetails(sale.id)
+          if (details) {
+            // Convertir SaleDetails a SaleProducts
+            // El backend devuelve FinalPrice y SuggestedPrice como precios por unidad
+            const saleProducts: SaleProduct[] = details.map((detail: SaleDetail) => ({
+              id: detail.id,
+              productId: detail.productId || "",
+              quantity: detail.quantity,
+              suggestedPrice: detail.suggestedPrice || 0, // Ya es precio por unidad
+              finalPrice: detail.finalPrice || 0, // Ya es precio por unidad
+              product: detail.product,
+            }))
+            setProducts(saleProducts)
+          }
+        } catch (error) {
+          console.error("Error loading sale details:", error)
+        } finally {
+          setIsLoadingDetails(false)
+        }
+      }
+    }
+    loadSaleDetails()
+  }, [sale?.id])
 
   // Cargar clientes iniciales y búsqueda con debounce
   useEffect(() => {
@@ -37,15 +74,15 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
       try {
         setIsLoadingClients(true)
         setIsSearchingClients(true)
-        
+
         const response = await apiClient.getClients({
           page: 1,
-          pageSize: 100, // Cargar más clientes inicialmente
+          pageSize: 100,
           searchTerm: clientSearchTerm,
           sortBy: "name",
-          sortDescending: false
+          sortDescending: false,
         })
-        
+
         if (response) {
           setClients(response.data)
         }
@@ -58,9 +95,45 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
       }
     }
 
-    const timeoutId = setTimeout(fetchClients, clientSearchTerm ? 800 : 0) // Debounce solo para búsquedas
+    const timeoutId = setTimeout(fetchClients, clientSearchTerm ? 800 : 0)
     return () => clearTimeout(timeoutId)
   }, [clientSearchTerm])
+
+  // Calcular workPackage cost por producto
+  const calculateWorkPackageCost = (product: any): number => {
+    if (!product?.workPackage || !product.workPackagePerHour) return 0
+    
+    const workPackage = product.workPackage
+    const workPackagePerHour = product.workPackagePerHour
+    
+    if (workPackage.calculationType === "Fixed") {
+      return workPackage.value || 0
+    } else if (workPackage.calculationType === "Multiply") {
+      return (workPackage.value || 0) * workPackagePerHour
+    }
+    return 0
+  }
+
+  // Calcular totales cuando cambian los productos
+  useEffect(() => {
+    const totalEstimated = products.reduce((sum, p) => {
+      const unitPrice = p.suggestedPrice || 0
+      const workPackageCost = calculateWorkPackageCost(p.product)
+      return sum + (unitPrice + workPackageCost) * p.quantity
+    }, 0)
+    
+    const totalFinal = products.reduce((sum, p) => {
+      const unitPrice = p.finalPrice || 0
+      const workPackageCost = calculateWorkPackageCost(p.product)
+      return sum + (unitPrice + workPackageCost) * p.quantity
+    }, 0)
+
+    setFormData((prev) => ({
+      ...prev,
+      estimatedTotal: totalEstimated,
+      finalTotal: totalFinal,
+    }))
+  }, [products])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,22 +141,33 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
     setError("")
 
     try {
+      const saleData = {
+        ...formData,
+        products: products.map((p) => ({
+          productId: p.productId,
+          quantity: p.quantity,
+          suggestedPrice: p.suggestedPrice,
+          finalPrice: p.finalPrice,
+        })),
+      }
+
       if (sale?.id) {
-        await apiClient.updateSale(sale.id, { ...formData, id: sale.id })
+        await apiClient.updateSale(sale.id, { ...saleData, id: sale.id })
       } else {
-        await apiClient.createSale(formData)
+        await apiClient.createSale(saleData)
       }
       onSuccess()
     } catch (err) {
       setError("Error al guardar la venta. Por favor, intenta de nuevo.")
+      console.error("Error saving sale:", err)
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleChange = (field: keyof Partial<Sale>, value: string | number) => {
+  const handleChange = (field: keyof Partial<Sale>, value: string | number | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    
+
     // Limpiar búsqueda cuando se selecciona un cliente
     if (field === "clientId") {
       setClientSearchTerm("")
@@ -91,7 +175,7 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
+    <div className="w-full max-w-6xl mx-auto p-6">
       <Card className="shadow-xl border-0 bg-gradient-to-br from-card to-muted/20 overflow-hidden">
         <CardHeader className="px-6 py-4 bg-gradient-to-r from-primary to-primary/90 text-white">
           <div className="flex items-center gap-3">
@@ -115,19 +199,18 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
         </CardHeader>
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Layout Principal - Aprovecha el espacio horizontal */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              
-              {/* Columna 1: Cliente */}
-              <div className="xl:col-span-2">
+            {/* Información General */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Cliente (Opcional) */}
+              <div className="lg:col-span-2">
                 <div className="bg-card rounded-xl border border-border p-4 shadow-sm h-full">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <UserCheck className="h-5 w-5 text-primary" />
                     </div>
-                    <h3 className="text-lg font-semibold text-card-foreground">Información del Cliente</h3>
+                    <h3 className="text-lg font-semibold text-card-foreground">Cliente (Opcional)</h3>
                   </div>
-                  
+
                   {isLoadingClients ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="flex items-center gap-3">
@@ -152,15 +235,21 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Selector de clientes */}
                       <div>
-                        <Label className="text-sm font-medium text-card-foreground mb-2 block">Cliente Seleccionado</Label>
-                        <Select value={formData.clientId} onValueChange={(value) => handleChange("clientId", value)}>
+                        <Label className="text-sm font-medium text-card-foreground mb-2 block">
+                          Cliente Seleccionado
+                        </Label>
+                        <Select
+                          value={formData.clientId || "none"}
+                          onValueChange={(value) => handleChange("clientId", value === "none" ? null : value)}
+                        >
                           <SelectTrigger className="h-12 border-border focus:border-primary focus:ring-primary bg-input text-foreground">
-                            <SelectValue placeholder="Selecciona un cliente de la lista" />
+                            <SelectValue placeholder="Selecciona un cliente (opcional)" />
                           </SelectTrigger>
                           <SelectContent className="max-h-60">
+                            <SelectItem value="none">Sin cliente</SelectItem>
                             {clients.length === 0 ? (
                               <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                                 <User className="h-5 w-5 mr-2" />
@@ -184,17 +273,16 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                 </div>
               </div>
 
-              {/* Columna 2: Estado y Montos */}
-              <div className="space-y-6">
-                {/* Estado de la Venta */}
-                <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
+              {/* Estado */}
+              <div>
+                <div className="bg-card rounded-xl border border-border p-4 shadow-sm h-full">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <Building2 className="h-5 w-5 text-green-600" />
                     </div>
                     <h3 className="text-lg font-semibold text-card-foreground">Estado</h3>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-card-foreground">Estado Actual</Label>
                     <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
@@ -236,49 +324,74 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                     </Select>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Montos */}
-                <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="p-2 bg-amber-100 rounded-lg">
-                      <DollarSign className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-card-foreground">Montos</h3>
+            {/* Observaciones */}
+            <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-card-foreground">Observaciones</h3>
+              </div>
+              <Textarea
+                placeholder="Ingresa observaciones adicionales sobre la venta..."
+                value={formData.observations || ""}
+                onChange={(e) => handleChange("observations", e.target.value)}
+                className="min-h-[100px] resize-none"
+                rows={4}
+              />
+            </div>
+
+            {/* Productos en la Venta */}
+            {isLoadingDetails ? (
+              <Card>
+                <CardContent className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </CardContent>
+              </Card>
+            ) : (
+              <SaleProductsList products={products} onProductsChange={setProducts} />
+            )}
+
+            {/* Resumen de Totales */}
+            <div className="bg-primary/10 rounded-xl border-2 border-primary/20 p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Total Estimado
+                  </Label>
+                  <div className="text-2xl font-bold text-primary">
+                    {formatCurrency(formData.estimatedTotal || 0)}
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium text-card-foreground mb-2 block">Total Estimado</Label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                        <Input
-                          id="estimatedTotal"
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          value={formData.estimatedTotal || ""}
-                          onChange={(e) => handleChange("estimatedTotal", Number.parseFloat(e.target.value) || 0)}
-                          className="pl-10 h-12 text-base border-border focus:border-primary focus:ring-primary bg-input text-foreground placeholder:text-muted-foreground"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Label className="text-sm font-medium text-card-foreground mb-2 block">Total Final</Label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                        <Input
-                          id="finalTotal"
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          value={formData.finalTotal || ""}
-                          onChange={(e) => handleChange("finalTotal", Number.parseFloat(e.target.value) || 0)}
-                          className="pl-10 h-12 text-base border-border focus:border-primary focus:ring-primary bg-input text-foreground placeholder:text-muted-foreground"
-                        />
-                      </div>
-                    </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Suma de precios sugeridos
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">Total Final</Label>
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(formData.finalTotal || 0)}
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Suma de precios finales
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">Diferencia</Label>
+                  <div
+                    className={`text-2xl font-bold ${
+                      (formData.finalTotal || 0) - (formData.estimatedTotal || 0) >= 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {formatCurrency((formData.finalTotal || 0) - (formData.estimatedTotal || 0))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Diferencia entre final y estimado
+                  </p>
                 </div>
               </div>
             </div>
@@ -295,9 +408,9 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
 
             {/* Botones de Acción */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-border">
-              <Button 
-                type="submit" 
-                disabled={isLoading || isLoadingClients} 
+              <Button
+                type="submit"
+                disabled={isLoading || isLoadingClients || isLoadingDetails}
                 className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {isLoading ? (
@@ -317,10 +430,10 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
                   </>
                 )}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onCancel} 
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
                 disabled={isLoading}
                 className="h-12 px-8 border-border text-foreground hover:bg-muted font-semibold rounded-xl transition-all duration-200"
               >
