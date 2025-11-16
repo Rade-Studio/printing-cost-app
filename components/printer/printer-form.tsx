@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api"
 import { Loader2, Printer as PrinterIcon, AlertCircle, CheckCircle, XCircle, Zap } from "lucide-react"
+import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface PrinterFormProps {
   printer?: Printer
@@ -214,7 +215,7 @@ export function PrinterForm({ printer, onSuccess, onCancel }: PrinterFormProps) 
       }
       onSuccess()
     } catch (err) {
-      setError("Error al guardar la impresora. Por favor, intenta de nuevo.")
+      setError(getUserFriendlyMessage(err))
     } finally {
       setIsLoading(false)
     }
