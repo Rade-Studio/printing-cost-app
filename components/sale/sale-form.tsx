@@ -13,6 +13,7 @@ import { apiClient } from "@/lib/api"
 import { SaleProductsList } from "@/components/sale/sale-products-list"
 import { useLocale } from "@/app/localContext"
 import { Loader2, Search, User, DollarSign, UserCheck, CreditCard, Building2, FileText } from "lucide-react"
+import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface SaleFormProps {
   sale?: Sale | null
@@ -158,7 +159,7 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
       }
       onSuccess()
     } catch (err) {
-      setError("Error al guardar la venta. Por favor, intenta de nuevo.")
+      setError(getUserFriendlyMessage(err))
       console.error("Error saving sale:", err)
     } finally {
       setIsLoading(false)

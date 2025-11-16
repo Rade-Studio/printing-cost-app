@@ -13,6 +13,7 @@ import { Loader2, Package, AlertCircle, CheckCircle, XCircle } from "lucide-reac
 import { useLocale } from "@/app/localContext"
 import { Filament } from "@/lib/types"
 import { MultiColorPicker } from "./multiply-color-picker"
+import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface FilamentFormProps {
   filament?: Filament
@@ -202,7 +203,7 @@ export function FilamentForm({ filament, onSuccess, onCancel }: FilamentFormProp
       }
       onSuccess()
     } catch (err) {
-      setError("Error al guardar el filamento. Por favor, intenta de nuevo.")
+      setError(getUserFriendlyMessage(err))
     } finally {
       setIsLoading(false)
     }

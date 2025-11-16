@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiClient } from "@/lib/api"
 import { Loader2, Briefcase, ImageIcon, FileText, AlertCircle, CheckCircle, XCircle, ExternalLink, Clock } from "lucide-react"
 import { Product, WorkPackage } from "@/lib/types"
+import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface ProductFormProps {
   product?: Product
@@ -200,7 +201,7 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
       }
       onSuccess()
     } catch (err) {
-      setError("Error al guardar el producto. Por favor, intenta de nuevo.")
+      setError(getUserFriendlyMessage(err))
     } finally {
       setIsLoading(false)
     }

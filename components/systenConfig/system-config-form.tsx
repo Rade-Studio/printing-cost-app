@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { apiClient } from "@/lib/api"
 import { Loader2, Settings } from "lucide-react"
+import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface SystemConfig {
   id?: string
@@ -65,7 +66,7 @@ export function SystemConfigForm({ config, existingConfigs = [], onSuccess, onCa
       }
       onSuccess()
     } catch (err) {
-      setError("Error al guardar la configuración. Por favor, intenta de nuevo.")
+      setError(getUserFriendlyMessage(err))
     } finally {
       setIsLoading(false)
     }
