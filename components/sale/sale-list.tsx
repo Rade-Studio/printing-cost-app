@@ -13,13 +13,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { apiClient, PaginationRequest, PaginatedResponse, PaginationMetadata } from "@/lib/api"
-import { Edit, Trash2 } from "lucide-react"
+import { Eye, Trash2 } from "lucide-react"
 import type { Client, Sale, SaleDetail } from "@/lib/types"
 import { useLocale } from "@/app/localContext"
 import { PaginatedTable, TableColumn, TableAction } from "@/components/shared/paginated-table"
 
 interface SaleListProps {
-  onEdit: (sale: Sale) => void
+  onView: (sale: Sale) => void
   onAdd: () => void
   refreshTrigger: number
 }
@@ -42,7 +42,7 @@ const statusLabels = {
   prueba_venta: "Prueba de Venta",
 }
 
-export function SaleList({ onEdit, onAdd, refreshTrigger }: SaleListProps) {
+export function SaleList({ onView, onAdd, refreshTrigger }: SaleListProps) {
   const [sales, setSales] = useState<Sale[]>([])
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -104,15 +104,6 @@ export function SaleList({ onEdit, onAdd, refreshTrigger }: SaleListProps) {
       ),
     },
     {
-      key: "status",
-      label: "Estado",
-      render: (sale) => (
-        <Badge className={statusColors[sale.status as keyof typeof statusColors] || "bg-gray-100"}>
-          {statusLabels[sale.status as keyof typeof statusLabels] || sale.status}
-        </Badge>
-      ),
-    },
-    {
       key: "estimatedTotal",
       label: "Total Estimado",
       render: (sale) => (
@@ -157,9 +148,9 @@ export function SaleList({ onEdit, onAdd, refreshTrigger }: SaleListProps) {
   // Configuración de acciones para la tabla
   const actions: TableAction<Sale>[] = [
     {
-      label: "Editar",
-      icon: <Edit className="h-3 w-3" />,
-      onClick: onEdit,
+      label: "Ver detalles",
+      icon: <Eye className="h-3 w-3" />,
+      onClick: onView,
       variant: "outline",
       size: "sm",
     },

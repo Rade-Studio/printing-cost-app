@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react"
 import { SaleList } from "@/components/sale/sale-list"
 import { SaleForm } from "@/components/sale/sale-form"
+import { SaleDetailsModal } from "@/components/sale/sale-details-modal"
 import { Sale } from "@/lib/types"
 
 type View = "list" | "form"
@@ -10,6 +11,7 @@ type View = "list" | "form"
 export default function VentasPage() {
   const [view, setView] = useState<View>("list")
   const [editingSale, setEditingSale] = useState<Sale | null>(null)
+  const [viewingSale, setViewingSale] = useState<Sale | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleAddSale = useCallback(() => {
@@ -17,9 +19,8 @@ export default function VentasPage() {
     setView("form")
   }, [])
 
-  const handleEditSale = useCallback((sale: Sale) => {
-    setEditingSale(sale)
-    setView("form")
+  const handleViewSale = useCallback((sale: Sale) => {
+    setViewingSale(sale)
   }, [])
 
   const handleSaleSuccess = useCallback(() => {
@@ -42,13 +43,21 @@ export default function VentasPage() {
 
       {view === "list" && (
         <SaleList
-          onEdit={handleEditSale}
+          onView={handleViewSale}
           onAdd={handleAddSale}
           refreshTrigger={refreshTrigger}
         />
       )}
 
       {view === "form" && <SaleForm sale={editingSale} onSuccess={handleSaleSuccess} onCancel={handleCancel} />}
+
+      {viewingSale && (
+        <SaleDetailsModal
+          isOpen={!!viewingSale}
+          onClose={() => setViewingSale(null)}
+          sale={viewingSale}
+        />
+      )}
     </div>
   )
 }

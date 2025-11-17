@@ -194,10 +194,13 @@ export function ProductForm({ product, onSuccess, onCancel }: ProductFormProps) 
     setError("")
 
     try {
+      // Excluir campos calculados que solo deben actualizarse desde cotizaciones
+      const { finalValue, packagingCost, additionalCosts, ...productData } = formData
+      
       if (product?.id) {
-        await apiClient.updateProduct(product.id, { ...formData, id: product.id })
+        await apiClient.updateProduct(product.id, { ...productData, id: product.id })
       } else {
-        await apiClient.createProduct(formData)
+        await apiClient.createProduct(productData)
       }
       onSuccess()
     } catch (err) {

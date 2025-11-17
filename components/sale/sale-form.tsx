@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { apiClient } from "@/lib/api"
 import { SaleProductsList } from "@/components/sale/sale-products-list"
 import { useLocale } from "@/app/localContext"
-import { Loader2, Search, User, DollarSign, UserCheck, CreditCard, Building2, FileText } from "lucide-react"
+import { Loader2, Search, User, DollarSign, UserCheck, CreditCard, FileText, X } from "lucide-react"
 import { getUserFriendlyMessage } from "@/lib/utils/error-utils"
 
 interface SaleFormProps {
@@ -29,7 +29,6 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
   const [formData, setFormData] = useState<Partial<Sale>>({
     clientId: sale?.clientId || null,
-    status: sale?.status || "cotizacion",
     estimatedTotal: sale?.estimatedTotal || 0,
     finalTotal: sale?.finalTotal || 0,
     observations: sale?.observations || "",
@@ -117,16 +116,16 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
 
   // Calcular totales cuando cambian los productos
   useEffect(() => {
+    // Total estimado = suma de valores sugeridos * cantidad
     const totalEstimated = products.reduce((sum, p) => {
-      const unitPrice = p.suggestedPrice || 0
-      const workPackageCost = calculateWorkPackageCost(p.product)
-      return sum + (unitPrice + workPackageCost) * p.quantity
+      const suggestedPrice = p.suggestedPrice || 0
+      return sum + suggestedPrice * p.quantity
     }, 0)
     
+    // Total final = suma de valores finales * cantidad
     const totalFinal = products.reduce((sum, p) => {
-      const unitPrice = p.finalPrice || 0
-      const workPackageCost = calculateWorkPackageCost(p.product)
-      return sum + (unitPrice + workPackageCost) * p.quantity
+      const finalPrice = p.finalPrice || p.product?.finalValue || 0
+      return sum + finalPrice * p.quantity
     }, 0)
 
     setFormData((prev) => ({
@@ -147,8 +146,8 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
         products: products.map((p) => ({
           productId: p.productId,
           quantity: p.quantity,
-          suggestedPrice: p.suggestedPrice,
-          finalPrice: p.finalPrice,
+          suggestedPrice: p.suggestedPrice || 0,
+          finalPrice: p.finalPrice || p.product?.finalValue || 0,
         })),
       }
 
@@ -201,130 +200,124 @@ export function SaleForm({ sale, onSuccess, onCancel }: SaleFormProps) {
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Información General */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Cliente (Opcional) */}
-              <div className="lg:col-span-2">
-                <div className="bg-card rounded-xl border border-border p-4 shadow-sm h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <UserCheck className="h-5 w-5 text-primary" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-card-foreground">Cliente (Opcional)</h3>
+            <div className="space-y-6">
+              {/* Cliente (Opcional) - Diseño Optimizado */}
+              <div className="bg-gradient-to-br from-card to-muted/20 rounded-xl border border-border p-5 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 bg-primary/10 rounded-lg">
+                    <UserCheck className="h-5 w-5 text-primary" />
                   </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground">Cliente</h3>
+                    <p className="text-xs text-muted-foreground">Opcional - Selecciona un cliente para esta venta</p>
+                  </div>
+                </div>
 
-                  {isLoadingClients ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="flex items-center gap-3">
-                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                        <span className="text-muted-foreground font-medium">Cargando clientes...</span>
-                      </div>
+                {isLoadingClients ? (
+                  <div className="flex items-center justify-center py-6">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">Cargando clientes...</span>
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {/* Buscador de clientes */}
-                      <div className="relative">
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                        <Input
-                          placeholder="Buscar cliente por nombre, email o teléfono..."
-                          value={clientSearchTerm}
-                          onChange={(e) => setClientSearchTerm(e.target.value)}
-                          className="pl-12 h-12 text-base border-border focus:border-primary focus:ring-primary bg-input text-foreground placeholder:text-muted-foreground"
-                        />
-                        {isSearchingClients && (
-                          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Selector de clientes con búsqueda integrada */}
+                    <div>
+                      <Select
+                        value={formData.clientId || "none"}
+                        onValueChange={(value) => handleChange("clientId", value === "none" ? null : value)}
+                      >
+                        <SelectTrigger className="h-11 w-full border-border focus:border-primary focus:ring-primary bg-background">
+                          <div className="flex items-center gap-2 w-full">
+                            <UserCheck className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <SelectValue placeholder="Seleccionar cliente (opcional)" />
                           </div>
-                        )}
-                      </div>
-
-                      {/* Selector de clientes */}
-                      <div>
-                        <Label className="text-sm font-medium text-card-foreground mb-2 block">
-                          Cliente Seleccionado
-                        </Label>
-                        <Select
-                          value={formData.clientId || "none"}
-                          onValueChange={(value) => handleChange("clientId", value === "none" ? null : value)}
-                        >
-                          <SelectTrigger className="h-12 border-border focus:border-primary focus:ring-primary bg-input text-foreground">
-                            <SelectValue placeholder="Selecciona un cliente (opcional)" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60">
-                            <SelectItem value="none">Sin cliente</SelectItem>
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px]">
+                          <div className="sticky top-0 bg-background border-b p-2 z-10">
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                              <Input
+                                placeholder="Buscar cliente..."
+                                value={clientSearchTerm}
+                                onChange={(e) => setClientSearchTerm(e.target.value)}
+                                className="pl-9 h-9 text-sm"
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => e.stopPropagation()}
+                              />
+                              {isSearchingClients && (
+                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                  <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="max-h-[240px] overflow-y-auto">
+                            <SelectItem value="none" className="py-2.5">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-muted-foreground/30"></div>
+                                <span className="text-sm">Sin cliente</span>
+                              </div>
+                            </SelectItem>
                             {clients.length === 0 ? (
-                              <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                                <User className="h-5 w-5 mr-2" />
-                                {clientSearchTerm ? "No se encontraron clientes" : "No hay clientes disponibles"}
+                              <div className="flex items-center justify-center py-6 text-sm text-muted-foreground px-4">
+                                <div className="text-center">
+                                  <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                  <p>{clientSearchTerm ? "No se encontraron clientes" : "No hay clientes disponibles"}</p>
+                                </div>
                               </div>
                             ) : (
                               clients.map((client) => (
-                                <SelectItem key={client.id} value={client.id || ""} className="py-3">
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-foreground">{client.name}</span>
-                                    <span className="text-xs text-muted-foreground">{client.email}</span>
+                                <SelectItem key={client.id} value={client.id || ""} className="py-2.5">
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="font-medium text-sm">{client.name}</span>
+                                    {client.email && (
+                                      <span className="text-xs text-muted-foreground">{client.email}</span>
+                                    )}
+                                    {client.phone && (
+                                      <span className="text-xs text-muted-foreground">{client.phone}</span>
+                                    )}
                                   </div>
                                 </SelectItem>
                               ))
                             )}
-                          </SelectContent>
-                        </Select>
+                          </div>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Cliente seleccionado - Vista previa */}
+                    {formData.clientId && (
+                      <div className="mt-2 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-primary/10 rounded">
+                            <UserCheck className="h-3.5 w-3.5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">
+                              {clients.find(c => c.id === formData.clientId)?.name}
+                            </p>
+                            {clients.find(c => c.id === formData.clientId)?.email && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {clients.find(c => c.id === formData.clientId)?.email}
+                              </p>
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleChange("clientId", null)}
+                            className="h-7 w-7 p-0 shrink-0"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Estado */}
-              <div>
-                <div className="bg-card rounded-xl border border-border p-4 shadow-sm h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Building2 className="h-5 w-5 text-green-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-card-foreground">Estado</h3>
+                    )}
                   </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-card-foreground">Estado Actual</Label>
-                    <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
-                      <SelectTrigger className="h-12 border-border focus:border-primary focus:ring-primary bg-input text-foreground">
-                        <SelectValue placeholder="Selecciona el estado" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cotizacion" className="py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                            <span>Cotización</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="en_proceso" className="py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <span>En Proceso</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="completada" className="py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span>Completada</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="cancelada" className="py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                            <span>Cancelada</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="prueba_venta" className="py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                            <span>Prueba de Venta</span>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 

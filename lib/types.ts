@@ -25,6 +25,8 @@ export interface SaleProduct {
   quantity: number
   suggestedPrice?: number  // Precio sugerido por unidad
   finalPrice?: number      // Precio final por unidad
+  packagingCost?: number | null  // Empaquetado desglosado
+  additionalCosts?: number | null  // Costos adicionales desglosados
   product?: Product        // Información del producto
 }
 
@@ -55,6 +57,9 @@ export interface Product {
   printingHistory?: PrintingHistory
   workPackageId?: string | null
   workPackagePerHour?: number | null
+  packagingCost?: number | null
+  additionalCosts?: number | null
+  finalValue?: number | null
   workPackage?: WorkPackage
 }
 
@@ -174,4 +179,35 @@ export interface BoldPaymentData {
   dialCode?: string
   documentNumber?: string
   documentType?: string
+}
+
+export interface Quotation {
+  id?: string
+  title: string
+  clientId?: string | null
+  productId?: string | null
+  printerId: string
+  printTimeHours: number
+  printTimeMinutes?: number | null
+  quantity: number
+  taxRate: number
+  packagingCost: number
+  additionalCosts: number
+  workPackageId?: string | null
+  workPackageHours: number
+  totalFilamentCost: number
+  totalEnergyCost: number
+  totalLaborCost: number
+  subtotalCost: number
+  taxAmount: number
+  totalCost: number
+  finalValue: number
+  marginPercent: number
+  filamentConsumptions?: FilamentConsumption[]
+  createdAt: string
+  updatedAt?: string | null
+  client?: Client
+  product?: Product
+  printer?: Printer
+  workPackage?: WorkPackage
 }
