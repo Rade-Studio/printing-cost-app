@@ -20,7 +20,8 @@ import {
   HammerIcon,
   Printer,
   History,
-  Calculator
+  Calculator,
+  FileText
 } from "lucide-react"
 
 const navigation = [
@@ -28,6 +29,7 @@ const navigation = [
   { name: "Clientes", href: "/clientes", icon: Users },
   { name: "Ventas", href: "/ventas", icon: ShoppingCart },
   { name: "Calculadora de Costos", href: "/calculadora-costos", icon: Calculator },
+  { name: "Cotizaciones", href: "/cotizaciones", icon: FileText },
   { name: "Historial de Impresión", href: "/historial-impresion", icon: History },
   { name: "Filamentos", href: "/filamentos", icon: Layers3 },
   { name: "Productos", href: "/productos", icon: Package },

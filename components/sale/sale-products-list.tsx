@@ -11,6 +11,7 @@ import { ProductSelect } from "@/components/shared/select-product"
 import { Product, SaleProduct } from "@/lib/types"
 import { Plus, Trash2, Package, Loader2 } from "lucide-react"
 import { useLocale } from "@/app/localContext"
+import { useSystemConfig } from "@/app/systenConfigContext"
 
 interface SaleProductsListProps {
   products: SaleProduct[]
@@ -29,6 +30,10 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
     finalPrice: 0,
   })
   const { formatCurrency } = useLocale()
+  const { configs } = useSystemConfig()
+  
+  // Calcular margen de ganancia desde configuración
+  const profitMargin = parseFloat(configs.DefaultProfitMargin || "20") / 100
 
   // Cargar productos disponibles
   const fetchProducts = async (searchTerm: string = "", pageSize: number = 50) => {
@@ -73,13 +78,14 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
   useEffect(() => {
     if (newProduct.productId) {
       const selectedProduct = availableProducts.find((p) => p.id === newProduct.productId)
-      if (selectedProduct?.printingHistory?.totalCost) {
-        // Precio sugerido por unidad = printingHistory.totalCost
-        const unitPrice = selectedProduct.printingHistory.totalCost
+      if (selectedProduct?.finalValue) {
+        // Valor sugerido = costo base sin margen (finalValue / (1 + profitMargin))
+        const suggestedPrice = selectedProduct.finalValue / (1 + profitMargin)
+        const finalPrice = selectedProduct.finalValue
         setNewProduct((prev) => ({
           ...prev,
-          suggestedPrice: unitPrice, // Precio sugerido por unidad
-          finalPrice: unitPrice, // Por defecto, precio final por unidad = sugerido
+          suggestedPrice: suggestedPrice, // Costo base sin margen
+          finalPrice: finalPrice, // Valor final del producto
         }))
       } else {
         setNewProduct((prev) => ({
@@ -89,7 +95,7 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
         }))
       }
     }
-  }, [newProduct.productId, availableProducts])
+  }, [newProduct.productId, availableProducts, profitMargin])
 
   const handleAddProduct = () => {
     if (!newProduct.productId || !newProduct.quantity || newProduct.quantity <= 0) {
@@ -100,8 +106,8 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
     const productToAdd: SaleProduct = {
       productId: newProduct.productId,
       quantity: newProduct.quantity,
-      suggestedPrice: newProduct.suggestedPrice, // Precio sugerido por unidad
-      finalPrice: newProduct.finalPrice || newProduct.suggestedPrice || 0, // Precio final por unidad
+      suggestedPrice: newProduct.suggestedPrice || 0, // Costo base sin margen
+      finalPrice: newProduct.finalPrice || selectedProduct?.finalValue || 0, // Valor final del producto
       product: selectedProduct,
     }
 
@@ -289,24 +295,13 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
         <div className="space-y-3">
           {products.map((product, index) => {
             const productInfo = product.product
-            const unitSuggestedPrice = product.suggestedPrice || 0
-            const unitFinalPrice = product.finalPrice || 0
+            // Valor final del producto (editable)
+            const unitFinalPrice = product.finalPrice || productInfo?.finalValue || 0
+            // Valor sugerido (costo base sin margen) - readonly
+            const suggestedPrice = product.suggestedPrice || (productInfo?.finalValue ? productInfo.finalValue / (1 + profitMargin) : 0)
             
-            // Calcular workPackage cost
-            const workPackageCost = (() => {
-              if (!productInfo?.workPackage || !productInfo.workPackagePerHour) return 0
-              const wp = productInfo.workPackage
-              const wpPerHour = productInfo.workPackagePerHour
-              if (wp.calculationType === "Fixed") {
-                return wp.value || 0
-              } else if (wp.calculationType === "Multiply") {
-                return (wp.value || 0) * wpPerHour
-              }
-              return 0
-            })()
-            
-            // Subtotal = (precio unitario + workPackage cost) * cantidad
-            const subtotal = (unitFinalPrice + workPackageCost) * product.quantity
+            // Subtotal = valor final * cantidad
+            const subtotal = unitFinalPrice * product.quantity
 
             return (
               <Card key={index} className="hover:shadow-md transition-shadow border-l-4 border-l-primary">
@@ -316,7 +311,7 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="font-semibold text-base">{productInfo?.name || "Producto no encontrado"}</h4>
-                        {productInfo?.printingHistory ? (
+                        {productInfo?.finalValue ? (
                           <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
                             ✓ Con precio
                           </span>
@@ -344,7 +339,7 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
                   </div>
 
                   {/* Segunda fila: Grid de precios y cálculos */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Cantidad */}
                     <div className="space-y-2">
                       <Label className="text-xs font-medium text-muted-foreground">Cantidad</Label>
@@ -359,19 +354,19 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
                       />
                     </div>
 
-                    {/* Precio Sugerido por Unidad */}
+                    {/* Valor Sugerido (readonly) */}
                     <div className="space-y-2">
-                      <Label className="text-xs font-medium text-muted-foreground">Precio Sugerido (unidad)</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Valor Sugerido (unidad)</Label>
                       <div className="h-10 px-3 py-2 bg-muted/50 rounded-md text-sm font-medium flex items-center border">
-                        {productInfo?.printingHistory?.totalCost
-                          ? formatCurrency(productInfo.printingHistory.totalCost)
-                          : "Sin sugerencia"}
+                        {suggestedPrice > 0
+                          ? formatCurrency(suggestedPrice)
+                          : "Sin precio"}
                       </div>
                     </div>
 
-                    {/* Precio Final por Unidad */}
+                    {/* Valor Final (editable) */}
                     <div className="space-y-2">
-                      <Label className="text-xs font-medium text-muted-foreground">Precio Final (unidad)</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Valor Final (unidad)</Label>
                       <Input
                         type="number"
                         step="0.01"
@@ -386,22 +381,6 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
                       />
                     </div>
 
-                    {/* WorkPackage Cost por Unidad */}
-                    <div className="space-y-2">
-                      <Label className="text-xs font-medium text-muted-foreground">Paquete Trabajo (unidad)</Label>
-                      <div className="h-10 px-3 py-2 bg-blue-50 dark:bg-blue-950/20 rounded-md text-sm font-medium flex items-center border border-blue-200 dark:border-blue-800">
-                        {workPackageCost > 0 ? formatCurrency(workPackageCost) : "Sin paquete"}
-                      </div>
-                    </div>
-
-                    {/* Precio Unitario Total */}
-                    <div className="space-y-2">
-                      <Label className="text-xs font-medium text-muted-foreground">Precio Unit. Total</Label>
-                      <div className="h-10 px-3 py-2 bg-primary/10 rounded-md text-sm font-semibold flex items-center border border-primary/20">
-                        {formatCurrency(unitFinalPrice + workPackageCost)}
-                      </div>
-                    </div>
-
                     {/* Subtotal */}
                     <div className="space-y-2">
                       <Label className="text-xs font-medium text-muted-foreground">Subtotal</Label>
@@ -411,21 +390,6 @@ export function SaleProductsList({ products, onProductsChange }: SaleProductsLis
                     </div>
                   </div>
 
-                  {/* Tercera fila: Desglose del cálculo (opcional, solo en desktop) */}
-                  <div className="hidden lg:block mt-4 pt-4 border-t">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>Cálculo:</span>
-                      <span className="font-medium">{formatCurrency(unitFinalPrice)}</span>
-                      <span>+</span>
-                      <span className="font-medium text-blue-600">{formatCurrency(workPackageCost)}</span>
-                      <span>=</span>
-                      <span className="font-medium">{formatCurrency(unitFinalPrice + workPackageCost)}</span>
-                      <span>×</span>
-                      <span className="font-medium">{product.quantity}</span>
-                      <span>=</span>
-                      <span className="font-bold text-primary">{formatCurrency(subtotal)}</span>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             )
