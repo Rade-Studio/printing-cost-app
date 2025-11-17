@@ -27,9 +27,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api";
-import { Loader2, Calculator, Search, ChevronDown, Trash, RotateCcw, Printer, Clock, Package, HelpCircle, HelpCircle as Help, X, ChevronRight } from "lucide-react";
+import { Loader2, Calculator, Search, ChevronDown, Trash, RotateCcw, Printer, Clock, Package, HelpCircle, HelpCircle as Help, X, ChevronRight, FileText, AlertCircle, CheckCircle } from "lucide-react";
 import { useLocale } from "@/app/localContext";
 import { useSystemConfig } from "@/app/systenConfigContext";
+import { QuotationModal } from "./quotation-modal";
 
 // Componente de Tooltip personalizado
 const CustomTooltip = ({ children, content }: { children: React.ReactNode; content: string }) => {
@@ -236,7 +237,11 @@ interface CalculatorFormData {
   additionalCosts: number; // Costos adicionales
 }
 
-export function CostCalculator() {
+interface CostCalculatorProps {
+  quotationId?: string;
+}
+
+export function CostCalculator({ quotationId }: CostCalculatorProps = {}) {
   const [formData, setFormData] = useState<CalculatorFormData>({
     printerId: "",
     printTimeHours: 0,
@@ -272,6 +277,9 @@ export function CostCalculator() {
   const [isLoadingWorkPackages, setIsLoadingWorkPackages] = useState(false);
   const [calculationResult, setCalculationResult] = useState<any>(null);
   const [customMargin, setCustomMargin] = useState(30);
+  const [showQuotationModal, setShowQuotationModal] = useState(false);
+  const [currentQuotation, setCurrentQuotation] = useState<{ id?: string; productId?: string; title?: string } | null>(null);
+  const [quotationLoaded, setQuotationLoaded] = useState(false);
 
   // Estados separados para horas y minutos
   const [printTimeHours, setPrintTimeHours] = useState<number>(0);
@@ -352,6 +360,60 @@ export function CostCalculator() {
 
     loadInitialData();
   }, []);
+
+  // Cargar cotización si se proporciona quotationId
+  useEffect(() => {
+    const loadQuotation = async () => {
+      if (!quotationId) return;
+      
+      try {
+        const quotation = await apiClient.getQuotation(quotationId);
+        if (quotation) {
+          // Guardar información de la cotización actual
+          setCurrentQuotation({
+            id: quotation.id,
+            productId: quotation.productId || undefined,
+            title: quotation.title,
+          });
+          setQuotationLoaded(true);
+
+          // Cargar datos de la cotización en el formulario
+          // Mapear filamentConsumptions al formato esperado
+          const filamentConsumptions = (quotation.filamentConsumptions || []).map(fc => ({
+            filamentId: fc.filamentId,
+            gramsUsed: fc.gramsUsed,
+          }));
+
+          setFormData({
+            printerId: quotation.printerId,
+            printTimeHours: quotation.printTimeHours,
+            filamentConsumptions: filamentConsumptions,
+            workPackageId: quotation.workPackageId || "",
+            workPackageHours: quotation.workPackageHours,
+            quantity: quotation.quantity,
+            taxRate: quotation.taxRate,
+            packagingCost: quotation.packagingCost,
+            additionalCosts: quotation.additionalCosts,
+          });
+
+          // Convertir horas decimales a horas y minutos
+          const hours = Math.floor(quotation.printTimeHours);
+          const minutes = Math.round((quotation.printTimeHours - hours) * 60);
+          setPrintTimeHours(hours);
+          setPrintTimeMinutes(minutes);
+
+          // Establecer margen personalizado si aplica
+          if (quotation.marginPercent) {
+            setCustomMargin(quotation.marginPercent);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading quotation:", err);
+      }
+    };
+
+    loadQuotation();
+  }, [quotationId]);
 
   // Debounce para búsqueda de impresoras
   useEffect(() => {
@@ -590,6 +652,53 @@ export function CostCalculator() {
           Reiniciar
         </Button>
       </div>
+
+      {/* Banner de cotización cargada */}
+      {quotationLoaded && currentQuotation && (
+        <div className="flex items-center justify-between gap-4 p-4 bg-muted/50 dark:bg-muted/30 border border-border rounded-lg mb-6">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-md shrink-0">
+              <FileText className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {currentQuotation.title}
+                </p>
+                <span className="px-2 py-0.5 text-xs font-medium text-muted-foreground bg-muted rounded-md shrink-0">
+                  Editando
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Modifica los valores y guarda los cambios o crea una nueva cotización
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setCurrentQuotation(null);
+                setQuotationLoaded(false);
+                resetForm();
+              }}
+              className="h-8 text-xs"
+            >
+              <X className="h-3.5 w-3.5 mr-1.5" />
+              Limpiar
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setShowQuotationModal(true)}
+              className="h-8 text-xs"
+            >
+              Guardar
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {/* Formulario */}
@@ -1169,6 +1278,20 @@ export function CostCalculator() {
                   </p>
                 </div>
               </div>
+
+              {/* Botón para pasar a impresión */}
+              {calculationResult && calculationResult.totalCost > 0 && (
+                <div className="pt-4 border-t">
+                  <Button
+                    onClick={() => setShowQuotationModal(true)}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <FileText className="h-5 w-5 mr-2" />
+                    Pasar a Impresión
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -1265,6 +1388,51 @@ export function CostCalculator() {
         isOpen={showHelpSidebar} 
         onClose={() => setShowHelpSidebar(false)} 
       />
+
+      {/* Modal de cotización */}
+      {calculationResult && (
+        <QuotationModal
+          isOpen={showQuotationModal}
+          onClose={() => setShowQuotationModal(false)}
+          onSuccess={() => {
+            setShowQuotationModal(false);
+            if (currentQuotation?.id) {
+              // Si se actualizó una cotización existente, mantenerla cargada
+              setQuotationLoaded(true);
+            } else {
+              // Si se creó una nueva, limpiar
+              setCurrentQuotation(null);
+              setQuotationLoaded(false);
+            }
+          }}
+          existingQuotationId={currentQuotation?.id}
+          existingProductId={currentQuotation?.productId}
+          onCreateNew={() => {
+            setCurrentQuotation(null);
+            setQuotationLoaded(false);
+          }}
+          calculationData={{
+            printerId: formData.printerId,
+            printTimeHours: printTimeHours,
+            printTimeMinutes: printTimeMinutes,
+            filamentConsumptions: formData.filamentConsumptions || [],
+            workPackageId: formData.workPackageId,
+            workPackageHours: formData.workPackageHours,
+            quantity: formData.quantity,
+            taxRate: formData.taxRate,
+            packagingCost: formData.packagingCost,
+            additionalCosts: formData.additionalCosts,
+            totalFilamentCost: calculationResult.totalFilamentCost,
+            totalEnergyCost: calculationResult.totalEnergyCost,
+            totalLaborCost: calculationResult.totalLaborCost,
+            subtotalCost: calculationResult.subtotalCost,
+            taxAmount: calculationResult.taxAmount,
+            totalCost: calculationResult.totalCost,
+            finalCostWithMargin: calculationResult.finalCostWithMargin,
+            marginPercent: customMargin,
+          }}
+        />
+      )}
     </div>
   );
 }

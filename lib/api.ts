@@ -1,5 +1,5 @@
 import { AuthService } from "./auth"
-import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Sale, SaleDetail, Subscription, SystemConfig, WorkPackage, BoldPaymentData } from "./types";
+import { CalculatePrintingHistoryResponse, Client, Dashboard, Expense, Filament, Printer, PrintingHistory, Product, Quotation, Sale, SaleDetail, Subscription, SystemConfig, WorkPackage, BoldPaymentData } from "./types";
 import { parseErrorResponse, type ErrorResponse } from "./errors/api-error";
 import { ApiError } from "./errors/types";
 import { getErrorMessage } from "./errors/error-messages";
@@ -220,6 +220,11 @@ class ApiClient {
     })
   }
 
+  async getSale(id: string, includeProducts: boolean = true): Promise<Sale | null> {
+    const url = `/sale/${id}${includeProducts ? '?includeProducts=true' : ''}`
+    return this.request<Sale | null>(url)
+  }
+
   async deleteSale(id: string) {
     return this.request(`/sale/${id}`, {
       method: "DELETE",
@@ -351,6 +356,10 @@ class ApiClient {
   // Método legacy para compatibilidad (sin paginación)
   async getAllProducts(): Promise<Product[] | null> {
     return this.request("/product/")
+  }
+
+  async getProduct(id: string): Promise<Product | null> {
+    return this.request<Product | null>(`/product/${id}`)
   }
 
   async createProduct(product: any): Promise<Product | null> {
@@ -556,6 +565,48 @@ class ApiClient {
     return this.request<{ success: boolean; message: string } | null>("/bold-verify-payment", {
       method: "POST",
       body: JSON.stringify({ orderId }),
+    })
+  }
+
+  // Quotation endpoints
+  async getQuotations(filters: PaginationRequest & { productId?: string; startDate?: string; endDate?: string; clientId?: string } = {}): Promise<PaginatedResponse<Quotation> | null> {
+    const params = new URLSearchParams();
+    
+    if (filters.page) params.append('page', filters.page.toString());
+    if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+    if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortDescending) params.append('sortDescending', 'true');
+    if (filters.productId) params.append('productId', filters.productId);
+    if (filters.startDate) params.append('startDate', filters.startDate);
+    if (filters.endDate) params.append('endDate', filters.endDate);
+    if (filters.clientId) params.append('clientId', filters.clientId);
+
+    const url = `/quotation/?${params}`;
+    return this.request<PaginatedResponse<Quotation> | null>(url);
+  }
+
+  async getQuotation(id: string): Promise<Quotation | null> {
+    return this.request<Quotation | null>(`/quotation/${id}`)
+  }
+
+  async createQuotation(quotation: any): Promise<Quotation | null> {
+    return this.request<Quotation | null>("/quotation/", {
+      method: "POST",
+      body: JSON.stringify(quotation),
+    })
+  }
+
+  async updateQuotation(id: string, quotation: any): Promise<Quotation | null> {
+    return this.request<Quotation | null>(`/quotation/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(quotation),
+    })
+  }
+
+  async deleteQuotation(id: string) {
+    return this.request(`/quotation/${id}`, {
+      method: "DELETE",
     })
   }
 }
