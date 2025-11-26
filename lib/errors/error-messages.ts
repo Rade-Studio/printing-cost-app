@@ -63,6 +63,7 @@ export const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCodes.AUTH_PASSWORD_CHANGE_FAILED]: "Error al cambiar la contraseña. Por favor, verifica los datos proporcionados.",
   [ErrorCodes.AUTH_USER_ALREADY_EXISTS]: "El usuario ya existe.",
   [ErrorCodes.AUTH_USER_WITHOUT_TENANT]: "El usuario no tiene un identificador de organización asignado.",
+  [ErrorCodes.AUTH_INVALID_INVITATION_CODE]: "El código de invitación ingresado es incorrecto o ya fue utilizado.",
 
   // Errores de Validación General
   [ErrorCodes.VALIDATION_ID_MISMATCH]: "El ID proporcionado no coincide con el ID de la solicitud.",
