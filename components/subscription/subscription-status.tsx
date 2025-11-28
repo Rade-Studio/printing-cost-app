@@ -1,15 +1,18 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Clock, Crown, AlertTriangle, CheckCircle, X } from "lucide-react"
+import { Clock, Crown, AlertTriangle, CheckCircle, X, Gift } from "lucide-react"
 import { useSubscriptionStatus } from "@/lib/hooks/use-subscription-status"
 import { useSubscriptionNotification } from "@/lib/contexts/subscription-notification-context"
+import { InvitationCodeModal } from "./invitation-code-modal"
 
 export function SubscriptionStatus() {
-  const { subscription, isLoading, error, daysRemaining } = useSubscriptionStatus()
+  const { subscription, isLoading, error, daysRemaining, refreshSubscription } = useSubscriptionStatus()
   const { isNotificationClosed, closeNotification } = useSubscriptionNotification()
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -140,6 +143,19 @@ export function SubscriptionStatus() {
               <div className="text-xs text-muted-foreground">días</div>
             </div>
           </div>
+
+          {/* Botón para aplicar código de invitación - solo para usuarios trial */}
+          {subscription.isTrial && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Gift className="h-4 w-4" />
+              Aplicar código
+            </Button>
+          )}
         </div>
         
         {isExpiringSoon && !isExpired && (
@@ -158,6 +174,14 @@ export function SubscriptionStatus() {
           </div>
         )}
       </CardContent>
+
+      <InvitationCodeModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onSuccess={() => {
+          refreshSubscription()
+        }}
+      />
     </Card>
   )
 }

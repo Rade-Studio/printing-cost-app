@@ -548,6 +548,13 @@ class ApiClient {
     })
   }
 
+  async applyInvitationCode(code: string): Promise<Subscription | null> {
+    return this.request<Subscription | null>("/subscription/apply-invitation-code", {
+      method: "POST",
+      body: JSON.stringify({ invitationCode: code }),
+    })
+  }
+
   async renewSubscription(): Promise<Subscription | null> {
     return this.request<Subscription | null>("/subscription/renew", {
       method: "POST",

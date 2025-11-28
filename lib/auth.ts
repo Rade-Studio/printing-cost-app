@@ -41,6 +41,7 @@ export interface SignupCreate {
   fullName: string
   phoneNumber: string
   country: string
+  invitationCode?: string
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
@@ -84,6 +85,24 @@ export class AuthService {
     })
 
     if (!response.ok) {
+      // Intentar parsear la respuesta de error
+      let errorData: { code?: string; message?: string } | null = null
+      try {
+        const text = await response.text()
+        if (text) {
+          errorData = JSON.parse(text)
+        }
+      } catch {
+        // Si no se puede parsear, usar error genérico
+      }
+
+      // Si tenemos un código de error, crear un error con ese código
+      if (errorData?.code) {
+        const error = new Error(errorData.message || errorData.code)
+        ;(error as any).code = errorData.code
+        throw error
+      }
+
       throw new Error("Error de registro")
     }
 

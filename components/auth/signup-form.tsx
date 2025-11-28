@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AuthService, SignupCreate } from "@/lib/auth"
-import { Loader2, Eye, EyeOff, CheckCircle, XCircle, ArrowLeft, Shield, User, Building, Phone } from "lucide-react"
+import { Loader2, Eye, EyeOff, CheckCircle, XCircle, ArrowLeft, Gift, Calculator, BarChart3, Users, Shield, Zap, TrendingUp } from "lucide-react"
+import { getErrorMessage } from "@/lib/errors/error-messages"
 
 interface PasswordStrength {
   score: number
@@ -27,12 +27,23 @@ export function SignupForm() {
     companyName: "",
     fullName: "",
     phoneNumber: "",
-    country: "", // Mantenemos el campo pero no lo mostramos
+    country: "",
+    invitationCode: "",
   })
   const [passwordConfirmation, setPasswordConfirmation] = useState("")
   const [terms, setTerms] = useState(false)
+  const [hasInvitationCode, setHasInvitationCode] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
-  // Función para calcular la fortaleza de la contraseña
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY })
+    }
+
+    window.addEventListener("mousemove", handleMouseMove)
+    return () => window.removeEventListener("mousemove", handleMouseMove)
+  }, [])
+
   const calculatePasswordStrength = (password: string): PasswordStrength => {
     let score = 0
     const feedback: string[] = []
@@ -107,12 +118,21 @@ export function SignupForm() {
     setError("")
 
     try {
-      await AuthService.signup(data)
+      const signupData = {
+        ...data,
+        invitationCode: data.invitationCode?.trim() || undefined
+      }
+      await AuthService.signup(signupData)
       router.push("/dashboard")
     } catch (err) {
       console.error("Signup error:", err)
       if (err instanceof Error) {
-        setError(err.message)
+        const errorCode = (err as any).code
+        if (errorCode) {
+          setError(getErrorMessage(errorCode))
+        } else {
+          setError(err.message || "Error al registrar. Por favor, intenta de nuevo.")
+        }
       } else {
         setError("Error al registrar. Por favor, intenta de nuevo.")
       }
@@ -121,39 +141,189 @@ export function SignupForm() {
     }
   }
 
+  const formatInvitationCode = (value: string): string => {
+    const cleaned = value.replace(/[-\s]/g, '').toUpperCase()
+    if (cleaned.length <= 5) return cleaned
+    if (cleaned.length <= 10) return `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`
+    if (cleaned.length <= 15) return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 10)}-${cleaned.slice(10)}`
+    if (cleaned.length <= 20) return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 10)}-${cleaned.slice(10, 15)}-${cleaned.slice(15)}`
+    if (cleaned.length <= 25) return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 10)}-${cleaned.slice(10, 15)}-${cleaned.slice(15, 20)}-${cleaned.slice(20)}`
+    return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 10)}-${cleaned.slice(10, 15)}-${cleaned.slice(15, 20)}-${cleaned.slice(20, 25)}`
+  }
+
+  const handleInvitationCodeChange = (value: string) => {
+    const formatted = formatInvitationCode(value)
+    setData({ ...data, invitationCode: formatted })
+    setHasInvitationCode(formatted.trim().length > 0)
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <div className="w-full max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="flex h-16 w-16 items-center justify-center">
-              <img src="/logo.svg" alt="Logo" className="h-14 w-14" />
+    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden p-4">
+      {/* Patrones decorativos de fondo - detrás de los paneles */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {/* Patrón de puntos en el lado izquierdo */}
+        <div 
+          className="absolute left-0 top-0 w-1/2 h-full opacity-[0.12]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--primary)) 2px, transparent 0)`,
+            backgroundSize: '48px 48px'
+          }}
+        />
+        
+        {/* Patrón de cuadrícula en el lado derecho */}
+        <div 
+          className="absolute right-0 top-0 w-1/2 h-full opacity-[0.1]"
+          style={{
+            backgroundImage: `linear-gradient(90deg, transparent 0%, hsl(var(--primary)) 1px, transparent 1px), linear-gradient(180deg, transparent 0%, hsl(var(--primary)) 1px, transparent 1px)`,
+            backgroundSize: '32px 32px'
+          }}
+        />
+        
+        {/* Formas geométricas decorativas grandes */}
+        <div className="absolute top-20 left-1/4 w-64 h-64 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute bottom-20 right-1/4 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-primary/8 blur-2xl" />
+        <div className="absolute top-1/4 right-1/3 w-40 h-40 rounded-full bg-primary/8 blur-2xl" />
+        <div className="absolute bottom-1/3 left-1/3 w-36 h-36 rounded-full bg-primary/8 blur-xl" />
+        <div className="absolute top-3/4 right-1/4 w-32 h-32 rounded-full bg-primary/8 blur-xl" />
+      </div>
+
+      {/* Animación de fondo que sigue el cursor */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-40 z-[1]"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, hsl(var(--primary) / 0.2), transparent 40%)`,
+          transition: 'background 0.15s ease-out'
+        }}
+      />
+
+      {/* Cuadro flotante contenedor */}
+      <div className="w-full max-w-7xl bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-2xl overflow-hidden relative z-10">
+        <div className="flex min-h-[600px]">
+          {/* Panel izquierdo - Beneficios y características */}
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/10 via-primary/5 to-background flex-col justify-center px-12 py-16 border-r border-border/50 relative">
+            <div className="max-w-md relative z-10">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex h-12 w-12 items-center justify-center bg-primary/10 rounded-lg">
+              <img src="/logo.svg" alt="Logo" className="h-8 w-8" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">
+              <span className="text-primary">3D</span> Print Cost
+            </h1>
+          </div>
+          
+          <h2 className="text-3xl font-bold text-foreground mb-4">
+            Comienza tu prueba gratuita
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Únete a cientos de empresas que ya están optimizando sus costos de impresión 3D.
+          </p>
+
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Calculator className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Calculadora Precisa</h3>
+                <p className="text-sm text-muted-foreground">
+                  Calcula el costo real de cada impresión considerando materiales, tiempo y gastos operativos.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <BarChart3 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Reportes Detallados</h3>
+                <p className="text-sm text-muted-foreground">
+                  Analiza el rendimiento de tu negocio con reportes y gráficos en tiempo real.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Gestión Completa</h3>
+                <p className="text-sm text-muted-foreground">
+                  Administra clientes, productos, cotizaciones y ventas desde un solo lugar.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Zap className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Ahorro de Tiempo</h3>
+                <p className="text-sm text-muted-foreground">
+                  Automatiza tus procesos y reduce el tiempo en tareas administrativas.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Maximiza Rentabilidad</h3>
+                <p className="text-sm text-muted-foreground">
+                  Optimiza tus precios y aumenta la rentabilidad de tu negocio.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Shield className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground mb-1">Seguridad Garantizada</h3>
+                <p className="text-sm text-muted-foreground">
+                  Tus datos están protegidos con encriptación de nivel empresarial.
+                </p>
+              </div>
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">
-            Únete a <span className="text-primary font-extrabold">3D</span> Print Cost
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Comienza tu prueba gratuita de 14 días y transforma tu negocio de impresión 3D
-          </p>
         </div>
+      </div>
 
-        {/* Formulario principal - Layout horizontal */}
-        <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm">
-            <CardHeader className="text-center pb-6 pt-8">
-              <CardTitle className="text-2xl font-bold text-card-foreground">Crear Cuenta</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Completa la información para comenzar tu prueba gratuita
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="px-8 pb-8">
-              <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Primera fila - Información básica */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Panel derecho - Formulario */}
+          <div className="flex-1 flex items-center justify-center px-6 py-12 lg:px-12 overflow-y-auto bg-card/50 relative">
+            <div className="w-full max-w-md relative z-10">
+              <div className="lg:hidden mb-8 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center bg-primary/10 rounded-lg">
+                    <img src="/logo.svg" alt="Logo" className="h-8 w-8" />
+                  </div>
+                </div>
+                <h1 className="text-2xl font-bold text-foreground mb-2">
+                  <span className="text-primary">3D</span> Print Cost
+                </h1>
+                <p className="text-muted-foreground">Crea tu cuenta</p>
+              </div>
+
+              <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-foreground mb-2">
+                  Crear cuenta
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Completa el formulario para comenzar
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-medium text-foreground">
-                      Nombre completo *
+                    <Label htmlFor="fullName" className="text-sm font-medium">
+                      Nombre completo
                     </Label>
                     <Input
                       id="fullName"
@@ -161,13 +331,14 @@ export function SignupForm() {
                       placeholder="Tu nombre completo"
                       value={data.fullName}
                       onChange={(e) => setData({ ...data, fullName: e.target.value })}
-                      className="h-12"
+                      className="h-11"
                       required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                      Correo electrónico *
+                    <Label htmlFor="email" className="text-sm font-medium">
+                      Correo electrónico
                     </Label>
                     <Input
                       id="email"
@@ -175,13 +346,14 @@ export function SignupForm() {
                       placeholder="tu@email.com"
                       value={data.email}
                       onChange={(e) => setData({ ...data, email: e.target.value })}
-                      className="h-12"
+                      className="h-11"
                       required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="phoneNumber" className="text-sm font-medium text-foreground">
-                      Número de teléfono *
+                    <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                      Teléfono
                     </Label>
                     <Input
                       id="phoneNumber"
@@ -189,17 +361,14 @@ export function SignupForm() {
                       placeholder="+1 (555) 123-4567"
                       value={data.phoneNumber}
                       onChange={(e) => setData({ ...data, phoneNumber: e.target.value })}
-                      className="h-12"
+                      className="h-11"
                       required
                     />
                   </div>
-                </div>
 
-                {/* Segunda fila - Empresa */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="companyName" className="text-sm font-medium text-foreground">
-                      Nombre de la empresa *
+                    <Label htmlFor="companyName" className="text-sm font-medium">
+                      Nombre de la empresa
                     </Label>
                     <Input
                       id="companyName"
@@ -207,162 +376,180 @@ export function SignupForm() {
                       placeholder="Nombre de tu empresa"
                       value={data.companyName}
                       onChange={(e) => setData({ ...data, companyName: e.target.value })}
-                      className="h-12"
+                      className="h-11"
                       required
                     />
                   </div>
-                  <div className="md:col-span-2 lg:col-span-2">
-                    {/* Espacio para futuras expansiones o información adicional */}
-                  </div>
-                </div>
 
-                {/* Tercera fila - Contraseñas */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                      Contraseña *
+                    <Label htmlFor="invitationCode" className="text-sm font-medium flex items-center gap-2">
+                      <Gift className="h-4 w-4" />
+                      Código de invitación <span className="text-muted-foreground font-normal">(opcional)</span>
                     </Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Crea una contraseña segura"
-                        value={data.password}
-                        onChange={(e) => setData({ ...data, password: e.target.value })}
-                        className="h-12 pr-12"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="passwordConfirmation" className="text-sm font-medium text-foreground">
-                      Confirmar contraseña *
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="passwordConfirmation"
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Confirma tu contraseña"
-                        value={passwordConfirmation}
-                        onChange={(e) => setPasswordConfirmation(e.target.value)}
-                        className="h-12 pr-12"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Indicador de fortaleza de contraseña - Solo cuando hay contraseña */}
-                {data.password && (
-                  <div className="bg-muted/50 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm font-medium text-foreground">Fortaleza de la contraseña:</span>
-                      <span className={`text-sm font-semibold ${getStrengthColor(passwordStrength.strength)}`}>
-                        {getStrengthText(passwordStrength.strength)}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {passwordStrength.feedback.map((item, index) => (
-                        <div key={index} className="flex items-center gap-2 text-xs">
-                          {data.password.length >= 8 && item.includes("8 caracteres") ? (
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                          ) : /[a-z]/.test(data.password) && item.includes("minúsculas") ? (
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                          ) : /[A-Z]/.test(data.password) && item.includes("mayúsculas") ? (
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                          ) : /[0-9]/.test(data.password) && item.includes("números") ? (
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                          ) : /[^A-Za-z0-9]/.test(data.password) && item.includes("especiales") ? (
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <XCircle className="h-3 w-3 text-red-500" />
-                          )}
-                          <span className={item.includes("8 caracteres") && data.password.length >= 8 ? "text-green-600" : 
-                                item.includes("minúsculas") && /[a-z]/.test(data.password) ? "text-green-600" :
-                                item.includes("mayúsculas") && /[A-Z]/.test(data.password) ? "text-green-600" :
-                                item.includes("números") && /[0-9]/.test(data.password) ? "text-green-600" :
-                                item.includes("especiales") && /[^A-Za-z0-9]/.test(data.password) ? "text-green-600" : "text-red-600"}>
-                            {item}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Validación de coincidencia de contraseñas */}
-                {passwordConfirmation && (
-                  <div className="text-center">
-                    {data.password !== passwordConfirmation ? (
-                      <p className="text-sm text-red-600">❌ Las contraseñas no coinciden</p>
-                    ) : (
-                      <p className="text-sm text-green-600">✅ Las contraseñas coinciden</p>
+                    <Input
+                      id="invitationCode"
+                      type="text"
+                      placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
+                      value={data.invitationCode}
+                      onChange={(e) => handleInvitationCodeChange(e.target.value)}
+                      className="h-11 font-mono text-sm"
+                      maxLength={29}
+                      style={{
+                        letterSpacing: data.invitationCode ? '0.05em' : 'normal'
+                      }}
+                    />
+                    {hasInvitationCode && (
+                      <div className="mt-2 p-2.5 bg-primary/5 border border-primary/20 rounded-md">
+                        <p className="text-xs text-primary font-medium flex items-center gap-1.5">
+                          <Gift className="h-3 w-3" />
+                          Usuario partner: recibirás 1 año de suscripción completa
+                        </p>
+                      </div>
                     )}
                   </div>
-                )}
 
-                {/* Términos y condiciones */}
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <input
-                      id="terms"
-                      type="checkbox"
-                      checked={terms}
-                      onChange={(e) => setTerms(e.target.checked)}
-                      className="mt-1 h-4 w-4 text-primary border-border rounded focus:ring-primary"
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Contraseña
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Crea una contraseña segura"
+                      value={data.password}
+                      onChange={(e) => setData({ ...data, password: e.target.value })}
+                      className="h-11 pr-11"
+                      required
                     />
-                    <label htmlFor="terms" className="text-sm text-muted-foreground">
-                      Acepto los{" "}
-                      <a href="#" className="text-primary hover:underline">términos y condiciones</a>{" "}
-                      y la{" "}
-                      <a href="#" className="text-primary hover:underline">política de privacidad</a>
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="passwordConfirmation" className="text-sm font-medium">
+                    Confirmar contraseña
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="passwordConfirmation"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirma tu contraseña"
+                      value={passwordConfirmation}
+                      onChange={(e) => setPasswordConfirmation(e.target.value)}
+                      className="h-11 pr-11"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-                {/* Error message */}
+                  {data.password && (
+                    <div className="bg-muted/30 p-3 rounded-md">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-foreground">Fortaleza:</span>
+                        <span className={`text-xs font-semibold ${getStrengthColor(passwordStrength.strength)}`}>
+                          {getStrengthText(passwordStrength.strength)}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {passwordStrength.feedback.map((item, index) => (
+                          <div key={index} className="flex items-center gap-2 text-xs">
+                            {data.password.length >= 8 && item.includes("8 caracteres") ? (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            ) : /[a-z]/.test(data.password) && item.includes("minúsculas") ? (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            ) : /[A-Z]/.test(data.password) && item.includes("mayúsculas") ? (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            ) : /[0-9]/.test(data.password) && item.includes("números") ? (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            ) : /[^A-Za-z0-9]/.test(data.password) && item.includes("especiales") ? (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <XCircle className="h-3 w-3 text-red-500" />
+                            )}
+                            <span className={
+                              item.includes("8 caracteres") && data.password.length >= 8 ? "text-green-600" : 
+                              item.includes("minúsculas") && /[a-z]/.test(data.password) ? "text-green-600" :
+                              item.includes("mayúsculas") && /[A-Z]/.test(data.password) ? "text-green-600" :
+                              item.includes("números") && /[0-9]/.test(data.password) ? "text-green-600" :
+                              item.includes("especiales") && /[^A-Za-z0-9]/.test(data.password) ? "text-green-600" : "text-muted-foreground"
+                            }>
+                              {item}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {passwordConfirmation && (
+                    <div className="text-sm">
+                      {data.password !== passwordConfirmation ? (
+                        <p className="text-red-600">Las contraseñas no coinciden</p>
+                      ) : (
+                        <p className="text-green-600">Las contraseñas coinciden</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <input
+                    id="terms"
+                    type="checkbox"
+                    checked={terms}
+                    onChange={(e) => setTerms(e.target.checked)}
+                    className="mt-1 h-4 w-4 text-primary border-border rounded focus:ring-primary"
+                  />
+                  <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed">
+                    Acepto los{" "}
+                    <a href="#" className="text-primary hover:underline">términos y condiciones</a>
+                    {" "}y la{" "}
+                    <a href="#" className="text-primary hover:underline">política de privacidad</a>
+                  </label>
+                </div>
+
                 {error && (
-                  <div className="text-sm text-destructive bg-destructive/10 p-4 rounded-lg border border-destructive/20">
+                  <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md border border-destructive/20">
                     {error}
                   </div>
                 )}
 
-                {/* Botones */}
-                <div className="space-y-4">
+                <div className="space-y-3 pt-2">
                   <Button
                     type="submit"
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full h-11 font-medium"
                     disabled={isLoading}
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Creando cuenta...
                       </>
                     ) : (
-                      "Comenzar Prueba Gratis"
+                      hasInvitationCode ? "Crear cuenta como partner" : "Crear cuenta"
                     )}
                   </Button>
                   
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-12"
+                    className="w-full h-10"
                     onClick={() => router.push("/")}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -370,22 +557,22 @@ export function SignupForm() {
                   </Button>
                 </div>
 
-                {/* Información adicional */}
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">
+                <div className="text-center pt-2">
+                  <p className="text-xs text-muted-foreground">
                     ¿Ya tienes una cuenta?{" "}
                     <button
                       type="button"
                       onClick={() => router.push("/login")}
                       className="text-primary hover:underline font-medium"
                     >
-                      Inicia sesión aquí
+                      Inicia sesión
                     </button>
                   </p>
                 </div>
               </form>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
