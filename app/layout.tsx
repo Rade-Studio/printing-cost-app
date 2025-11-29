@@ -10,8 +10,8 @@ import { SystemConfigProvider } from "./systenConfigContext"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-  title: "3D Print Cost - Calculadora de Impresión 3D | Gestión de Costos y Clientes",
-  description: "Calculadora profesional de costos de impresión 3D. Gestiona precios, clientes, materiales y ventas. Software completo para negocios de impresión 3D. Calcula costos de filamento, tiempo y gastos operativos.",
+  title: "3D Print Cost - Gestor de negocio de impresión 3D | Gestión de Costos y Clientes",
+  description: "Gestor de negocio de impresión 3D. Mide tu rentabilidad, gestiona precios, clientes, materiales y ventas. Software completo para negocios de impresión 3D. Calcula costos de filamento, tiempo y gastos operativos.",
   keywords: [
     "calculadora impresion 3d",
     "calcular costos impresion 3d", 
