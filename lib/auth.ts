@@ -44,6 +44,11 @@ export interface SignupCreate {
   invitationCode?: string
 }
 
+export interface AuthError extends Error {
+  code?: string
+  identityErrors: string[]
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5081"
 
 export class AuthService {
@@ -109,6 +114,62 @@ export class AuthService {
     const result = await response.json()
     this.setToken(result.token)
     return result
+  }
+
+  /**
+   * Requests a password reset email. The API answers the same way whether or not the account exists.
+   */
+  static async forgotPassword(email: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    })
+
+    if (!response.ok) {
+      throw await this.toAuthError(response)
+    }
+  }
+
+  /**
+   * Sets a new password with the token received by email.
+   */
+  static async resetPassword(email: string, token: string, newPassword: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, token, newPassword }),
+    })
+
+    if (!response.ok) {
+      throw await this.toAuthError(response)
+    }
+  }
+
+  /**
+   * Builds an Error carrying the API error code and the Identity error codes (details.errors[].code).
+   */
+  private static async toAuthError(response: Response): Promise<AuthError> {
+    let errorData: { code?: string; message?: string; details?: { errors?: { code?: string }[] } } | null = null
+    try {
+      const text = await response.text()
+      if (text) {
+        errorData = JSON.parse(text)
+      }
+    } catch {
+      // Respuesta sin JSON: se usa el error genérico
+    }
+
+    const error = new Error(errorData?.message || errorData?.code || "Error de autenticación") as AuthError
+    error.code = errorData?.code
+    error.identityErrors = (errorData?.details?.errors ?? [])
+      .map((identityError) => identityError.code)
+      .filter((code): code is string => Boolean(code))
+    return error
   }
 
   static setToken(token: string): void {

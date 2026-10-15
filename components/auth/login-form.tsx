@@ -205,9 +205,18 @@ export function LoginForm() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    Contraseña
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-sm font-medium">
+                      Contraseña
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/recuperar-contrasena")}
+                      className="text-sm text-primary hover:underline font-medium"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
                   <div className="relative">
                     <Input
                       id="password"
