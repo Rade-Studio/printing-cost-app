@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Analytics } from "@vercel/analytics/next"
+import { SiteAnalytics } from "@/components/analytics"
 import { Suspense } from "react"
 import "./globals.css"
 import { LocaleProvider } from "./localContext"
@@ -107,7 +107,7 @@ export default function RootLayout({
             </LocaleProvider>
           </SystemConfigProvider>
         </ThemeProvider>
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   )
